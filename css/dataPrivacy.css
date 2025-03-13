@@ -1,0 +1,86 @@
+body {
+margin: 0;
+padding: 0;
+font-family: Arial;
+background-color: #fbaf41;
+background-image: url('../.idea/images/bgImage.jpg');
+background-attachment: fixed;
+background-size: cover;
+background-position: center;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+}
+
+.dataPrivy-container {
+position: relative;
+width: 300px;
+background-color: #293A82;
+border-radius: 10px;
+padding: 25px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+text-align: center;
+height: 250px;
+}
+
+.messageBox {
+display: none;
+position: fixed;
+top: 48%;
+left: 50%;
+transform: translate(-50%, -50%);
+background-color: #fbaf41;
+color: black;
+padding: 30px 10px;
+font-size: 14px;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+text-align: center;
+}
+
+.label {
+width: 100%;
+background-color: white;
+color: black;
+font-size: 14px;
+padding: 15px 0;
+border-radius: 10px;
+text-align: center;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.submit-button {
+position: absolute;
+top: 85%;
+left: 34%;
+background-color: #fbaf41;
+color: white;
+width: 100px;
+height: 30px;
+font-size: 16px;
+border: none;
+border-radius: 20px;
+transform: translateY(-50%);
+}
+
+
+
+.back-button {
+position: absolute;
+top: 11%;
+left: 3%;
+background-color: #fbaf41;
+color: white;
+width: 25px;
+height: 25px;
+font-size: 10px;
+border: none;
+border-radius: 20px;
+transform: translateY(-50%);
+}
+
+.button:hover {
+background-color: #F4F441;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In Page</title>
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+
+<div class="login-container">
+    <img src=".idea/images/logo.png" alt="Asia Pacific College Logo">
+    <h1>Asia Pacific College<br></h1>
+    <h2>Log In<br></h2>
+    <label for="email">Email address:</label>
+    <input type="email" id="email" name="email">
+    <label for="pwd">Password:</label>
+    <input type="password" id="pwd" name="pwd">
+    <a href="#">Forgot Password?</a>
+
+    <div class="button-container">
+            <button type="button" class="button back-button" id="backButton">Back</button>
+            <button type="button" class="button signIn-button" id="signInButton">Sign In</button>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById("backButton").addEventListener("click", function () {
+        window.location.href = "signup.html";
+    });
+
+    document.getElementById("signInButton").addEventListener("click", function () {
+        window.location.href = "facultyPOV.html";
+    });
+</script>
+
+</body>
+</html>
