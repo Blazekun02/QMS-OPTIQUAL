@@ -6,7 +6,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-image: url(/.idea/images/bgImage.jpg);
+    background-color: #fbaf41;
+    background-image: url('/.idea/images/bgImage.jpg');
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
