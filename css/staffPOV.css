@@ -16,7 +16,7 @@ body {
 
 .image {
     flex: 1;
-    background-image: url('.idea/images/apc.jpg');
+    background-image: url('/.idea/images/apc.jpg');
     background-attachment: fixed;
     background-position: 55px -40px;
     background-size: cover;
