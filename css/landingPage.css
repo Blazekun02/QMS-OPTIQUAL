@@ -6,8 +6,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #FCFCFD;
-    background-image: url('../.idea/images/bgImage.jpg');
+    background-image: url(/.idea/images/bgImage.jpg);
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
