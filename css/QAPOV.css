@@ -4,8 +4,10 @@ body {
     font-family: Arial;
     background-color: white;
     display: flex;
-    justify-content: center;
-    height: 100vh;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
 }
 
 .Wrapper {
@@ -35,7 +37,6 @@ body {
     width: 100%;
     padding: 10px 0;
 }
-
 
 .apc_logo{
     margin-bottom: 30px;
