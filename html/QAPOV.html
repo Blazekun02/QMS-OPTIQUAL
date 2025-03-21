@@ -4,40 +4,68 @@
         <title>Quality Assurance POV</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link rel="stylesheet" href="/css/QAPOV.css">
     </head>
     <body>
-        <div class="Wrapper">
-            <div class="Selection_pane">
-                <div class="apc_logo">
-                    <img src="/.idea/images/logo.png" alt="APC Logo" class="small-logo" height="50" width="50">
-                </div>
-                    <div class="QA_Selections">
-                        <div class="QAP_menu-icons">
-                            <img src="/.idea/images/QAP Sidebar/Not Clicked/Policy_Repo.png" alt="Policy Repository">
-                        </div>
-                        <div class="QAP_menu-icons">
-                            <img src="/.idea/images/QAP Sidebar/Not Clicked/Create_Poli.png" alt="Create Policy">
-                        </div>
-                        <div class="QAP_menu-icons">
-                            <img src="/.idea/images/QAP Sidebar/Not Clicked/Pro_Track.png" alt="Process Tracking">
-                        </div>
-                        <div class="QAP_menu-icons">
-                            <img src="/.idea/images/QAP Sidebar/Not Clicked/Task_Manage.png" alt="Task Management">
-                        </div>
-                        <div class="QAP_menu-icons">
-                            <img src="/.idea/images/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Role Management">
-                        </div>
-                        <div class="QAP_menu-icons">
-                            <img src="/.idea/images/QAP Sidebar/Not Clicked/Info.png" alt="Information">
-                        </div>
-                </div>
+        <div class="yellow-line"></div>
+        <div class="image"></div>
+        <div class="white-line"></div>
+        <div class="blue-line"></div>
+        <div class="copyright-label">Copyright © 2024 OPTIQUAL. All rights reserved</div>
+    
+        <div class="Selection_pane"> <!-- grey-line -->
+            <div class="apc_logo"> <!-- logo-wrapper -->
+                <img src="/.idea/images/logo.png" alt="APC Logo" class="small-logo">
             </div>
-            <div class="Yellow_divider"></div>
-            <div class="Blue_bottom"></div>
-            <div class="QA_Body_Background">
-                <img src="/.idea/images/apc2.png"> 
+                <div class="QA_Selections"> <!-- menu-icons -->
+                    <div class="QAP_menu-icons"> <!-- icon-item -->
+                        <img src="/.idea/images/QAP Sidebar/Not Clicked/Policy_Repo.png" alt="Policy Repository">
+                        <span class="icon-label">Policy Repository</span>
+                    </div>
+                    <div class="QAP_menu-icons">
+                        <img src="/.idea/images/QAP Sidebar/Not Clicked/Create_Poli.png" alt="Create Policy">
+                        <span class="icon-label">Create Policy</span>
+                    </div>
+                    <div class="QAP_menu-icons">
+                        <img src="/.idea/images/QAP Sidebar/Not Clicked/Pro_Track.png" alt="Process Tracking">
+                        <span class="icon-label">Request Tracker</span>
+                    </div>
+                    <div class="QAP_menu-icons">
+                        <img src="/.idea/images/QAP Sidebar/Not Clicked/Task_Manage.png" alt="Task Management">
+                        <span class="icon-label">Task Manager</span>
+                    </div>
+                    <div class="QAP_menu-icons">
+                        <img src="/.idea/images/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Role Management">
+                        <span class="icon-label">Role Manager</span>
+                    </div>
+                    <div class="QAP_menu-icons">
+                        <img src="/.idea/images/QAP Sidebar/Not Clicked/Info.png" alt="Information">
+                        <span class="icon-label">Information</span>
+                    </div>
+                </div>
+        </div>
+        <img src="/.idea/images/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+
+        <div>
+            <button type="button" class="button user-btn" id="userButton">
+                <i class="fa fa-user-circle" style="font-size:24px"></i>
+                Name of the user
+            </button>
+            <button type="button" class="button notif-btn" id="notifButton">
+                <i class="fa fa-bell" style="font-size:24px"></i>
+            </button>
+        </div>
+        
+        <div class="notification-overlay" id="notificationOverlay">
+            <div class="notification-content">
             </div>
         </div>
+        <div class="signOut-overlay" id="signOutOverlay">
+            <div class="signOut-content">
+                Sign out
+            </div>
+        </div>
+    <script src="/js/QAPOV.js"></script>
     </body>
 </html>
