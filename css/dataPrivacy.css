@@ -2,7 +2,8 @@ body {
 margin: 0;
 padding: 0;
 font-family: Arial;
-background-image: url(/.idea/images/bgImage.jpg);
+background-color: #fbaf41;
+background-image: url('/.idea/images/bgImage.jpg');
 background-attachment: fixed;
 background-size: cover;
 background-position: center;
