@@ -1,5 +1,6 @@
-const greyLine = document.getElementById('grey-line');
-const hamburgerIcon = document.getElementById('hamburger-icon');
+  const greyLine = document.getElementById('grey-line');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+
 
     greyLine.addEventListener('mouseenter', () => {
         greyLine.classList.add('extended');
@@ -18,7 +19,6 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
 
-// <!-- JS for notif and sign out -->
 
     const notificationOverlay = document.getElementById('notificationOverlay');
     const notifButton = document.getElementById('notifButton');
@@ -38,7 +38,6 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
 
-// <!-- js for policy repository -->
 
     function showPoliciesRepository() {
         document.getElementById('policies-repository-content').style.display = 'flex';
@@ -60,8 +59,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
 
-// <!-- js for filter -->
-
+    <!-- js for filter -->
         const filterButton = document.getElementById('filterButton');
         const filterOverlay = document.getElementById('filterOverlay');
         const cancelFilter = document.getElementById('cancelFilter');
@@ -100,7 +98,6 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 }
 
-// <!-- js for policy submission -->
 
     function showPolicySubmission() {
         document.getElementById('policies-repository-content').style.display = 'none';
@@ -121,3 +118,105 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
     document.getElementById("last-child").addEventListener("click", function () {
         cfOverlay.style.display = "none";
     });
+
+    const submitOverlay = document.getElementById('submitOverlay');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+
+    submitButton.addEventListener('click', () => {
+        submitOverlay.style.display = submitOverlay.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.getElementById("submitBtn").addEventListener("click", function () {
+        submitOverlay.style.display = "none";
+    });
+
+    document.getElementById("cancelBtn").addEventListener("click", function () {
+        submitOverlay.style.display = "none";
+    });
+
+2
+
+    function showProcessTracker() {
+        document.getElementById('policies-repository-content').style.display = 'none';
+        document.getElementById('policy-submission-content').style.display = 'none';
+        document.querySelector('.process-tracker').style.display = 'flex';
+    }
+
+
+    document.querySelector('.process-tracker').style.display = 'none';
+
+document.addEventListener('DOMContentLoaded', function() {
+  const submissionsButton = document.getElementById('processTrackerSub-btn');
+  const table = document.querySelector('.process-tracker-table');
+
+  if (submissionsButton && table) {
+    submissionsButton.addEventListener('click', function() {
+      if (this.textContent === 'Submissions') {
+        this.textContent = 'Feedbacks';
+
+        table.innerHTML = `
+          <tHead>
+            <tr>
+              <th>Policy Reported</th>
+              <th>Date Submitted</th>
+              <th>Status</th>
+            </tr>
+          </tHead>
+          <tBody>
+            <tr>
+              <td>Student Handbook</td>
+              <td>10/24/24</td>
+              <td class="status-reviewed">Reviewed</td>
+            </tr>
+            <tr>
+              <td>Organizational Profile</td>
+              <td>03/03/24</td>
+              <td class="status-verified">Verified</td>
+            </tr>
+            <tr>
+              <td>Student Dress Code</td>
+              <td>06/07/24</td>
+              <td class="status-approved">Approved</td>
+            </tr>
+          </tBody>
+        `;
+      } else {
+        this.textContent = 'Submissions';
+        // Change table back to original columns
+        table.innerHTML = `
+          <tHead>
+            <tr>
+              <th>Policy Title</th>
+              <th>Date Submitted</th>
+              <th>Version no.</th>
+              <th>Status</th>
+            </tr>
+          </tHead>
+          <tBody>
+            <tr>
+              <td>Student Handbook</td>
+              <td>10/24/24</td>
+              <td>5.0</td>
+              <td class="status-reviewed">Reviewed</td>
+            </tr>
+            <tr>
+              <td>Organizational Profile</td>
+              <td>03/03/24</td>
+              <td>3.0</td>
+              <td class="status-verified">Verified</td>
+            </tr>
+            <tr>
+              <td>Student Dress Code</td>
+              <td>06/07/24</td>
+              <td>4.0</td>
+              <td class="status-approved">Approved</td>
+            </tr>
+          </tBody>
+        `;
+      }
+    });
+  }
+});
+

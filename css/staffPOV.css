@@ -1,22 +1,21 @@
-* {
+        * {
             box-sizing: border-box;
         }
         body {
             margin: 0;
             padding: 0;
             font-family: 'Istok Web', sans-serif;
-            background-color: #fbaf41;
+            background-color: white;
             height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            overflow: hidden;
         }
 
         .image {
             flex: 1;
-            background-image: url('.idea/images/apc.jpg');
+            background-image: url('/.idea/images/apc.jpg');
             background-attachment: fixed;
             background-position: 55px -40px;
             background-size: cover;
@@ -43,7 +42,7 @@
             z-index:10;
         }
         .blue-line {
-            position: absolute;
+            position: fixed;
             width: 100%;
             bottom: 0;
             height: 0.4in;
@@ -52,7 +51,7 @@
         }
 
         .copyright-label {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 5%;
             width: auto;
@@ -67,7 +66,7 @@
 
 
         .grey-line {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 0.7in;
@@ -102,7 +101,7 @@
         .extended-text {
             color: #fbaf41;
             font-size: 16px;
-            font-family:"Bebas Neue";
+            font-family:"Istok Web";
             margin-left: 10px;
             display: none;
             margin-top:10px;
@@ -274,13 +273,13 @@
         }
 
         .search-container {
-            width: 300px;
+            width: 300px; /* Adjust width as needed */
             margin-bottom: 20px;
             margin-top: -60px;
             margin-right: 10px;
             display: inline-flex;
             align-items: center;
-            align-self: flex-end;
+            align-self: flex-end; /* Align to the right */
         }
 
 
@@ -554,6 +553,69 @@
             color:black;
         }
 
+        .submit-overlay{
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .submit-popUp{
+            background-color: #293A82;
+            color: white;
+            padding: 5px;
+            border-radius: 10px;
+            width: 460px;
+            height: 230px;
+            text-align: center;
+            align-items: center;
+            margin-left: 475px;
+            margin-top: 220px;
+            font-size: 20px;
+        }
+
+        .submit-field {
+            margin-left: 20px;
+            margin-top: -5px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+
+        .submit-buttons {
+            text-align: center;
+        }
+
+        .submit-buttons button {
+            color: black;
+            padding: 5px 30px ;
+            border-radius: 20px;
+            border: #fbaf41;
+            cursor: pointer;
+            margin-top: 25px;
+            background-color: #fbaf41;
+            font-size: 18px;
+            margin-left: 40px;
+            margin-right: 10px;
+            align-items: center;
+        }
+
+        .submit-buttons button:hover{
+            background-color: #db8804;
+            color:black;
+        }
+
+        .submit-input {
+            border-radius: 5px;
+            align-items: left;
+            margin-left: 500px;
+            margin-top:-160px;
+        }
+
         .confirm-dl{
             display: none;
             position: absolute;
@@ -577,6 +639,9 @@
             margin-left: 475px;
             margin-top: 230px;
             font-size: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .cf-buttons {
@@ -589,7 +654,7 @@
             border-radius: 10px;
             border: #fbaf41;
             cursor: pointer;
-            margin-top: 40px;
+            margin-top: 20px;
             background-color: #fbaf41;
             font-size: 18px;
             margin-left:20px;
@@ -599,4 +664,97 @@
         .cf-buttons button:hover{
             background-color: #db8804;
             color:black;
+        }
+
+        .process-tracker {
+            width: 93%;
+            margin-top: 50px;
+            background-color:#293A82;
+            display: none;
+            height: auto;
+            padding: 20px;
+            margin-left: 60px;
+            color: white;
+            position: relative;
+        }
+
+        .process-tracker .tracker-header {
+           font-size: 1.5em;
+          font-weight: bold;
+          margin-bottom: 20px;
+
+        }
+
+        .process-tracker .submissions-button {
+            padding: 8px 14px;
+            border-radius: 15px;
+            border: none;
+            color: grey;
+            font-size: 12px;
+            align-self: flex-end;
+            margin-left: -95px;
+            margin-bottom: 480px;
+            cursor: pointer;
+        }
+
+        .process-tracker .submissions-button:hover {
+            color: white;
+            background-color: #A9A9A9;
+        }
+
+        .process-tracker-table {
+          width: 97%;
+          color: black;
+          font-family: Istok-Web;
+          margin-left: 17px;
+          margin-top: 100px;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
+    .process-tracker-table th,
+    .process-tracker-table td {
+          padding: 10px 15px;
+          text-align: left;
+        }
+
+        .process-tracker-table tHead th {
+          background-color: #fbaf41;
+          color: black;
+          text-align: left;
+
+        }
+
+        .process-tracker-table tBody tr:nth-child(odd) td {
+          background-color: #E0E0E0;
+        }
+
+        .process-tracker-table tBody tr:nth-child(even) td {
+          background-color: #FFFFFF;
+        }
+
+          .process-tracker-table tBody tr:hover td {
+            background-color: grey;
+        }
+
+        .process-tracker-table tBody tr:nth-child(odd):hover td {
+            background-color: #343A40;
+        }
+
+        .process-tracker-table td:nth-child(4) {
+          text-align: center;
+        }
+
+        .process-tracker-table .status-reviewed {
+          color: #fbaf41;
+        }
+
+        .process-tracker-table .status-verified {
+          color: #2196F3;
+        }
+
+
+        .process-tracker-table .status-approved {
+           color: #4CAF50;
         }
