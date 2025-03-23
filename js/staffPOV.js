@@ -18,7 +18,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
 
-<!-- JS for notif and sign out -->
+// <!-- JS for notif and sign out -->
 
     const notificationOverlay = document.getElementById('notificationOverlay');
     const notifButton = document.getElementById('notifButton');
@@ -38,7 +38,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
 
-<!-- js for policy repository -->
+// <!-- js for policy repository -->
 
     function showPoliciesRepository() {
         document.getElementById('policies-repository-content').style.display = 'flex';
@@ -60,7 +60,8 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
 
-<!-- js for filter -->
+// <!-- js for filter -->
+
         const filterButton = document.getElementById('filterButton');
         const filterOverlay = document.getElementById('filterOverlay');
         const cancelFilter = document.getElementById('cancelFilter');
@@ -99,7 +100,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 }
 
-<!-- js for policy submission -->
+// <!-- js for policy submission -->
 
     function showPolicySubmission() {
         document.getElementById('policies-repository-content').style.display = 'none';

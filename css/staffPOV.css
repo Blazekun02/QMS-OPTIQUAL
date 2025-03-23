@@ -90,7 +90,7 @@
             justify-content: center;
             width: 0.7in;
             margin-top: 10px;
-
+ 
         }
 
         .logo {
@@ -287,7 +287,7 @@
 
         .policies-repository-content .search-container .filter-button {
             background-color: white !important;
-            color: #293A82; !important;
+            color: #293A82 !important;
             padding: 10px 10px;
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -312,7 +312,7 @@
         }
 
         .policies-repository-content .search-container .filter-button svg:hover {
-            stroke: #0A185F; !important;
+            stroke: #0A185F !important;
         }
 
         .filter-overlay {
