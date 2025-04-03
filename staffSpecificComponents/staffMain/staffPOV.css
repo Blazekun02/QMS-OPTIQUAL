@@ -1,0 +1,240 @@
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fbaf41;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+}
+
+.image {
+    flex: 1;
+    background-image: url('/.idea/images/apc.jpg');
+    background-attachment: fixed;
+    background-position: 55px -40px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: calc(100vh - 0.4in - 0.15in - 0.4in);
+}
+
+.white-line, .yellow-line, .blue-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+}
+.white-line {
+    top: 0;
+    height: 0.4in;
+    background-color: white;
+}
+.yellow-line {
+    top: 4%;
+    height: 0.20in;
+    background-color: #fbaf41;
+}
+.blue-line {
+    bottom: 0;
+    height: 0.4in;
+    background-color: #293A82;
+}
+
+.copyright-label {
+    position: absolute;
+    bottom: 0;
+    left: 5%;
+    width: auto;
+    max-width: 80%;
+    font-size: 16px;
+    background-color: #293A82;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.grey-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.7in;
+    height: 100%;
+    background-color: #343A40;
+    transition: width 0.5s ease;
+    z-index: 15;
+    display: flex;
+    align-items: flex-start;
+}
+
+.grey-line.extended {
+    width: 2.4in;
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.7in;
+    margin-top: 10px;
+
+}
+
+.logo {
+    max-width: 80%;
+    max-height: 80%;
+    display: block;
+}
+
+
+.extended-text {
+    color: #fbaf41;
+    font-size: 16px;
+    font-family:"Bebas Neue";
+    margin-left: 10px;
+    display: none;
+    margin-top:10px;
+}
+
+.grey-line.extended .extended-text {
+    display: inline;
+}
+
+.hamburger-icon {
+    position: absolute;
+    top: 3%;
+    left: 0.8in;
+    transform: translateY(-50%);
+    width: 0.4in;
+    height: 0.3in;
+    background-color: white;
+    cursor: pointer;
+    transition: left 0.5s ease;        }
+
+.hamburger-icon::before,
+.hamburger-icon::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 0.2in;
+    background-color: #343A40;
+}
+
+.hamburger-icon::before {
+    top: 0;
+}
+
+.hamburger-icon::after {
+    bottom: 0;
+}
+
+.user-btn, .notif-btn {
+    position: absolute;
+    top: 1%;
+    background-color: white;
+    border: none;
+    color: black;
+    text-align: center;
+    font-size: 17px;
+    cursor: pointer;
+}
+.user-btn {
+    left: 86%;
+}
+
+.notif-btn {
+    left: 83.5%;
+}
+.notification-overlay {
+    position: fixed;
+    top: 22px;
+    right: 210px;
+    display: none;
+    z-index: 1000;
+
+}
+
+.notification-content {
+    background-color: #343A40;
+    width: 220px;
+    height: 250px;
+    border-radius: 5px;
+}
+
+.signOut-overlay {
+    position: absolute;
+    top: 40px;
+    right: 70px;
+    background-color: #343A40;
+    border-radius: 20px;
+    padding: 8px 15px;
+    display: none;
+    z-index: 1001;
+    color: white;
+    font-size: 12px;
+}
+
+.signOut-overlay::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 20%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #343A40 transparent;
+}
+
+.signOut-content {
+    cursor: pointer;
+    transition: color 0.3s;
+    text-align: center;
+    width: 70px;
+}
+
+.signOut-content:hover {
+    color: red;
+}
+
+.menu-icons {
+    position: absolute;
+    top: 20%;
+    left: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.menu-icons .icon-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.8in;
+}
+
+.menu-icons img {
+    width: 0.4in;
+    height: 0.4in;
+    cursor: pointer;
+    transition: filter 0.3s ease;
+}
+
+.icon-label {
+    color: white;
+    margin-left: 0.2in;
+    display: none;
+    transition: filter 0.3s ease;
+}
+
+.icon-item:hover .icon-label {
+    color: #fbaf41;
+ }
+
+.grey-line.extended .icon-label {
+    display: inline;
+}
