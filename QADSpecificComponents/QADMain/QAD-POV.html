@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quality Assurance Director</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="QAD-POV.css">
+        
+
+    </head>
+
+    <body>
+
+        <!-- Sidebar -->
+        <div class="Sidebar">
+            <div class="Sidebar-Logo">
+                <img src="/.idea/images/logo.png" alt="Logo" class="Logo">
+                <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
+            </div>
+            <ul class="Sidebar-Menu">
+                <li class="menu-icons">
+                    <img src="/.idea/images/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
+                    <span class="icon-label">Policies Repository</span>
+                </li>
+                <li class="menu-icons">
+                    <img src="/.idea/images/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
+                    <span class="icon-label">Policy Submission</span>
+                </li>
+                <li class="menu-icons">
+                    <img src="/.idea/images/req tracker-notClicked.png" alt="Icon 3">
+                    <span class="icon-label">Request Tracker</span>
+                </li>
+                <li class="menu-icons">
+                    <img src="/.idea/images/task manager-notClicked.png" alt="Icon 4">
+                    <span class="icon-label">Task Manager</span>
+                </li>
+                <li class="menu-icons">
+                    <img src="/.idea/images/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6">
+                    <span class="icon-label">Manage Roles</span>
+                </li>
+                <li class="menu-icons">
+                    <img src="/.idea/images/QAP Sidebar/Not Clicked/QD-Dept_Manage.png" alt="Icon 7">
+                    <span class="icon-label">Department Manager</span>
+                </li>
+                <li class="menu-icons">
+                    <img src="/.idea/images/QAP Sidebar/Not Clicked/QD_Policy_Manage.png" alt="Icon 8">
+                    <span class="icon-label">Policy Manager</span>
+                </li>
+                <li >
+                    <img src="/.idea/images/info - notClicked.png" alt="Icon 9">
+                    <span class="icson-label">Information</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="blue-line"></div>
+        <div class="yellow-line"></div>
+        <img src="/.idea/images/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+        <div>
+            <button type="button" class="button user-btn" id="userButton">
+                <i class="fa fa-user-circle" style="font-size:24px"></i>
+                Name of the user
+            </button>
+            <button type="button" class="button notif-btn" id="notifButton">
+                <i class="fa fa-bell" style="font-size:24px"></i>
+            </button>
+        </div>
+
+        <div class="notification-overlay" id="notificationOverlay">
+            <div class="notification-content">
+            </div>
+        </div>
+        <div class="signOut-overlay" id="signOutOverlay">
+            <div class="signOut-content">
+                Sign out
+            </div>
+        </div>
+
+         <!-- Department Manager -->
+          <div class="Department-Manager-Panel" style="display: none;">
+            <div class="Department-Manager-Header">
+                <h1>Department Manager</h1>
+
+                <div class="DM-Search-Container">
+                    <label>
+                        <input type="text" placeholder="Search" id="searchInput">
+                    </label>
+                    <button id="searchButton"><i class="fas fa-search"></i></button>
+                </div>
+                
+          </div>
+          <div class="DMP-Divider"></div>
+          <div class="add-department-button">
+            <button class="add-department-button">+</button>
+    <script src="QAD-POV.js"></script>
+    </body>
+</html>

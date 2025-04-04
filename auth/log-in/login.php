@@ -1,6 +1,6 @@
 <!-- Include message generation -->
-<?php include '../../genMsg/message_box.php'; ?>
-<?php include 'loginBE.php'; ?>
+<?php include_once '../../genMsg/message_box.php'; ?>
+<?php include_once 'loginBE.php'; ?>
 
 <!-- Login -->
 <!DOCTYPE html>

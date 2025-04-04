@@ -1,0 +1,277 @@
+.Sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.7in;
+    height: 100%;
+    background-color: #343A40;
+    transition:  width 0.5s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+}
+
+.Sidebar.extended {
+    width: 2.4in;
+}
+
+.Sidebar-Logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 0.7in;
+    height: 0.7in;
+    margin-top: 10px;
+    padding-left: 5px;
+    
+}
+
+.extended-text {
+    color: #fbaf41;
+    font-size: 16px;
+    font-family:"Bebas Neue";
+    margin-left: 10px;
+    display: none;
+    margin-top:10px;
+}
+
+.Sidebar.Sidebar.extended .extended-text {
+    display: inline;
+}
+
+.Logo {
+    max-height: 80%;
+    max-height: 80%;
+    display: block;
+}
+
+
+.Sidebar-Menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding-left: 15px;
+    
+}
+
+
+
+.Sidebar-Menu li{
+    list-style: none;
+    display: flex;
+    color: white;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.Sidebar-Menu li:hover .icon-label{
+    color: orange;
+}q  
+
+.Sidebar-Menu img {
+    
+    width: 0.4in;
+    height: 0.4in;
+    cursor: pointer;
+    
+}
+
+.Sidebar-Menu img {
+    width: 0.4in;
+    height: 0.4in;
+    cursor: pointer;
+}
+
+.icon-label {
+    color: white;
+    margin-left: 0.2in;
+    display: none;
+    transition: filter 0.3s ease;
+}
+
+
+.Sidebar.extended .icon-label {
+    display: block;
+}
+
+.blue-line{
+    position: absolute;
+    bottom: 0;
+    background-color: #293A82;
+    width: 100%;
+    height: 40px;
+    z-index: -1;
+}
+
+.yellow-line{  
+    position: absolute;
+    top: 80px;
+    background-color: #fbaf41;
+    width: 100%;
+    height: 10px;
+    z-index: -10;
+}
+
+.hamburger-icon {
+    position: absolute;
+    margin-top: 35px;
+    left: 0.8in;
+    transform: translateY(-50%);
+    width: 0.4in;
+    height: 0.3in;
+    background-color: white;
+    cursor: pointer;
+    transition: left 0.5s ease;        }
+
+.hamburger-icon::before,
+.hamburger-icon::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 0.2in;
+    background-color: #343A40;
+}
+
+.hamburger-icon::before {
+    top: 0;
+}
+
+.hamburger-icon::after {
+    bottom: 0;
+}
+
+
+.user-btn, .notif-btn {
+    position: absolute;
+    margin-top: 20px;
+    top: 0.5%;
+    background-color: white;
+    border: none;
+    color: black;
+    text-align: center;
+    font-size: 17px;
+    cursor: pointer;
+    z-index: 10;
+}
+.user-btn {
+    left: 86%;
+}
+
+.notif-btn {
+    left: 83.5%;
+}
+
+
+.notification-overlay {
+    position: fixed;
+    top: 6vh;
+    right: 15vh;
+    display: none;
+    z-index: 1000;
+
+}
+
+.notification-content {
+    background-color: #343A40;
+    width: 220px;
+    height: 250px;
+    border-radius: 5px;
+}
+
+
+.signOut-overlay {
+    position: absolute;
+    top: 6vh;
+    right: 2vw;
+    background-color: #343A40;
+    border-radius: 20px;
+    padding: 8px 15px;
+    display: none;
+    z-index: 1001;
+    color: white;
+    font-size: 12px;
+}
+
+.signOut-overlay::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 20%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #343A40 transparent;
+}
+
+.signOut-content {
+    cursor: pointer;
+    transition: color 0.3s;
+    text-align: center;
+    width: 70px;
+}
+
+.signOut-content:hover {
+    color: red;
+}
+
+.Department-Manager-Panel {
+    position: absolute;
+    background-color: white;
+    top: 90px;
+    left: 0.9in;
+    width: calc(100% - 0.9in);
+    height: calc(100vh - 149px);
+    border: 2px solid red;
+    z-index: -1;
+}
+
+.DMP-Divider {
+    position: absolute;
+    top: 60px;
+    background-color:  gray;
+    width: 100%;
+    height: 2px;
+}
+
+.Department-Manager-Header {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.DM-Search-Container {
+    display: absolute;
+    align-items: center;
+    border: 2px solid gray;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    border-radius: 20px;
+    width: fit-content;
+    background: white;
+}
+
+.DM-Search-Container input[type="text"] {
+    flex: 1;
+    height: 30px;
+    border: none;
+    outline: none;
+    border-radius: 20px 0 0 20px;
+    padding: 0 10px;
+}
+
+.DM-Search-Container button {
+    background-color: #293A82;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    height: 30px;
+    border-radius: 0 20px 20px 0;
+    cursor: pointer;
+}
+

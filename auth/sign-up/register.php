@@ -2,7 +2,7 @@
 // Start session to store messages
 session_start();
 
-include '../../genMsg/setMessage.php'; // Include the message setting function
+include_once '../../genMsg/setMessage.php'; // Include the message setting function
 
 
 // Check if form is submitted

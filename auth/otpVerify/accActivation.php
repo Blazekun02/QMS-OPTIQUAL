@@ -4,7 +4,7 @@ date_default_timezone_set('Asia/Manila');
 session_start();
 
 // Include the message setting function
-include '../../genMsg/setMessage.php'; 
+include_once '../../genMsg/setMessage.php'; 
 
 // Include database connection
 require_once "../../connect.php";

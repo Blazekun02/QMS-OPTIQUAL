@@ -1,5 +1,5 @@
 <!-- Include message generation -->
-<?php include '../../genMsg/message_box.php'; ?>
+<?php include_once '../../genMsg/message_box.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">

@@ -3,10 +3,10 @@
 session_start(); // Start the session
 
 // Include the message setting function
-include '../../genMsg/setMessage.php'; 
+include_once '../../genMsg/setMessage.php'; 
 
 //Include connection verification
-include '../../auth/connectionVerification.php';
+include_once '../../auth/connectionVerification.php';
 
 
 //Check if submitted

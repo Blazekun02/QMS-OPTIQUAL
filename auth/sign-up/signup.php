@@ -1,5 +1,5 @@
 <!-- Include message generation -->
-<?php include '../../genMsg/message_box.php'; ?>
+<?php include_once '../../genMsg/message_box.php'; ?>
 
 
 <!-- Purpose: Sign up page for the user to create an account -->
