@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Sign Up Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #FCFCFD;
+            background-image: url('.idea/images/bgImage.png');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .background-overlay {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            background-color: #FCFCFD;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 270px;
+            text-align: center;
+            box-shadow: 1em 3em 7em rgba(0, 0, 0, 1);
+            Border: 0.1em solid #293A82;
+            border-radius: 1em;
+        }
+
+        .box img {
+            width: 80px;
+            height: auto;
+            margin-bottom: 5px;
+        }
+
+        .box h1 {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .box button {
+            padding: 8px 15px;
+            background-color: #293A82;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 20px;
+            margin-left: 18px;
+            margin-top: 20px;
+        }
+
+        .box button:hover {
+            background-color: #0A185F;
+        }
+    </style>
+</head>
+<body>
+<div class="background-overlay">
+<div class="box">
+    <img src=".idea/images/logo.png" alt="School Logo"> <!-- Fixed path -->
+    <p style="color: #fbaf41; font-size: 18px;">Asia Pacific College</p>
+    <p style="color: #293A82; font-size: 18px;">Quality Management System</p>
+    <button onclick="redirectToDataPrivacy()">Sign Up</button>
+    <button onclick="redirectToDataPrivacy()">Log In</button>
+</div>
+</div>
+
+<script>
+    function redirectToDataPrivacy() {
+        window.location.href = "dataPrivacy.html"; /* Fixed function name */
+    }
+</script>
+</body>
+</html>

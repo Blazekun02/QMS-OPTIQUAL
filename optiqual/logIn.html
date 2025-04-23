@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Istok+Web&display=swap" rel="stylesheet">
+    <title>Log In Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Istok Web', sans-serif;
+            background-color: #fbaf41;
+            background-image: url('.idea/images/bgImage.png');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+         .logIn-overlay {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            width: 350px;
+            border-radius: 1em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 1);
+            text-align: center;
+            border: 0.1em solid #293A82;
+        }
+        .login-container img {
+            width: 50px;
+            margin-bottom: 20px;
+            margin-right: 250px;
+        }
+
+        .login-container h1 {
+            color: black;
+            margin-top:-2.7em;
+            margin-left: 2em;
+            margin-bottom: 0;
+            font-size: 1.5em;
+            font-family: Istok Web;
+        }
+        .login-container h2 {
+            color: black;
+            margin-top: 0.6em;
+            margin-left:-11.2em;
+            margin-bottom:10px;
+            font-size: 22px;
+            font-family: Istok Web;
+        }
+
+        .login-container label {
+            color: black;
+            font-size: 12px;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 5px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+
+        }
+
+        .login-container a {
+            color: blue;
+            font-size: 10px;
+            display: block;
+            margin-top: 0px; /* Adjust space above the link */
+            margin-left: -220px;
+            margin-bottom: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .button {
+            width: 90px;
+            height: 30px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            padding: 8px 15px;
+        }
+
+        .back-button {
+            background-color: #293A82;
+            color: white;
+        }
+
+        .signIn-button {
+            background-color: #293A82;
+            color: white;
+        }
+
+        .button:hover {
+            background-color:  #0A185F;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="logIn-overlay">
+<div class="login-container">
+    <img src=".idea/images/logo.png" alt="Asia Pacific College Logo">
+    <h1>Asia Pacific College<br></h1>
+    <h2>Log In<br></h2>
+    <label for="email">Email address:</label>
+    <input type="email" id="email" name="email">
+    <label for="pwd">Password:</label>
+    <input type="password" id="pwd" name="pwd" autocomplete="current-password">
+    <a href="#">Forgot Password?</a>
+
+    <div class="button-container">
+            <button type="button" class="button back-button" id="backButton">Back</button>
+            <button type="button" class="button signIn-button" id="signInButton">Sign In</button>
+    </div>
+
+</div>
+</div>
+<script>
+    document.getElementById("backButton").addEventListener("click", function () {
+    window.history.back();
+    });
+
+    document.getElementById("signInButton").addEventListener("click", function () {
+        window.location.href = "facultyPOv.html";
+    });
+</script>
+
+</body>
+</html>
