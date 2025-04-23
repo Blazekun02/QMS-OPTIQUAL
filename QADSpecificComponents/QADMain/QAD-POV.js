@@ -15,12 +15,19 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
         hamburgerIcon.style.left = isExtended ? '2.5in' : '0.8in';
     });
 
-    const notificationOverlay = document.getElementById('notificationOverlay');
     const notifButton = document.getElementById('notifButton');
-    notifButton.addEventListener('click', () => {
-        notificationOverlay.style.display = notificationOverlay.style.display === 'block' ? 'none' : 'block';
-    });
+    const notificationOverlay = document.getElementById('popupOverlay');
 
+    notifButton.addEventListener('click', () => {
+        if (notificationOverlay.style.display === 'block') {
+            notificationOverlay.style.display = 'none';
+        } else {
+            notificationOverlay.style.display = 'block';
+        }
+    });
+   
+
+    
     const signOutOverlay = document.getElementById('signOutOverlay');
     const userButton = document.getElementById('userButton');
     userButton.addEventListener('click', () => {

@@ -118,14 +118,15 @@
 
 .hamburger-icon {
     position: absolute;
-    margin-top: 35px;
+    margin-top: 20px;
     left: 0.8in;
     transform: translateY(-50%);
     width: 0.4in;
     height: 0.3in;
     background-color: white;
     cursor: pointer;
-    transition: left 0.5s ease;        }
+    transition: left 0.5s ease;        
+}
 
 .hamburger-icon::before,
 .hamburger-icon::after {
@@ -166,21 +167,8 @@
 }
 
 
-.notification-overlay {
-    position: fixed;
-    top: 6vh;
-    right: 15vh;
-    display: none;
-    z-index: 1000;
 
-}
 
-.notification-content {
-    background-color: #343A40;
-    width: 220px;
-    height: 250px;
-    border-radius: 5px;
-}
 
 
 .signOut-overlay {
@@ -274,4 +262,3 @@
     border-radius: 0 20px 20px 0;
     cursor: pointer;
 }
-
