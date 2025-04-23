@@ -1,9 +1,10 @@
 <?php
-
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Include the message setting function
-include '../../genMsg/setMessage.php'; 
+require_once "../../genMsg/setMessage.php";
 
 function directTo($accID){
     // Include database connection
@@ -42,7 +43,7 @@ function directTo($accID){
             break;
         case 4://Staff
             setMessage("Logged In Succesfully!","success");
-            header("Location: ../../staffSpecificComponents/staffMain/staffPOV.php");
+            header("Location: ../../staffSpecificComponents/staffMain/staff-POV.php");
             break;
         default://Error
             setMessage("Invalid Role","error");
@@ -57,8 +58,9 @@ if (isset($_SESSION['accID'])) {
     $accID = $_SESSION['accID'];
     directTo($accID);
 } else {
-    header("Location: login.php");
+    header("Location: log-in/login.php");
     exit();
 }
+
 
 ?>

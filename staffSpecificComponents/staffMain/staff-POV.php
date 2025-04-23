@@ -1,21 +1,27 @@
+<?php
+// Include message generation
+require_once '../../genMsg/message_box.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty and Staff</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
     <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.gaoogleapis.com/icon?family=Material+Icons">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
     <style>
+        /* General styling */
         * {
             box-sizing: border-box;
         }
+
         body {
-            margin: 0;
+            margin: 0; 
             padding: 0;
             font-family: 'Istok Web', sans-serif;
             background-color: white;
@@ -37,7 +43,7 @@
             height: auto;
         }
 
-
+        /* Header styling */
         .white-line,.blue-line {
             position: absolute;
             left: 0;
@@ -132,7 +138,8 @@
             height: 2vw;
             background-color: white;
             cursor: pointer;
-            transition: left 0.5s ease;        }
+            transition: left 0.5s ease;        
+        }
 
         .hamburger-icon::before,
         .hamburger-icon::after {
@@ -215,6 +222,7 @@
         .signOut-content:hover {
             color: red;
         }
+
 
         .menu-icons {
             position: absolute;
@@ -859,10 +867,10 @@
 <!-- sidebar, logo, and icons -->
 <div class="grey-line" id="grey-line">
     <div class="logo-wrapper">
-        <img src=".idea/images/logo.png" alt="Logo" class="logo">
+        <img src="../../assets/logos/logo.png" alt="Logo" class="logo">
     </div>
         <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
-<div class="menu-icons">
+    <div class="menu-icons">
         <div class="icon-item">
             <img src=".idea/images/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
             <span class="icon-label">Policies Repository</span>
@@ -887,7 +895,6 @@
 </div>
 
 <!-- Hamburger, notif, and sign out -->
-
 <img src=".idea/images/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
 <div>
     <button type="button" class="button user-btn" id="userButton">
@@ -904,9 +911,13 @@
 </div>
 <div class="signOut-overlay" id="signOutOverlay">
     <div class="signOut-content">
-        Sign out
+        <form action="../../auth/sign-out/signoutBE.php" method="POST">
+            <button type="submit" class="signout-button">Sign Out</button>
+        </form>
     </div>
 </div>
+
+
 
 <!-- POLICY REPOSITORY -->
 <div class="policies-repository-content" id="policies-repository-content" style="display: none;">

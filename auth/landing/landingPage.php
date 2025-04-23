@@ -1,3 +1,13 @@
+<?php
+// Start the session
+if (!session_id()) {
+    session_start();
+}
+// Include the message setting function
+require_once '../../genMsg/setMessage.php';
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +32,7 @@
     }
 
     function redirectToLogin() {
-        window.location.href = "../../auth/login/login.html";
+        window.location.href = "../../auth/connectionVerification.php";
     }
 
 </script>

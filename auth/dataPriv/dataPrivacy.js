@@ -1,6 +1,6 @@
 
 document.getElementById("backButton").addEventListener("click", function () {
-    window.location.href = "../../auth/landing/landingPage.html";
+    window.location.href = "../../auth/landing/landingPage.php";
 });
   
 document.getElementById("submitButton").addEventListener("click", function () {
