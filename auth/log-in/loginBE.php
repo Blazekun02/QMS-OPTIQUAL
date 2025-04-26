@@ -11,6 +11,10 @@ require_once "../../genMsg/setMessage.php";
 //Check if submitted
 if (isset($_POST["confirmButton"])) {
 
+    if(!isset($_SESSION['attempts'])){
+        $_SESSION['attempts'] = 0;
+    }
+
     //Check if attempts are more than 5 and if there is a cooldown period
     if($_SESSION['attempts'] > 5){
         //set cooldown period
@@ -31,12 +35,8 @@ if (isset($_POST["confirmButton"])) {
         
     }
     else {
-        //Track number of attempts
-        if(!isset($_SESSION['attempts'])){
-            $_SESSION['attempts'] = 0;
-        }else {
-            $_SESSION['attempts']++;
-        }
+        //increase number of attempts
+        $_SESSION['attempts']++;
     }
 
     //Check if email and password are not empty
@@ -64,16 +64,17 @@ if (isset($_POST["confirmButton"])) {
                 // Unset attempts on successful login
                 unset($_SESSION['attempts']);
                 // Call the function to redirect based on role
-                directTo($accID);
+                $_SESSION['authenticated'] = true;
+                //redirect to connection Verification
+                header("Location: ../connectionVerification.php");
+                exit;            
             } else {
-                setMessage("Invalid Email or Password 2","error");
+                setMessage("Invalid Password","error");
                 header("Location: login.php");
                 exit;
             }
-            
-            
         } else {
-            setMessage("Invalid Email or Password","error");
+            setMessage("Invalid Email","error");
             header("Location: login.php");
             exit;
         }

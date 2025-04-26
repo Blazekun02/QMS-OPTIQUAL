@@ -9,7 +9,7 @@ use PHPMailer\PHPMailer\Exception;
 //Load Composer's autoloader
 require '../../vendor/autoload.php';
 
-function sendEmail_Verify($fname, $lname, $email, $PIN, $email_subject, $email_template) {
+function sendEmail_Verify($email, $email_subject, $email_template) {
     $mail = new PHPMailer(true);
 
     try {

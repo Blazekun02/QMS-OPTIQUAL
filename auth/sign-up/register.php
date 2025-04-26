@@ -109,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['accID'] = $accID;
 
             //Insert new OTP Verification Token
-            $INSERT_OTP = "INSERT INTO otptbl (requestBy, PIN) VALUES (?, ?)";
+            $INSERT_OTP = "INSERT INTO otptbl (requestBy, PIN, isUsedFor) VALUES (?, ?, 0)";
             $stmt = $conn->prepare($INSERT_OTP);
             $stmt->bind_param("ii", $accID, $PIN);
 
@@ -126,8 +126,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "; 
     
                 // Send verification email
-                sendEmail_Verify($fname, $lname, $email, $PIN, $email_subject, $email_template);
+                sendEmail_Verify( $email, $email_subject, $email_template);
     
+                //Set OTP type to 0 (email verification)
+                $_SESSION["otpType"] = 0;
+
                 // Redirect to OTP verification page
                 setMessage("Verification email has been sent succesfully!","success");
                 header("Location: ../otpVerify/otpVerify.php");
@@ -146,9 +149,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    // Close the statement and connection
-    $stmt->close();
-    $conn->close();
 } else {
     setMessage("Invalid request method", "error");
     header("Location: signup.php");

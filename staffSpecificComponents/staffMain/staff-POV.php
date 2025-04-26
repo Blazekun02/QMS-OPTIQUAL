@@ -223,6 +223,17 @@ require_once '../../genMsg/message_box.php';
             color: red;
         }
 
+        .signout-link {
+        color: white;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 12px;
+        }
+
+        .signout-link:hover {
+            color: red;
+        }
+
 
         .menu-icons {
             position: absolute;
@@ -911,9 +922,7 @@ require_once '../../genMsg/message_box.php';
 </div>
 <div class="signOut-overlay" id="signOutOverlay">
     <div class="signOut-content">
-        <form action="../../auth/sign-out/signoutBE.php" method="POST">
-            <button type="submit" class="signout-button">Sign Out</button>
-        </form>
+        <a href="#" class="signout-link" id="signOutLink">Sign Out</a>   
     </div>
 </div>
 
@@ -1110,9 +1119,14 @@ require_once '../../genMsg/message_box.php';
         signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
     });
 
-    document.getElementById("signOutOverlay").addEventListener("click", function () {
-        window.location.href = "landingPage.html";
-    });
+    document.getElementById('signOutLink').addEventListener('click', function (e) {
+    e.preventDefault(); // Prevent default link behavior
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '../../auth/sign-out/signoutBE.php';
+    document.body.appendChild(form);
+    form.submit();
+});
 
 
 
