@@ -1,13 +1,14 @@
 <?php
-
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Include the message setting function
-include '../../genMsg/setMessage.php'; 
+require_once "../genMsg/setMessage.php";
 
 function directTo($accID){
     // Include database connection
-    require_once "../../connect.php";
+    require_once "../connect.php";
 
     //Retrieve roleID from database
     $sql_retreive_roleID = "SELECT roleID FROM accdatatbl WHERE accID = ?";
@@ -42,7 +43,7 @@ function directTo($accID){
             break;
         case 4://Staff
             setMessage("Logged In Succesfully!","success");
-            header("Location: ../../staffSpecificComponents/staffMain/staffPOV.php");
+            header("Location: ../staffSpecificComponents/staffMain/staff-POV.php");
             break;
         default://Error
             setMessage("Invalid Role","error");
@@ -53,12 +54,13 @@ function directTo($accID){
 }
 
 //Check if accID is set
-if (isset($_SESSION['accID'])) {
+if (isset($_SESSION['accID']) && isset($_SESSION['authenticated'])) {
     $accID = $_SESSION['accID'];
     directTo($accID);
 } else {
-    header("Location: login.php");
+    header("Location: log-in/login.php");
     exit();
 }
+
 
 ?>

@@ -15,10 +15,10 @@
     <div class="form-container" id="VerifyForm">
         <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
         <h2>Asia Pacific College<br></h2>
-        <h3>Email Verification</h3>
-        <form action="accActivation.php" method="POST">
+        <h3>OTP Verification</h3>
+        <form action="otpVerifyBE.php" method="POST">
             <input type="text" name="OTP" placeholder="Enter Verification Code" required>
-            <p>Didn't receive a code? <a href="accActivation.php?resend=true" id="resendCode">Resend Code</a></p>
+            <p>Didn't receive a code? <a href="otpVerifyBE.php?resend=true" id="resendCode">Resend Code</a></p>
 
             <button type="submit" class="button confirm-button" name="signup">Confirm</button>
         </form>
