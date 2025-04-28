@@ -9,6 +9,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    z-index: 1000;
     
 }
 
@@ -33,7 +34,6 @@
     font-family:"Bebas Neue";
     margin-left: 10px;
     display: none;
-    margin-top:10px;
 }
 
 .Sidebar.Sidebar.extended .extended-text {
@@ -70,7 +70,7 @@
 
 .Sidebar-Menu li:hover .icon-label{
     color: orange;
-}q  
+}
 
 .Sidebar-Menu img {
     
@@ -206,15 +206,436 @@
     color: red;
 }
 
+/* Policy Repository */
+.policy-repo-content {
+    position: absolute;
+    display: none;
+    background-color: white;
+    top: 90px;
+    left: 0.9in;    
+    width: calc(100% - 0.9in);
+    height: calc(100vh - 149px);
+    border: 2px solid red;
+    z-index: 1;
+
+}
+
+.PS-Divider {
+    position: absolute;
+    top: 60px;
+    background-color:  gray;
+    width: 100%;
+    height: 2px;
+}
+
+.Poli-Repo-Header {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.PR-Search-Container {
+    display: absolute;
+    align-items: center;
+    border: 2px solid gray;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    border-radius: 20px;
+    width: fit-content;
+    background: white;
+}
+
+.PR-Search-Container input[type="text"] {
+    flex: 1;
+    height: 30px;
+    border: none;
+    outline: none;
+    border-radius: 20px 0 0 20px;
+    padding: 0 10px;
+}
+
+.PR-Search-Container button {
+    background-color: #293A82;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    height: 30px;
+    border-radius: 0 20px 20px 0;
+    cursor: pointer;
+}
+
+.PS-Parent-Folders {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 2;
+    border-radius: 10px;
+    background-color: #4963D4;
+    
+}
+
+
+.PS-Parent-Folders:hover {
+    background-color: #fbaf41;
+    color: white;
+}
+
+.PS-Parent-Folder-Name {
+    justify-content: center;
+    align-items: center;
+    padding-left: 10px;
+ }
+
+ .child-folders {
+    display: flex;
+    flex-direction: column; 
+    margin-left: 20px; 
+    transition: 5s ease;
+}
+
+.PS-Child-Folders {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 2;
+    border-radius: 10px;
+    margin-left: 20px;
+    background-color: #7B8EDE;
+    
+}
+
+.PS-Child-Folder-Name {
+    justify-content: center;
+    align-items: center;
+    padding-left: 10px;
+}
+
+ 
+
+    
+
+/*Policy Submissions Styles*/
+/*POLICY SUBMISSION CONTAINER*/
+ 
+.policy-submission-content {
+    position: absolute;
+    background-color: white;
+    top: 90px;
+    left: 0.9in;    
+    width: calc(100% - 0.9in);
+    height: calc(100vh - 149px);
+    border: 2px solid red;
+    z-index: 1;
+    display: none;
+    align-items: center;  /* vertical centering */
+    justify-content: center;
+}
+
+.policy-submission {
+    border-radius: 10px;
+    width: 22.40vw;
+    height: auto;
+    background-color: #293A82;
+    text-align: center;
+    padding: 2vh;
+    margin-bottom: 1vh;
+}
+
+.policy-submission h2 {
+    color: white;
+    margin-bottom: 1vw;
+    margin-top: 0.3vw;
+    font-size: 24px;
+}
+
+
+.policy-submission-buttons button {
+    width: 100%;
+    padding: 1vh 1vw;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    
+}
+
+/*DOWNLOAD TEMPLATE BUTTON*/
+.policy-submission-buttons button:first-child  {
+    background-color: white;
+    border-radius: 15px;
+    margin-top: 0.7vh;
+    margin-bottom: 20vh;
+    color: #343A40;
+    text-align: left;
+
+}
+
+.policy-submission-buttons button:first-child:hover {
+    background-color: #343A40;
+    color:white;
+}
+
+/*SUBMIT BUTTON*/
+.policy-submission-buttons button:last-child {
+    background-color: #fbaf41;
+    color: white;
+}
+
+.policy-submission-buttons button:last-child:hover {
+    background-color: #db8804;
+    color:black;
+}
+
+/*SUBMIT BUTTON ONCE CLICKED/ SUBMIT CONTENT*/
+.submit-overlay{
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit-popUp{
+    background-color: #293A82;
+    color: white;
+    padding: 1vw;
+    border-radius: 10px;
+    width: 30vw;
+    height: 35vh;
+    text-align: center;
+    align-items: center;
+    margin-left: 35.2vw;
+    margin-top: 33vh;
+    font-size: 20px;
+}
+
+.submit-field {
+    text-align: left;
+    font-size: 14px;
+    margin-left: 0.3vw;
+    margin-top: -0.4vw;
+}
+
+.submit-buttons {
+    text-align: center;
+}
+
+.submit-buttons button {
+    color: black;
+    padding: 0.3vw 2.5vh ;
+    border-radius: 20px;
+    border: #fbaf41;
+    cursor: pointer;
+    background-color: #fbaf41;
+    font-size: 18px; 
+    margin-left: 1vw;
+    margin-right: 0.6vw;
+    align-items: center;
+    margin-top: 1.5vh;
+}
+
+.submit-buttons button:hover{
+    background-color: #db8804;
+    color:black;
+}
+
+.submit-input {
+    border-radius: 9em;
+    align-items: left;
+    margin-top: -1.3vh;
+
+}
+
+/* CONFIRMATION ONCE DOWNLOAD TEMPLATE IS CLICKED*/
+.confirm-dl{
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.confirm-popUp{
+    background-color: #293A82;
+    color: white;
+    padding: 1vw;
+    border-radius: 10px;
+    width: 28vw;
+    height: 20vh;
+    margin-left: 35.5vw;
+    margin-top: 38vh;
+    text-align: center;
+    align-items: center;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cf-buttons {
+    text-align: center;
+}
+
+.cf-buttons button {
+    color: white;
+    padding: 0.8vh 2.3vw;
+    border-radius: 10px;
+    border: #fbaf41;
+    cursor: pointer;
+    margin-top: 3vh;
+    background-color: #fbaf41;
+    font-size: 18px;
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+.cf-buttons button:hover{
+    background-color: #db8804;
+    color:black;
+}
+
+.confirmSubmit-dl{
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.confirmSubmit-popUp{
+    background-color: #293A82;
+    color: white;
+    padding: 1vw;
+    border-radius: 10px;
+    width: 28vw;
+    height: 20vh;
+    margin-left: 35.5vw;
+    margin-top: 38vh;
+    text-align: center;
+    align-items: center;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cfSubmit-buttons {
+    text-align: center;
+}
+
+.cfSubmit-buttons button {
+    color: white;
+    padding: 0.8vh 2.3vw;
+    border-radius: 10px;
+    border: #fbaf41;
+    cursor: pointer;
+    margin-top: 3vh;
+    background-color: #fbaf41;
+    font-size: 18px;
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+.cfSubmit-buttons button:hover{
+    background-color: #db8804;
+    color:black;
+}
+
+
+
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+
+/* Policy submission container */
+.policy-submission {
+    width: 90%; 
+    height: auto; 
+    padding: 2vw; 
+    margin: 2vh auto; 
+}
+
+/* Policy submission header text */
+.policy-submission h2 {
+    font-size: 18px; 
+    margin-bottom: 1.5vw; 
+    margin-top: 1vw;
+}
+
+ /* Policy submission buttons */
+.policy-submission-buttons button {
+    width: 100%;
+    padding: 1.5vh 1vw; 
+    font-size: 16px; 
+    margin-bottom: 1vh; 
+}
+
+/* Download template button */
+.policy-submission-buttons button:first-child {
+    margin-top: 1vh; 
+    margin-bottom: 2vh; 
+}
+
+ /* Submit button */
+.policy-submission-buttons button:last-child {
+    margin-top: 12vh; 
+}
+
+ /* Confirmation download modal */
+.confirm-popUp {
+    width: 45%; 
+    height: auto; 
+    margin: 42vh auto; 
+    padding: 2vw; 
+    font-size: 1.6em; 
+}
+
+.cf-buttons button {
+    padding: 1vh 5vw;
+    font-size: 2emm;
+    margin-top: 2vh; 
+}
+
+/* Submit confirmation modal */
+.submit-popUp {
+    width: 60%; 
+    height: auto; 
+    margin: 35vh auto; 
+    padding: 2vw; 
+    font-size: 1.3em; 
+}
+
+.submit-buttons button {
+    padding: 1vh 4vw; 
+    font-size: 0.7em; 
+    margin-top: 1vh; 
+}
+
+}
+
+
+/*Department Manager Panel Styles*/
 .Department-Manager-Panel {
     position: absolute;
     background-color: white;
     top: 90px;
-    left: 0.9in;
+    left: 0.9in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 149px);
     border: 2px solid red;
-    z-index: -1;
+    z-index: 1;
 }
 
 .DMP-Divider {
@@ -262,3 +683,224 @@
     border-radius: 0 20px 20px 0;
     cursor: pointer;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
