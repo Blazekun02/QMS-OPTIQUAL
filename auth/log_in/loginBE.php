@@ -4,9 +4,13 @@ if (!session_id()) {
     session_start();
 }
 
-// Include the message setting function
-require_once "../../genMsg/setMessage.php";
+// Include the file paths
+require_once __DIR__  . "/../../filepaths.php";
 
+// Include the message setting function
+require_once genMsg_dir . "/setMessage.php";
+
+$inputtedPassword = $hashedPassword = "";
 
 //Check if submitted
 if (isset($_POST["confirmButton"])) {
@@ -45,7 +49,7 @@ if (isset($_POST["confirmButton"])) {
         $inputtedPassword = trim($_POST['password']);
 
         // Include database connection
-        require_once "../../connect.php";
+        require_once BASE_DIR . "/connect.php";
 
         //check if acc exists
         $sql_retreive_accID = "SELECT accID, password FROM accdatatbl WHERE email = ?";

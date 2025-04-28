@@ -6,8 +6,11 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+// Include path file
+require_once __DIR__ . '/../../filepaths.php';
+
 //Load Composer's autoloader
-require '../../vendor/autoload.php';
+require BASE_DIR . '/vendor/autoload.php';
 
 function sendEmail_Verify($email, $email_subject, $email_template) {
     $mail = new PHPMailer(true);

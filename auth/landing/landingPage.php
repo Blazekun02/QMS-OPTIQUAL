@@ -3,8 +3,12 @@
 if (!session_id()) {
     session_start();
 }
+
+// Include the path file
+require_once __DIR__ . '/../../filepaths.php';
+
 // Include the message setting function
-require_once '../../genMsg/setMessage.php';
+require_once genMsg_dir . '/setMessage.php';
 
 ?>
 

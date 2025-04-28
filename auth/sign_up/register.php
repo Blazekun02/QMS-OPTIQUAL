@@ -1,8 +1,14 @@
 <?php
 // Start session to store messages
-session_start();
+if(!session_id()) {
+    session_start();
+}
 
-include_once '../../genMsg/setMessage.php'; // Include the message setting function
+// Include path file
+require_once __DIR__ . '/../../filepaths.php';
+
+// Include the message setting function
+require_once genMsg_dir . '/setMessage.php'; 
 
 
 // Check if form is submitted
@@ -65,7 +71,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
-    require_once '../../connect.php'; // Include database connection
+    // Include database connection
+    require_once BASE_DIR . '/connect.php'; 
 
     // Check if email already exists
     $SELECT = "SELECT email FROM accdatatbl WHERE email = ? LIMIT 1";
@@ -115,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if ($stmt->execute()) {
                 // Include email sending function
-                require_once '../../auth/emailing/emailSend.php'; 
+                require_once emailing_dir . '/emailSend.php'; 
                 
                 $email_subject = "Email Verification";
                 $email_template = "

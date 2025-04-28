@@ -8,7 +8,7 @@ document.getElementById("submitButton").addEventListener("click", function () {
     const messageBox = document.getElementById("messageBox");
 
     if (agreeCheckbox.checked) {
-        window.location.href = "../../auth/sign-up/signup.php";
+        window.location.href = "../../auth/sign_up/signup.php";
     } else {
         messageBox.style.display = "block";
 

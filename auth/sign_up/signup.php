@@ -1,5 +1,11 @@
-<!-- Include message generation -->
-<?php include_once '../../genMsg/message_box.php'; ?>
+<?php 
+
+//Include filepaths
+require_once __DIR__ . '/../../filepaths.php';
+
+//Include connection verification
+
+require_once genMsg_dir . '/message_box.php'; ?>
 
 
 <!-- Purpose: Sign up page for the user to create an account -->
@@ -32,7 +38,7 @@
 
             <button type="submit" class="button confirm-button" name="confirmButton">Confirm</button>
         </form>
-        <p>Already have an account? <a href="../../auth/log-in/login.php" id="loginLink">Login</a></p>
+        <p>Already have an account? <a href="../../auth/log_in/login.php" id="loginLink">Login</a></p>
     </div>
 
     <!-- Floating message box -->

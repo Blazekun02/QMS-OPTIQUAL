@@ -1,10 +1,17 @@
 <?php
 
 date_default_timezone_set('Asia/Manila');
-session_start();
+
+// Start session if not already started
+if (!session_id()) {
+    session_start();
+}
+
+//include filepath
+require_once __DIR__ . '/../../filepaths.php';
 
 // Include the message setting function
-include_once '../../genMsg/setMessage.php'; 
+include_once genMsg_dir . '/setMessage.php'; 
 
 // Include database connection
 require_once "../../connect.php";
@@ -99,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else if ($otpTypeRequest == 1){
             //Direct to password change page
             setMessage("Sucessfully redirected to password change","success");
-            header("Location: ../log-in/passwordChange.php");
+            header("Location: ../log_in/passwordChange.php");
             exit();
         }
 
