@@ -1,9 +1,14 @@
 <?php
 //check if session is started
-session_start();
+if(!session_id()){
+    session_start();
+}
+
+// Include the file paths
+require_once __DIR__ . '/../../filepaths.php';
 
 // Include the message setting function
-include_once '../../genMsg/setMessage.php';
+require_once genMsg_dir . '/setMessage.php';
 
 //check if form is submitted
 if ($_SERVER["REQUEST_METHOD"]==="POST"){
@@ -30,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"]==="POST"){
     // }
 
     //Include database connection
-    require_once "../../connect.php";
+    require_once BASE_DIR . "/connect.php";
 
     //Retrieve accID from database
     $sql_retrieve_accID = "SELECT accID FROM accdatatbl WHERE email = ?";
@@ -64,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"]==="POST"){
     $stmt->bind_param("ii", $PIN, $accID);
     if ($stmt->execute()){
         //include the email sending function
-        include_once '../emailing/emailSend.php';
+        require_once emailing_dir .'/emailSend.php';
 
         //Send Reset PIN
         $email_subject = "Password Reset";

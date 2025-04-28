@@ -1,5 +1,12 @@
 <!-- Include message generation -->
-<?php require_once '../../genMsg/message_box.php'; 
+<?php 
+
+
+//include file paths
+require_once __DIR__ . '/../../filepaths.php';
+
+//incude message box
+require_once genMsg_dir . '/message_box.php'; 
 
 ?>
 
@@ -25,7 +32,7 @@
 
         <button type="submit" class="button confirm-button" name="confirmButton">Confirm</button>
     </form>
-    <p>Don't have an account? <a href="../../auth/sign-up/signup.php" id="signUpLink">Sign Up</a></p>
+    <p>Don't have an account? <a href="../../auth/sign_up/signup.php" id="signUpLink">Sign Up</a></p>
 </div>
 
 <script src="login.js"></script>

@@ -1,5 +1,9 @@
-<!-- Include message generation -->
-<?php include_once '../../genMsg/message_box.php'; ?>
+<?php 
+//include filepaths
+require_once __DIR__ . '/../../filepaths.php';
+
+//include message box
+include_once genMsg_dir . '/message_box.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">

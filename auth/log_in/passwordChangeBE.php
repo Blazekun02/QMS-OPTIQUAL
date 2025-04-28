@@ -1,11 +1,15 @@
 <?php
 
+// Start session
 if(!session_id()){
     session_start();
 }
 
+// Include filepaths
+require_once __DIR__ . "/../../filepaths.php";
+
 // Include the message setting function
-require_once "../../genMsg/setMessage.php";
+require_once genMsg_dir . "/setMessage.php";
 
 //initialize variables
 $newPassword = $confirmNewPassword = "";
@@ -59,7 +63,7 @@ if (isset($_POST["confirmPasswordButton"])) {
     }
 
     // Include database connection
-    require_once "../../connect.php";
+    require_once BASE_DIR . "/connect.php";
 
     //Hash the password
     $newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
