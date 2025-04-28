@@ -109,21 +109,46 @@
                     $PRSubfolders = [];
                     if (mysqli_num_rows($resultPF) > 0) {
                         while ($row = mysqli_fetch_assoc($resultPF)) {
+                            echo '<div class="Parent-Block">'; // <--- ADD THIS WRAPPER!
+                        
                             echo '<div class="PS-Parent-Folders" data-id="' . $row['categoryID'] . '">';
                             echo '<p class="PS-Parent-Folder-Name">' . $row['categoryName'] . '</p>';
                             echo '</div>';
-                            
+                        
                             $queryCF = "SELECT * FROM categorytbl WHERE parentCategoryID = " . $row['categoryID'];
                             $resultCF = mysqli_query($conn, $queryCF);
+                        
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; // hide initially
+                        
                             if (mysqli_num_rows($resultCF) > 0) {
                                 while ($rowCF = mysqli_fetch_assoc($resultCF)) {
-                                    echo '<div class="PS-Child-Folders">';
+                                    echo '<div class="PS-Child-Folders" data-id="' . $rowCF['categoryID'] . '">';
                                     echo '<p class="PS-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
+                        
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'];
+                                    $resultPol = mysqli_query($conn, $queryPol);
+                        
+                                    echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; // correct id
+                        
+                                    if (mysqli_num_rows($resultPol) > 0) {
+                                        while ($rowPol = mysqli_fetch_assoc($resultPol)) {
+                                            echo '<div class="PS-Policies">';
+                                            echo '<p class="PS-Policies-Name">' . $rowPol['title'] . '</p>';
+                                            echo '</div>';
+                                        }
+                                    } else {
+                                        echo '<div class="PS-Policies">';
+                                        echo '<p class="PS-Policies-Name">No policies available</p>';
+                                        echo '</div>';
+                                    }
+                        
+                                    echo '</div>'; // close Policies-Folder
                                 }
                             }
-                            echo '</div>'; // end child-folders div
+                        
+                            echo '</div>'; // close child-folders
+                            echo '</div>'; // <--- CLOSE Parent-Block here!
                         }
                     }
                     
@@ -202,7 +227,7 @@
                         $stmt =  $conn->prepare("INSERT INTO policytbl (title, contentPath) VALUES (?, ?)");
                         $stmt -> bind_param("ss", $policyTitle, $targetFilePath);
                         if ($stmt -> execute()) {
-                            echo "<script>alert('File uploaded successfully.'); window.location.href='../../QAD-POV.php';</script>";
+                            echo "<script>alert('File uploaded successfully.'); window.location.href='/QMS-OPTIQUAL/QADSpecificComponents/QADMain/QAD-POV.php';</script>";
                         } else {
                             echo "❌ Error saving to database: " . $stmt->error;
                         }

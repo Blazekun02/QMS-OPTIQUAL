@@ -109,22 +109,130 @@ const parentFolders = document.querySelectorAll('.PS-Parent-Folders');
 
 parentFolders.forEach(folder => {
     folder.addEventListener('click', () => {
-        const parentId = folder.getAttribute('data-id'); 
+        const parentId = folder.getAttribute('data-id');
         console.log('Clicked Parent ID:', parentId);
 
-        // Hide all child folders first
+        // Hide all child folders
         const allChildFolders = document.querySelectorAll('.child-folders');
         allChildFolders.forEach(child => {
             child.style.display = 'none';
         });
 
-        // Show the matching child folders
+        // Hide all policy folders
+        const allPoliciesFolder = document.querySelectorAll('.Policies-Folder');
+        allPoliciesFolder.forEach(policyFolder => {
+            policyFolder.style.display = 'none';
+        });
+
+        // Show matching child folders
         const childToShow = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
         if (childToShow) {
-            childToShow.style.display = 'flex'; 
+            childToShow.style.display = 'flex';
         }
     });
 });
+
+//Policy Repository
+const searchInput = document.getElementById('searchInput');
+const searchButton = document.getElementById('searchButton');
+
+// Search function
+function searchPolicies() {
+    const searchTerm = searchInput.value.toLowerCase();
+
+    // Get everything
+    const parentFolders = document.querySelectorAll('.PS-Parent-Folders');
+    const childFolders = document.querySelectorAll('.PS-Child-Folders');
+    const policies = document.querySelectorAll('.PS-Policies');
+
+    // First, hide everything
+    parentFolders.forEach(parent => parent.style.display = 'none');
+    document.querySelectorAll('.child-folders').forEach(childFolder => childFolder.style.display = 'none');
+    childFolders.forEach(child => child.style.display = 'none');
+    document.querySelectorAll('.Policies-Folder').forEach(policyFolder => policyFolder.style.display = 'none');
+    policies.forEach(policy => policy.style.display = 'none');
+
+    let found = false; // to know if there are any matches
+
+    // Search in Parent Folders
+    parentFolders.forEach(parent => {
+        const parentName = parent.innerText.toLowerCase();
+        if (parentName.includes(searchTerm)) {
+            parent.style.display = 'flex';
+            found = true;
+        }
+    });
+
+    // Search in Child Folders
+    childFolders.forEach(child => {
+        const childName = child.innerText.toLowerCase();
+        if (childName.includes(searchTerm)) {
+            child.style.display = 'flex';
+            const parentId = child.closest('.child-folders').getAttribute('data-parent-id');
+            document.querySelector(`.PS-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
+            document.querySelector(`.child-folders[data-parent-id='${parentId}']`).style.display = 'flex';
+            found = true;
+        }
+    });
+
+    // Search in Policies
+    policies.forEach(policy => {
+        const policyName = policy.innerText.toLowerCase();
+        if (policyName.includes(searchTerm)) {
+            policy.style.display = 'flex';
+
+            const policiesFolder = policy.closest('.Policies-Folder');
+            policiesFolder.style.display = 'flex';
+
+            const childFolder = policiesFolder.previousElementSibling; // the previous .PS-Child-Folders
+            if (childFolder) childFolder.style.display = 'flex';
+
+            const parentId = childFolder.closest('.child-folders').getAttribute('data-parent-id');
+            document.querySelector(`.PS-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
+            document.querySelector(`.child-folders[data-parent-id='${parentId}']`).style.display = 'flex';
+
+            found = true;
+        }
+    });
+
+    if (!found) {
+        console.log('No results found.');
+    }
+}
+
+// Attach search on button click
+searchButton.addEventListener('click', searchPolicies);
+
+// Optional: Search also when typing (Enter key)
+searchInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        searchPolicies();
+    }
+});
+
+// Child Folders click
+const childFolders = document.querySelectorAll('.PS-Child-Folders');
+
+childFolders.forEach(childFolder => {
+    childFolder.addEventListener('click', () => {
+        const childId = childFolder.getAttribute('data-id');
+        console.log('Clicked Child ID:', childId);
+
+        // Hide all policy folders first
+        const allPoliciesFolder = document.querySelectorAll('.Policies-Folder');
+        allPoliciesFolder.forEach(policyFolder => {
+            policyFolder.style.display = 'none';
+        });
+
+        // Show the policy folder for the clicked child
+        const policiesFolderToShow = document.querySelector(`.Policies-Folder[data-pol-id='${childId}']`);
+        if (policiesFolderToShow) {
+            policiesFolderToShow.style.display = 'flex';
+        }
+    });
+});
+
+
     
 
 // Role Manager
