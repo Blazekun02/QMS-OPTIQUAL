@@ -1,8 +1,14 @@
 <?php
 // Start session to store messages
-session_start();
+if(!session_id()) {
+    session_start();
+}
 
-include_once '../../genMsg/setMessage.php'; // Include the message setting function
+// Include path file
+require_once __DIR__ . '/../../filepaths.php';
+
+// Include the message setting function
+require_once genMsg_dir . '/setMessage.php'; 
 
 
 // Check if form is submitted
@@ -65,7 +71,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
-    require_once '../../connect.php'; // Include database connection
+    // Include database connection
+    require_once BASE_DIR . '/connect.php'; 
 
     // Check if email already exists
     $SELECT = "SELECT email FROM accdatatbl WHERE email = ? LIMIT 1";
@@ -109,13 +116,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['accID'] = $accID;
 
             //Insert new OTP Verification Token
-            $INSERT_OTP = "INSERT INTO otptbl (requestBy, PIN) VALUES (?, ?)";
+            $INSERT_OTP = "INSERT INTO otptbl (requestBy, PIN, isUsedFor) VALUES (?, ?, 0)";
             $stmt = $conn->prepare($INSERT_OTP);
             $stmt->bind_param("ii", $accID, $PIN);
 
             if ($stmt->execute()) {
                 // Include email sending function
-                require_once '../../auth/emailing/emailSend.php'; 
+                require_once emailing_dir . '/emailSend.php'; 
                 
                 $email_subject = "Email Verification";
                 $email_template = "
@@ -126,8 +133,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "; 
     
                 // Send verification email
-                sendEmail_Verify($fname, $lname, $email, $PIN, $email_subject, $email_template);
+                sendEmail_Verify( $email, $email_subject, $email_template);
     
+                //Set OTP type to 0 (email verification)
+                $_SESSION["otpType"] = 0;
+
                 // Redirect to OTP verification page
                 setMessage("Verification email has been sent succesfully!","success");
                 header("Location: ../otpVerify/otpVerify.php");
@@ -146,9 +156,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    // Close the statement and connection
-    $stmt->close();
-    $conn->close();
 } else {
     setMessage("Invalid request method", "error");
     header("Location: signup.php");

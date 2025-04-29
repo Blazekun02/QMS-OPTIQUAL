@@ -1,10 +1,17 @@
 <?php
 
 date_default_timezone_set('Asia/Manila');
-session_start();
+
+// Start session if not already started
+if (!session_id()) {
+    session_start();
+}
+
+//include filepath
+require_once __DIR__ . '/../../filepaths.php';
 
 // Include the message setting function
-include_once '../../genMsg/setMessage.php'; 
+include_once genMsg_dir . '/setMessage.php'; 
 
 // Include database connection
 require_once "../../connect.php";
@@ -16,6 +23,15 @@ if (!isset($_SESSION["accID"])) {
     exit();
 }
 $accID = $_SESSION["accID"];
+
+//Retrieve otp type session request
+if (isset($_SESSION["otpTypeRequest"])) {
+    $otpTypeRequest = $_SESSION["otpTypeRequest"];
+} else {
+    setMessage("OTP type not found", "error");
+    header("Location: otpVerify.php");
+    exit();
+}
 
 // Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -30,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $otp = trim($_POST["OTP"]);
 
     // Retrieve Latest PIN, otpStatus, otpCreated from database
-    $sql_retreive_PIN = "SELECT PIN, otpStatus, otpCreated FROM otptbl WHERE requestBy = ? ORDER BY otpCreated DESC LIMIT 1";
+    $sql_retreive_PIN = "SELECT PIN, isUsedFor, otpStatus, otpCreated FROM otptbl WHERE requestBy = ? ORDER BY otpCreated DESC LIMIT 1";
     $stmt = $conn->prepare($sql_retreive_PIN);
     if (!$stmt) {
         setMessage("Database error on retrieving PIN", "error");
@@ -43,6 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $PIN = $row["PIN"];
+        $isUsedFor = $row["isUsedFor"];
         $otpStatus = $row["otpStatus"];
         $otpCreated = $row["otpCreated"];
     } else {
@@ -52,39 +69,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $stmt->close();
 
-    // Check if the OTP is valid and unused
-    if ($otp == $PIN && $otpStatus == 'unused') {
+    // Check if the OTP is valid, unused and matches the session request
+    if ($otp == $PIN && $isUsedFor == $otpTypeRequest && $otpStatus == 'unused') {
         // Update OTP status to used
-        $sql_update_otpStatus = "UPDATE otptbl SET  otpStatus = 'used' WHERE requestBy = ? AND PIN = ?";
+        $sql_update_otpStatus = "UPDATE otptbl SET  otpStatus = 'used' WHERE requestBy = ? AND PIN = ? AND isUsedFor = ? AND otpStatus = 'unused'";
         $stmt = $conn->prepare($sql_update_otpStatus);
         if (!$stmt) {
             setMessage("Database error on OTP status update","error");
             header("Location: otpVerify.php");
             exit();
         }
-        $stmt->bind_param("ii", $accID , $PIN);
+        $stmt->bind_param("iii", $accID, $PIN, $otpTypeRequest);
         $stmt->execute();
 
-        //Update account status to verified
-        $sql_update_accStatus = "UPDATE accdatatbl SET verificationStatus = 'verified' WHERE accID = ?";
-        $stmt = $conn->prepare($sql_update_accStatus);
-        $stmt->bind_param("i", $accID);
-        if (!$stmt->execute()) {
-            setMessage("Database error on updating account status","error");
-            header("Location: otpVerify.php");
+        //Update account status to verified or redirect to password reset
+        if ($otpTypeRequest == 0) {
+            $sql_update_accStatus = "UPDATE accdatatbl SET verificationStatus = 'verified' WHERE accID = ?";
+            $stmt = $conn->prepare($sql_update_accStatus);
+            $stmt->bind_param("i", $accID);
+            if (!$stmt->execute()) {
+                setMessage("Database error on updating account status","error");
+                header("Location: otpVerify.php");
+                exit();
+            }
+            //Close the statement and connection
+            $stmt->close();
+            $conn->close();
+            
+            session_unset(); // Unset all session variables
+            $_SESSION["accID"] = $accID; // Set the accID again for the next page
+            $_SESSION["authenticated"] = true; // Set authenticated to true
+
+            setMessage("Account Verified Succesfully!","success");
+            header("Location: ../connectionVerification.php");
+            exit();
+        } else if ($otpTypeRequest == 1){
+            //Direct to password change page
+            setMessage("Sucessfully redirected to password change","success");
+            header("Location: ../log_in/passwordChange.php");
             exit();
         }
 
-        //Close the statement and connection
-        $stmt->close();
-        $conn->close();
         
-        session_unset(); // Unset all session variables
-        $_SESSION["accID"] = $accID; // Set accID to null
-
-        setMessage("Account Verified Succesfully!","success");
-        header("Location: ../../auth/log-in/login.php");
-        exit();
     } else {
         // Redirect back with an error message
         setMessage("Invalid verification code","error");
@@ -94,14 +120,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }   
 
 // Function to resend verification code and email
-function resendVerificationCode($accID, $conn) {
+function resendVerificationCode($accID, $conn, $otpTypeRequest) {
     // Generate a new verification code
     $newPIN = random_int(100000, 999999);
 
     //Insert new verification code in the database
-    $sql_insertNewPIN = "INSERT INTO otptbl (requestBy, PIN) VALUES (?, ?)";
+    $sql_insertNewPIN = "INSERT INTO otptbl (requestBy, PIN, isUsedFor) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($sql_insertNewPIN);
-    $stmt->bind_param("ii", $accID, $newPIN);
+    $stmt->bind_param("iii", $accID, $newPIN, $otpTypeRequest);
     if (!$stmt->execute()) {
         setMessage("Database error on inserting new PIN","error");
         header("Location: otpVerify.php");
@@ -126,8 +152,8 @@ function resendVerificationCode($accID, $conn) {
     }
     $stmt->close();
 
-    //Retrieve Account details from database
-    $sql_retrieve_accDetails = "SELECT fname, lname, email FROM accdatatbl WHERE accID = ?";
+    //Retrieve email from database
+    $sql_retrieve_accDetails = "SELECT email FROM accdatatbl WHERE accID = ?";
     $stmt = $conn->prepare($sql_retrieve_accDetails);
     if (!$stmt) {
         setMessage("Database error on retrieving account details","error");
@@ -139,8 +165,6 @@ function resendVerificationCode($accID, $conn) {
     $result = $stmt->get_result();
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        $fname = $row["fname"];
-        $lname = $row["lname"];
         $email = $row["email"];
     } else {
         setMessage("Account details not found","error");
@@ -150,17 +174,31 @@ function resendVerificationCode($accID, $conn) {
 
     // Include email sending function
     require_once '../../auth/emailing/emailSend.php'; 
-                
-    $email_subject = "Resend: Email Verification";
-    $email_template = "
-        <h2>You have Registered with the Quality Management System</h2>
-        <h5>Here is the code for your email verification</h5>
-        <br/><br/>
-        <h1><b>$newPIN<b/></h1>
-    "; 
+    
+    if ($otpTypeRequest == 0) {
+        $email_subject = "Resend: Email Verification";
+        $email_template = "
+            <h2>You have Registered with the Quality Management System</h2>
+            <h5>Here is the code for your email verification</h5>
+            <br/><br/>
+            <h1><b>$newPIN<b/></h1>
+        ";
+    } elseif ($otpTypeRequest == 1) {
+        $email_subject = "Resend: Password Reset";
+        $email_template = "
+            <h2>You have requested a password reset with the Quality Management System</h2>
+            <h5>Here is the code for your password reset confirmation</h5>
+            <br/><br/>
+            <h1><b>$newPIN<b/></h1>
+        ";
+    } else {
+        setMessage("Invalid OTP type","error");
+        header("Location: otpVerify.php");
+        exit();
+    }
 
     // Send verification email
-    sendEmail_Verify($fname, $lname, $email, $newPIN, $email_subject, $email_template);
+    sendEmail_Verify( $email, $email_subject, $email_template);
 
     // Close the statement and connection
     $stmt->close();
@@ -196,9 +234,8 @@ if (isset($_GET['resend']) && $_GET['resend'] === 'true') {
         }
     }
     
-
     // Resend verification code
-    resendVerificationCode($accID, $conn);
+    resendVerificationCode($accID, $conn, $otpTypeRequest);
     
     setMessage("Verification code resent","success");
     header("Location: otpVerify.php");

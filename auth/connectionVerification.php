@@ -3,12 +3,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+//Include path file
+require_once __DIR__ . '/../filepaths.php';
+
 // Include the message setting function
-require_once "../../genMsg/setMessage.php";
+require_once genMsg_dir . '/setMessage.php';
 
 function directTo($accID){
     // Include database connection
-    require_once "../../connect.php";
+    require_once connect_php;
 
     //Retrieve roleID from database
     $sql_retreive_roleID = "SELECT roleID FROM accdatatbl WHERE accID = ?";
@@ -21,7 +24,7 @@ function directTo($accID){
         $roleID = $row["roleID"];
     } else{
         setMessage("Role not Found","error");
-        header("Location: login.php");
+        header("Location: /qms_optiqual/auth/log_in/login.php");
         exit();
     }
     $stmt->close();
@@ -43,22 +46,22 @@ function directTo($accID){
             break;
         case 4://Staff
             setMessage("Logged In Succesfully!","success");
-            header("Location: ../../staffSpecificComponents/staffMain/staff-POV.php");
+            header("Location: /qms_optiqual/staffSpecificComponents/staffMain/staff-POV.php");
             break;
         default://Error
             setMessage("Invalid Role","error");
-            header("Location: login.php");
+            header("Location: /qms_optiqual/auth/log_in/login.php");
             exit();    
     }
     exit();
 }
 
 //Check if accID is set
-if (isset($_SESSION['accID'])) {
+if (isset($_SESSION['accID']) && isset($_SESSION['authenticated'])) {
     $accID = $_SESSION['accID'];
     directTo($accID);
 } else {
-    header("Location: log-in/login.php");
+    header("Location: /qms_optiqual/auth/log_in/login.php");
     exit();
 }
 
