@@ -40,7 +40,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
     
 
-// Role Manager
+//department Manager
 
 function showDepartmentManager() {
     const departmentPanel = document.querySelector('.Department-Manager-Panel');

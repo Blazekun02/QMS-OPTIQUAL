@@ -30,23 +30,23 @@
             <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
     <div class="menu-icons">
             <div class="icon-item">
-                <img src=".idea/images/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
+                <img src="../../assets/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
                 <span class="icon-label">Policies Repository</span>
             </div>
             <div class="icon-item">
-                <img src=".idea/images/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
+                <img src="../../assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
                 <span class="icon-label">Policy Submission</span>
             </div>
             <div class="icon-item">
-                <img src=".idea/images/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
+                <img src="../../assets/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
                 <span class="icon-label">Process Tracker</span>
             </div>
             <div class="icon-item">
-                <img src=".idea/images/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
+                <img src="../../assets/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
                 <span class="icon-label">Task Manager</span>
             </div>
             <div class="icon-item">
-                <img src=".idea/images/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
+                <img src="../../assets/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
                 <span class="icon-label">Information</span>
             </div>
         </div>
@@ -54,7 +54,7 @@
     
     <!-- Hamburger, notif, and sign out -->
     
-    <img src=".idea/images/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+    <img src="../../assets/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
     <div class="header-buttons">
         <button type="button" class="button notif-btn" id="notifButton">
             <i class="fa fa-bell" style="font-size: 1.5em;"></i>
@@ -66,7 +66,7 @@
     </div>
 
     <div class="notification-overlay" id="notificationOverlay">
-        <div class="notification-content">Notifications</div>
+        <div class="notification-content"></div>
     </div>
     <div class="signOut-overlay" id="signOutOverlay">
         <div class="signOut-content">Sign out</div>
@@ -85,6 +85,9 @@
             <button class="filter-button" id="filterButton">
                 <i class="fas fa-filter"></i>
             </button>
+        </div>
+
+        <div id="main-content">
         </div>
     
         <div class="filter-overlay" id="filterOverlay">
@@ -116,11 +119,11 @@
                 </div>
             </div>
         </div>
+
+</div>
+     
     
-    </div>
-    
-    
-    <!-- POLICY SUBMISSION -->
+<!-- POLICY SUBMISSION -->
     <div class="policy-submission-content" id="policy-submission-content" >
         <div class="policy-submission">
             <h2>Policy Submission</h2>
@@ -141,6 +144,7 @@
                 </div>
             </div>
         </div>
+
     
     <div class="submit-overlay" id="submitOverlay">
         <div class="submit-popUp">
@@ -158,22 +162,51 @@
         <div class="submit-buttons">
         <button id="cancelBtn">Cancel</button>
         <button id="submitBtn">Submit</button>
-        </div>
-            <div class="confirm-dl" id="confirmSubmit-dl">
-                <div class= "confirmSubmit-popUp">
-                    <h2> Confirm Download?</h2>
-                    <div class="cfSubmit-buttons">
-                        <button id="cfNoBtn">No</button>
-                        <button id="cfYesBtn">Yes</button>
-                    </div>
-                </div>
-            </div>
+        </div> 
     </div>
     </div>
     
     <!--for process tracker-->
     <div class="process-tracker">
-        <h2 class="tracker-header">Process Tracker <br> </h2>
+        <div class="tracker-header-container">
+            <button class="back-button" onclick="showProcessTracker()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="tracker-header">Process Tracker</h2>
+        </div>
+
+        <div class="process-flow">
+            <div class="step submission">
+                <div class="step-indicator"></div>
+                <div class="step-label">Submission</div>
+                <div class="step-date">1-10-25</div>
+                <div class="step-person">John Doe</div>
+            </div>
+            <div class="step review">
+                <div class="step-indicator"></div>
+                <div class="step-label">Review</div>
+                <div class="step-date">1-12-25</div>
+                <div class="step-person">John Doe</div>
+            </div>
+            <div class="step verification">
+                <div class="step-indicator"></div>
+                <div class="step-label">Verification</div>
+                <div class="step-date">Date</div>
+                <div class="step-person">John Doe</div>
+            </div>
+            <div class="step approval">
+                <div class="step-indicator"></div>
+                <div class="step-label">Approval</div>
+                <div class="step-date">Date</div>
+                <div class="step-person">John Doe</div>
+            </div>
+    </div>
+
+        <div class="below-process-flow-placeholder" style="display: none;">
+            <h3>Policy Content Placeholder</h3>
+            Content will go here once the database is connected.
+        </div>
+
         <div class = "ptWhite-line" style = "display:flex;"></div>
         <button class="submissions-button" id ="processTrackerSub-btn">Submissions</button>
         <table class="process-tracker-table">
@@ -190,6 +223,7 @@
         </table>
     </div>
     
+
     <!--FOR TASK MANAGER-->
     <div class="task-manager">
         <div class="task-manager-header-container">

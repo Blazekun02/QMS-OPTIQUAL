@@ -6,21 +6,33 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
 
 greyLine.addEventListener('mouseenter', () => {
     greyLine.classList.add('extended');
-    hamburgerIcon.style.left = '14.5vw';
+
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        hamburgerIcon.style.left = '25vw'; 
+    } else {
+        hamburgerIcon.style.left = '14.5vw';  
+    }
 });
 
 greyLine.addEventListener('mouseleave', () => {
     greyLine.classList.remove('extended');
-    hamburgerIcon.style.left = '5.5vw';
+
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        hamburgerIcon.style.left = '6vw'; 
+    } else {
+        hamburgerIcon.style.left = '5.5vw';
+    }
 });
 
 hamburgerIcon.addEventListener('click', () => {
-        const isExtended = greyLine.classList.toggle('extended');
-        hamburgerIcon.style.left = isExtended ? '13vw' : '4vw';
-    });
+    const isExtended = greyLine.classList.toggle('extended');
 
-
-
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        hamburgerIcon.style.left = isExtended ? '25vw' : '6vw'; // Adjust positions for smaller screens
+    } else {
+        hamburgerIcon.style.left = isExtended ? '15vw' : '5.5vw'; // Default positions for larger screens
+    }
+});
 
 // JS for notif and sign out
 
@@ -47,11 +59,11 @@ document.getElementById("signOutOverlay").addEventListener("click", function () 
 // js for policy repository
 
 function showPoliciesRepository() {
-document.getElementById('policies-repository-content').style.display = 'flex';
-document.getElementById('policy-submission-content').style.display='none';
-document.querySelector('.process-tracker').style.display='none';
-document.querySelector('.task-manager').style.display = 'none';
-document.querySelector('.information').style.display = 'none';
+    document.getElementById('policies-repository-content').style.display = 'flex';
+    document.getElementById('policy-submission-content').style.display='none';
+    document.querySelector('.process-tracker').style.display='none';
+    document.querySelector('.task-manager').style.display = 'none';
+    document.querySelector('.information').style.display = 'none';
 }
 
 // Placeholder data for the policy repository
@@ -125,79 +137,143 @@ const policyCategoriesData = [
 ];
 
 function generatePolicyRepository(data) {
-const repositoryContent = document.getElementById('policies-repository-content');
-const searchContainer = repositoryContent.querySelector('.search-container');
-const blackLine = repositoryContent.querySelector('.blackLine');
-let insertionPoint = blackLine ? blackLine.nextSibling : searchContainer ? searchContainer.nextSibling : repositoryContent.firstChild;
+    const repositoryContent = document.getElementById('policies-repository-content');
+    const searchContainer = repositoryContent.querySelector('.search-container');
+    const blackLine = repositoryContent.querySelector('.blackLine');
+    let insertionPoint = blackLine ? blackLine.nextSibling : searchContainer ? searchContainer.nextSibling : repositoryContent.firstChild;
 
 
-const existingCategories = repositoryContent.querySelectorAll('.category');
-existingCategories.forEach(category => category.remove());
+    const existingCategories = repositoryContent.querySelectorAll('.category');
+    existingCategories.forEach(category => category.remove());
 
-data.forEach(categoryData => {
-    const categoryDiv = document.createElement('div');
-    categoryDiv.classList.add('category');
-    categoryDiv.dataset.category = categoryData.name.toLowerCase().replace(/ /g, '-');
-    categoryDiv.innerHTML = `
-        ${categoryData.name}
-        <i class="fas fa-chevron-right expand-icon"></i>
-        <div class="category-content"></div>
-    `;
-    repositoryContent.insertBefore(categoryDiv, insertionPoint);
-    insertionPoint = categoryDiv.nextSibling;
-
-    const categoryContentDiv = categoryDiv.querySelector('.category-content');
-    categoryData.subcategories.forEach(subcategoryData => {
-        const subcategoryDiv = document.createElement('div');
-        subcategoryDiv.classList.add('subcategory');
-        subcategoryDiv.dataset.subcategory = subcategoryData.name.toLowerCase().replace(/ /g, '-');
-        subcategoryDiv.innerHTML = `
-            ${subcategoryData.name}
+    data.forEach(categoryData => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.classList.add('category');
+        categoryDiv.dataset.category = categoryData.name.toLowerCase().replace(/ /g, '-');
+        categoryDiv.innerHTML = `
+            ${categoryData.name}
             <i class="fas fa-chevron-right expand-icon"></i>
-            <div class="nested-subcategory-content"></div>
+            <div class="category-content"></div>
         `;
-        categoryContentDiv.appendChild(subcategoryDiv);
+        repositoryContent.insertBefore(categoryDiv, insertionPoint);
+        insertionPoint = categoryDiv.nextSibling;
 
-        const nestedContentDiv = subcategoryDiv.querySelector('.nested-subcategory-content');
-        subcategoryData.nestedSubcategories.forEach(nestedSubcategoryName => {
-            const nestedSubcategoryDiv = document.createElement('div');
-            nestedSubcategoryDiv.classList.add('nested-subcategory');
-            nestedSubcategoryDiv.dataset.nestedSubcategory = nestedSubcategoryName.toLowerCase().replace(/ /g, '-');
-            nestedSubcategoryDiv.textContent = nestedSubcategoryName;
-            nestedContentDiv.appendChild(nestedSubcategoryDiv);
+        const categoryContentDiv = categoryDiv.querySelector('.category-content');
+        categoryData.subcategories.forEach(subcategoryData => {
+            const subcategoryDiv = document.createElement('div');
+            subcategoryDiv.classList.add('subcategory');
+            subcategoryDiv.dataset.subcategory = subcategoryData.name.toLowerCase().replace(/ /g, '-');
+            subcategoryDiv.innerHTML = `
+                ${subcategoryData.name}
+                <i class="fas fa-chevron-right expand-icon"></i>
+                <div class="nested-subcategory-content"></div>
+            `;
+            categoryContentDiv.appendChild(subcategoryDiv);
+
+            const nestedContentDiv = subcategoryDiv.querySelector('.nested-subcategory-content');
+            subcategoryData.nestedSubcategories.forEach(nestedSubcategoryName => {
+                const nestedSubcategoryDiv = document.createElement('div');
+                nestedSubcategoryDiv.classList.add('nested-subcategory');
+                nestedSubcategoryDiv.dataset.nestedSubcategory = nestedSubcategoryName.toLowerCase().replace(/ /g, '-');
+                nestedSubcategoryDiv.textContent = nestedSubcategoryName;
+                nestedContentDiv.appendChild(nestedSubcategoryDiv);
+            });
         });
     });
-});
 
-attachPolicyRepositoryEventListeners();
+    attachPolicyRepositoryEventListeners();
 }
 
 function attachPolicyRepositoryEventListeners() {
-document.querySelectorAll('.category').forEach(category => {
-    category.addEventListener('click', function() {
-        this.classList.toggle('expanded');
+    document.querySelectorAll('.category').forEach(category => {
+        category.addEventListener('click', function() {
+            this.classList.toggle('expanded');
+        });
     });
-});
 
-document.querySelectorAll('.subcategory').forEach(subcategory => {
-    subcategory.addEventListener('click', function(event) {
-        event.stopPropagation();
-        this.classList.toggle('expanded');
+    document.querySelectorAll('.subcategory').forEach(subcategory => {
+        subcategory.addEventListener('click', function(event) {
+            event.stopPropagation();
+            this.classList.toggle('expanded');
 
-        const parentCategoryContent = this.closest('.category-content');
-        if (parentCategoryContent) {
-            parentCategoryContent.querySelectorAll('.subcategory.expanded').forEach(otherSubcategory => {
-                if (otherSubcategory !== this) {
-                    otherSubcategory.classList.remove('expanded');
-                }
-            });
-        }
+            const parentCategoryContent = this.closest('.category-content');
+            if (parentCategoryContent) {
+                parentCategoryContent.querySelectorAll('.subcategory.expanded').forEach(otherSubcategory => {
+                    if (otherSubcategory !== this) {
+                        otherSubcategory.classList.remove('expanded');
+                    }
+                });
+            }
+        });
     });
-});
+
+
+    document.querySelectorAll('.nested-subcategory').forEach(nestedSubcategory => {
+        nestedSubcategory.addEventListener('click', function(event) {
+            event.stopPropagation();
+
+            const policiesRepositoryContent = document.getElementById('policies-repository-content');
+            const nestedSubcategoryTitle = this.textContent;
+
+            if (policiesRepositoryContent) {
+                previousRepositoryContent = policiesRepositoryContent.innerHTML;
+                console.log(previousRepositoryContent);
+                policiesRepositoryContent.innerHTML = '';
+            }
+                // 1. Create the blue container
+                const blueContainer = document.createElement('div');
+                blueContainer.classList.add('blue-policy-container');
+
+                // 2. Create the header container (to hold back button and title)
+                const blueContainerHeader = document.createElement('div');
+                blueContainerHeader.style.display = 'flex';
+                blueContainerHeader.style.alignItems = 'center';
+                blueContainerHeader.style.padding = '10px';
+                // You might want to add a specific class for styling this header container
+
+                // 3. Create the back button HTML string
+                const backButtonHTML = `
+                <button id="backButton" style="margin-right: 0.1em; margin-left: 0.5em;margin-top: 1em; padding: 0.2em 0.5em; border: none; border-radius:0.3em; background-color: #ddd; cursor: pointer; font-size: 1.1em;color:black;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                `;
+
+                // 4. Insert the back button HTML at the beginning of the blue container header
+                blueContainerHeader.innerHTML = backButtonHTML;
+                const backButtonElement = blueContainerHeader.querySelector('#backButton');
+
+                if (backButtonElement) {
+                    backButtonElement.addEventListener('click', function() {
+                        if (policiesRepositoryContent && previousRepositoryContent !== null) {
+                            policiesRepositoryContent.innerHTML = previousRepositoryContent;
+                            previousRepositoryContent = null;
+                            attachPolicyRepositoryEventListeners();
+                        } else if (policiesRepositoryContent) {
+                            generatePolicyRepository(policyCategoriesData); 
+                        }
+                    });
+
+                // 6. Create the header text
+                const headerText = document.createElement('h2');
+                headerText.textContent = nestedSubcategoryTitle;
+                headerText.classList.add('blue-container-header');
+                headerText.style.marginLeft = '2em'; 
+
+                blueContainerHeader.appendChild(headerText);
+                blueContainer.appendChild(blueContainerHeader);
+                policiesRepositoryContent.appendChild(blueContainer);
+
+                const whiteLine = document.createElement('div');
+                 whiteLine.classList.add('blue-container-header-separator'); // Add this class
+
+                
+                blueContainer.appendChild(whiteLine);
+            } else {
+                console.error("Element with ID 'policies-repository-content' not found.");
+            }
+        });
+    });
 }
-
-
-
 
 // js for filter in Pol Rep
 
@@ -298,127 +374,191 @@ document.getElementById("cancelBtn").addEventListener("click", function () {
 });
 
 
-
-
 // js for process tracker
 
 function showProcessTracker() {
-document.getElementById('policies-repository-content').style.display = 'none';
-document.getElementById('policy-submission-content').style.display = 'none';
-document.querySelector('.process-tracker').style.display = 'flex';
-document.querySelector('.task-manager').style.display = 'none';
-document.querySelector('.information').style.display = 'none';
+    document.getElementById('policies-repository-content').style.display = 'none';
+    document.getElementById('policy-submission-content').style.display = 'none';
+    document.querySelector('.process-tracker').style.display = 'flex';
+    document.querySelector('.task-manager').style.display = 'none';
+    document.querySelector('.information').style.display = 'none';
+    document.querySelector('.back-button').style.display = 'none';
+    document.querySelector('.process-tracker .tracker-header').textContent = 'Process Tracker';
+    document.querySelector('.process-flow').style.display = 'none';
+    document.querySelector('.top-line').style.display = 'none';
+    document.querySelector('.bottom-line').style.display = 'none';
+    document.querySelector('.below-process-flow-placeholder').style.display = 'none'; // Hide placeholder initially
 }
 
 // Sample process tracker data for Submissions view
 const submissionsData = [
-{
-    policyTitle: "Student Handbook",
-    dateSubmitted: "10/24/24",
-    version: "5.0",
-    status: "Reviewed"
-},
-{
-    policyTitle: "Organizational Profile",
-    dateSubmitted: "03/03/24",
-    version: "3.0",
-    status: "Verified"
-},
-{
-    policyTitle: "Student Dress Code",
-    dateSubmitted: "06/07/24",
-    version: "4.0",
-    status: "Approved"
-}
+    {
+        policyTitle: "Student Handbook",
+        dateSubmitted: "10/24/24",
+        version: "5.0",
+        status: "Reviewed"
+    },
+    {
+        policyTitle: "Organizational Profile",
+        dateSubmitted: "03/03/24",
+        version: "3.0",
+        status: "Verified"
+    },
+    {
+        policyTitle: "Student Dress Code",
+        dateSubmitted: "06/07/24",
+        version: "4.0",
+        status: "Approved"
+    }
 ];
 
 // Sample process tracker data for Feedbacks view
 const feedbacksData = [
-{
-    policyReported: "Student Handbook",
-    dateSubmitted: "10/24/24",
-    status: "Reviewed"
-},
-{
-    policyReported: "Organizational Profile",
-    dateSubmitted: "03/03/24",
-    status: "Submitted"
-},
-{
-    policyReported: "Student Dress Code",
-    dateSubmitted: "06/07/24",
-    status: "Addressed"
-}
+    {
+        policyReported: "Student Handbook",
+        dateSubmitted: "10/24/24",
+        status: "Reviewed"
+    },
+    {
+        policyReported: "Organizational Profile",
+        dateSubmitted: "03/03/24",
+        status: "Submitted"
+    },
+    {
+        policyReported: "Student Dress Code",
+        dateSubmitted: "06/07/24",
+        status: "Addressed"
+    }
 ];
 
+// Function to populate the process tracker table
 function populateProcessTrackerTable(data, isFeedbackView = false) {
-const tableBody = document.getElementById('processTrackerTableBody');
-tableBody.innerHTML = ''; // Clear existing rows
+    const tableBody = document.getElementById('processTrackerTableBody');
+    tableBody.innerHTML = '';
 
-data.forEach(item => {
-    const row = tableBody.insertRow();
+    data.forEach(item => {
+        const row = tableBody.insertRow();
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function() {
+            document.querySelector('.ptWhite-line').style.display = 'none';
+            document.querySelector('.process-tracker-table').style.display = 'none';
+            document.querySelector('.process-tracker .submissions-button').style.display = 'none';
 
-    if (isFeedbackView) {
-        const policyCell = row.insertCell();
-        policyCell.textContent = item.policyReported;
+            const titleText = isFeedbackView ? item.policyReported : item.policyTitle;
+            document.querySelector('.process-tracker .tracker-header').textContent = titleText;
 
-        const dateCell = row.insertCell();
-        dateCell.textContent = item.dateSubmitted;
+            document.querySelector('.back-button').style.display = 'block';
+            document.querySelector('.process-flow').style.display = 'flex'; // Show process flow
 
-        const statusCell = row.insertCell();
-        statusCell.textContent = item.status;
-        statusCell.className = `status-${item.status.toLowerCase()}`; // Apply status class
-    } else {
-        const titleCell = row.insertCell();
-        titleCell.textContent = item.policyTitle;
+            const placeholder = document.querySelector('.below-process-flow-placeholder');
+            if(placeholder){
+                placeholder.style.display = 'block'; 
+            }else {
+                console.error('Placeholder element not found!');
+            }
+        });
 
-        const dateCell = row.insertCell();
-        dateCell.textContent = item.dateSubmitted;
+        if (isFeedbackView) {
+            const policyCell = row.insertCell();
+            policyCell.textContent = item.policyReported;
 
-        const versionCell = row.insertCell();
-        versionCell.textContent = item.version;
+            const dateCell = row.insertCell();
+            dateCell.textContent = item.dateSubmitted;
 
-        const statusCell = row.insertCell();
-        statusCell.textContent = item.status;
-        statusCell.className = `status-${item.status.toLowerCase()}`; // Apply status class
-    }
-});
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-const submissionsButton = document.getElementById('processTrackerSub-btn');
-
-// Initial population of the table with Submissions data
-populateProcessTrackerTable(submissionsData);
-
-if (submissionsButton) {
-    submissionsButton.addEventListener('click', function() {
-        if (this.textContent === 'Submissions') {
-            this.textContent = 'Feedbacks';
-            populateProcessTrackerTable(feedbacksData, true);
-            // Update table headers for Feedbacks view
-            const tableHeaderRow = document.querySelector('.process-tracker-table thead tr');
-            tableHeaderRow.innerHTML = `
-                <th>Policy Reported</th>
-                <th>Date Submitted</th>
-                <th>Status</th>
-            `;
+            const statusCell = row.insertCell();
+            statusCell.textContent = item.status;
+            statusCell.className = `status-${item.status.toLowerCase()}`;
         } else {
-            this.textContent = 'Submissions';
-            populateProcessTrackerTable(submissionsData);
-            // Update table headers for Submissions view
-            const tableHeaderRow = document.querySelector('.process-tracker-table thead tr');
-            tableHeaderRow.innerHTML = `
-                <th>Policy Title</th>
-                <th>Date Submitted</th>
-                <th>Version no.</th>
-                <th>Status</th>
-            `;
+            const titleCell = row.insertCell();
+            titleCell.textContent = item.policyTitle;
+
+            const dateCell = row.insertCell();
+            dateCell.textContent = item.dateSubmitted;
+
+            const versionCell = row.insertCell();
+            versionCell.textContent = item.version;
+
+            const statusCell = row.insertCell();
+            statusCell.textContent = item.status;
+            statusCell.className = `status-${item.status.toLowerCase()}`;
         }
     });
 }
-});
 
+// Function to handle back button click
+function handleBackButtonClick() {
+    document.querySelector('.ptWhite-line').style.display = 'block';
+    document.querySelector('.process-tracker-table').style.display = 'table';
+    document.querySelector('.process-tracker .submissions-button').style.display = 'block';
+    document.querySelector('.process-tracker .tracker-header').textContent = 'Process Tracker';
+    document.querySelector('.back-button').style.display = 'none';
+    document.querySelector('.process-flow').style.display = 'none';
+    document.querySelector('.below-process-flow-placeholder').style.display = 'none'; // Hide placeholder
+}
+
+// DOMContentLoaded event to initialize the process tracker
+document.addEventListener('DOMContentLoaded', function() {
+    const submissionsButton = document.getElementById('processTrackerSub-btn');
+    const processTrackerHeader = document.querySelector('.process-tracker .tracker-header');
+    const backButton = document.querySelector('.back-button');
+    const processFlowContainer = document.querySelector('.process-flow');
+    const topLine = document.querySelector('.top-line');
+    const bottomLine = document.querySelector('.bottom-line');
+    const placeholder = document.querySelector('.below-process-flow-placeholder'); // Get the placeholder
+
+    // Initially hide elements
+    if (processFlowContainer) processFlowContainer.style.display = 'none';
+    if (topLine) topLine.style.display = 'none';
+    if (bottomLine) bottomLine.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'none'; // Hide placeholder on load
+
+    // Initial population of the table with Submissions data
+    populateProcessTrackerTable(submissionsData);
+
+    if (submissionsButton) {
+        submissionsButton.addEventListener('click', function() {
+            const header = document.querySelector('.process-tracker .tracker-header');
+            if (this.textContent === 'Submissions') {
+                this.textContent = 'Feedbacks';
+                populateProcessTrackerTable(feedbacksData, true);
+                const tableHeaderRow = document.querySelector('.process-tracker-table thead tr');
+                tableHeaderRow.innerHTML = `
+                    <th>Policy Reported</th>
+                    <th>Date Submitted</th>
+                    <th>Status</th>
+                `;
+                header.textContent = 'Process Tracker';
+                backButton.style.display = 'none';
+                this.style.display = 'block';
+                if (processFlowContainer) processFlowContainer.style.display = 'none';
+                if (topLine) topLine.style.display = 'none';
+                if (bottomLine) bottomLine.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'none'; // Hide placeholder on view switch
+            } else {
+                this.textContent = 'Submissions';
+                populateProcessTrackerTable(submissionsData);
+                const tableHeaderRow = document.querySelector('.process-tracker-table thead tr');
+                tableHeaderRow.innerHTML = `
+                    <th>Policy Title</th>
+                    <th>Date Submitted</th>
+                    <th>Version no.</th>
+                    <th>Status</th>
+                `;
+                header.textContent = 'Process Tracker';
+                backButton.style.display = 'none';
+                this.style.display = 'block';
+                if (processFlowContainer) processFlowContainer.style.display = 'none';
+                if (topLine) topLine.style.display = 'none';
+                if (bottomLine) bottomLine.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'none'; // Hide placeholder on view switch
+            }
+        });
+    }
+
+    if (backButton) {
+        backButton.addEventListener('click', handleBackButtonClick);
+    }
+});
 
 
 
