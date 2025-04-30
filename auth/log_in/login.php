@@ -19,22 +19,30 @@ require_once genMsg_dir . '/message_box.php';
     <title>Log In Page</title>
     <link rel="stylesheet" href="login.css">
 </head>
+<style>
+
+
+</style>
+
 <body>
-
-<div class="login-container">
+<div class="logIn-overlay">    
+    <div class="login-container">
     <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
-    <h1>Asia Pacific College<br></h1>
-    <h2>Log In<br></h2>
-    <form action="loginBE.php" method="POST">
-        <input type="text" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
-        <a id="forgotPass" href="forgotPass.php">Forgot Password?</a>
+        <h1>Asia Pacific College<br></h1>
+        <h2>Log In<br></h2>
+        <label for="email">Email address:</label>
+        <input type="email" id="email" name="email">
+        <label for="pwd">Password:</label>
+        <input type="password" id="pwd" name="pwd" autocomplete="current-password">
+        <a href="#">Forgot Password?</a>
 
-        <button type="submit" class="button confirm-button" name="confirmButton">Confirm</button>
-    </form>
-    <p>Don't have an account? <a href="../../auth/sign_up/signup.php" id="signUpLink">Sign Up</a></p>
+        <div class="button-container">
+            <button type="button" class="button back-button" id="backButton">Back</button>
+            <button type="button" class="button signIn-button" id="signInButton">Sign In</button>
+        </div>
+        <b>Don't have an account?<a href="signUp.php">Sign up here</a></b>
+    </div>
 </div>
-
 <script src="login.js"></script>
 </body>
 </html>
