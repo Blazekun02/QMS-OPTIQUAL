@@ -14,6 +14,8 @@ $inputtedPassword = $hashedPassword = "";
 
 //Check if submitted
 if (isset($_POST["confirmButton"])) {
+    //Trim all input values to remove extra spaces
+    $_POST = array_map('trim', $_POST);
 
     if(!isset($_SESSION['attempts'])){
         $_SESSION['attempts'] = 0;
@@ -44,9 +46,9 @@ if (isset($_POST["confirmButton"])) {
     }
 
     //Check if email and password are not empty
-    if(!empty(trim($_POST['email'])) && !empty(trim($_POST['password']))) {
-        $email = trim($_POST['email']);
-        $inputtedPassword = trim($_POST['password']);
+    if(!empty($_POST['email']) && !empty($_POST['password'])) {
+        $email = $_POST['email'];
+        $inputtedPassword = $_POST['password'];
 
         // Include database connection
         require_once BASE_DIR . "/connect.php";

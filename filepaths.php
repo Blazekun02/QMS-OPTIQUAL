@@ -43,6 +43,9 @@ define('generalComponents_dir', BASE_DIR . '/generalComponents');
 //header folder
 define('header_dir', generalComponents_dir . '/header');
 
+//pdfViewer folder
+define('pdfViewer_dir', generalComponents_dir . '/pdfViewer');
+
 //taskManager folder
 define('taskManager_dir', generalComponents_dir . '/taskManager');
 
@@ -85,6 +88,8 @@ define('staffMain_dir', staffSpecificComponents_dir . '/staffMain');
 
 //----------------------------------------------------------------------
 
-
+//directory of files folder---------------------------------------------
+define('files_dir', BASE_DIR . '/files');
+//----------------------------------------------------------------------
 
 ?>

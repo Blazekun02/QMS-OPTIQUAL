@@ -27,7 +27,11 @@ require_once genMsg_dir . '/message_box.php';
     <h2>Log In<br></h2>
     <form action="loginBE.php" method="POST">
         <input type="text" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
+        <input type="password" id="password" name="password" placeholder="Password">
+
+        <!-- Show Password Checkbox -->
+        <p><input type="checkbox" id="showPassword"> Show Password</p>
+
         <a id="forgotPass" href="forgotPass.php">Forgot Password?</a>
 
         <button type="submit" class="button confirm-button" name="confirmButton">Confirm</button>

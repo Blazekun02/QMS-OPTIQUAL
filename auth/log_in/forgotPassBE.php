@@ -12,6 +12,8 @@ require_once genMsg_dir . '/setMessage.php';
 
 //check if form is submitted
 if ($_SERVER["REQUEST_METHOD"]==="POST"){
+    //Trim the input
+    $POST = array_map('trim', $_POST);
 
     // Check if email is empty
     if (empty($_POST["email"])){
@@ -21,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"]==="POST"){
     }
 
     // Retrieve email and sanitize input
-    $email = trim($_POST["email"]);
+    $email = $_POST["email"];
 
     // Generate random verification token
     $PIN = random_int(100000, 999999); 

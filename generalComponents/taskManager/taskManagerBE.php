@@ -54,7 +54,7 @@ try {
     } else {
         echo json_encode(['message' => 'No tasks found']);
     }
-} catch (PDOException $e) {
+} catch (PDOException $e) { 
      // Return a generic error message in production
      echo json_encode(['error' => 'An error occurred while fetching tasks']);
 }
