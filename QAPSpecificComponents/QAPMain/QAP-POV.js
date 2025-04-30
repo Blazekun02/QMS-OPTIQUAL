@@ -1,31 +1,33 @@
-const greyLine = document.getElementById('grey-line');
+const sidebar = document.querySelector('.Sidebar');
 const hamburgerIcon = document.getElementById('hamburger-icon');
 
-    greyLine.addEventListener('mouseenter', () => {
-        greyLine.classList.add('extended');
+    sidebar.addEventListener('mouseenter', () => {
+        sidebar.classList.add('extended');
         hamburgerIcon.style.left = '2.5in';
     });
 
-    greyLine.addEventListener('mouseleave', () => {
-        greyLine.classList.remove('extended');
+    sidebar.addEventListener('mouseleave', () => {
+        sidebar.classList.remove('extended');
         hamburgerIcon.style.left = '0.8in';
     });
-
     hamburgerIcon.addEventListener('click', () => {
-            const isExtended = greyLine.classList.toggle('extended');
-            hamburgerIcon.style.left = isExtended ? '2.5in' : '0.8in';
-        });
-
-
-
-// <!-- JS for notif and sign out -->
-
-    const notificationOverlay = document.getElementById('notificationOverlay');
-    const notifButton = document.getElementById('notifButton');
-    notifButton.addEventListener('click', () => {
-        notificationOverlay.style.display = notificationOverlay.style.display === 'block' ? 'none' : 'block';
+        const isExtended = greyLine.classList.toggle('extended');
+        hamburgerIcon.style.left = isExtended ? '2.5in' : '0.8in';
     });
 
+    const notifButton = document.getElementById('notifButton');
+    const notificationOverlay = document.getElementById('popupOverlay');
+
+    notifButton.addEventListener('click', () => {
+        if (notificationOverlay.style.display === 'block') {
+            notificationOverlay.style.display = 'none';
+        } else {
+            notificationOverlay.style.display = 'block';
+        }
+    });
+   
+
+    
     const signOutOverlay = document.getElementById('signOutOverlay');
     const userButton = document.getElementById('userButton');
     userButton.addEventListener('click', () => {
@@ -36,90 +38,203 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
         window.location.href = "landingPage.html";
     });
 
+    const policyRepositoryPanel = document.getElementById('policy-repo-content');
+    const policySubmissionPanel = document.getElementById('policy-submission-content');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    
+    
 
+// Policy Repository
+function showPolicyRepository() {
+    console.log("Policy Repository Triggered");
+    policyRepositoryPanel.style.display = 'block';
+    policySubmissionPanel.style.display = 'none';
+    departmentPanel.style.display = 'none'; 
+}
 
-// <!-- js for policy repository -->
+// Policy Submission
+function showPolicySubmission() {
+    console.log("Policy Submission Triggered");
 
-    function showPoliciesRepository() {
-        document.getElementById('policies-repository-content').style.display = 'flex';
-    }
-    document.querySelectorAll('.category').forEach(category => {
-        category.addEventListener('click', function() {
-            this.classList.toggle('expanded');
-        });
-    });
+    // Safely get the department panel inside this function
+    
+    policyRepositoryPanel.style.display = 'none';
+    policySubmissionPanel.style.display = 'flex';
+    departmentPanel.style.display = 'none';
 
-    document.querySelectorAll('.subcategory').forEach(subcategory => {
-        subcategory.addEventListener('click', function() {
-            const subcategoryName = this.getAttribute('data-subcategory');
-            // Handle the subcategory click, e.g., display policies for the selected department
-            console.log(`Subcategory clicked: ${subcategoryName}`);
-            // You can add logic here to load and display the relevant policies
-        });
-    });
-
-
-
-// <!-- js for filter -->
-
-        const filterButton = document.getElementById('filterButton');
-        const filterOverlay = document.getElementById('filterOverlay');
-        const cancelFilter = document.getElementById('cancelFilter');
-        const applyFilter = document.getElementById('applyFilter');
-        const categoryFilter = document.getElementById('categoryFilter');
-        const sortFilter = document.getElementById('sortFilter');
-
-        filterButton.addEventListener('click', () => {
-            filterOverlay.style.display = 'flex';
-        });
-
-        cancelFilter.addEventListener('click', () => {
-            filterOverlay.style.display = 'none';
-        });
-
-        applyFilter.addEventListener('click', () => {
-            const selectedCategory = categoryFilter.value;
-            const selectedSort = sortFilter.value;
-
-            filterSubcategories(selectedCategory, selectedSort);
-            filterOverlay.style.display = 'none';
-        });
-
-    function filterSubcategories(category, sort) {
-    const subcategories = document.querySelectorAll('.subcategory');
-    subcategories.forEach(subcategory => {
-        const subcategoryName = subcategory.getAttribute('data-subcategory');
-        const showCategory = !category || category === subcategoryName;
-
-        if (showCategory) {
-            subcategory.style.display = 'flex';
-        } else {
-            subcategory.style.display = 'none';
-        }
-    });
+    
 
 }
 
-// <!-- js for policy submission -->
+const cfOverlay = document.getElementById('confirm-dl');
+const dlBtn = document.querySelector('.policy-submission-buttons button:first-child');
 
-    function showPolicySubmission() {
-        document.getElementById('policies-repository-content').style.display = 'none';
-        document.getElementById('policy-submission-content').style.display = 'flex';
+dlBtn.addEventListener('click', () => {
+    cfOverlay.style.display = cfOverlay.style.display === 'block' ? 'none' : 'block';
+
+});
+
+document.getElementById("first-child").addEventListener("click", function () {
+    cfOverlay.style.display = "none";
+    alert("Download cancelled");
+
+});
+
+document.getElementById("last-child").addEventListener("click", function () {
+    cfOverlay.style.display = "none";
+    alert("Downloading template");
+});
+
+const submitOverlay = document.getElementById('submitOverlay');
+const submitBtn = document.getElementById('submitBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+
+
+submitButton.addEventListener('click', () => {
+    submitOverlay.style.display = submitOverlay.style.display === 'block' ? 'none' : 'block';
+});
+
+document.getElementById("submitBtn").addEventListener("click", function () {
+    submitOverlay.style.display = "none";
+
+});
+
+document.getElementById("cancelBtn").addEventListener("click", function () {
+    submitOverlay.style.display = "none";
+});
+  
+
+// Policy Repository
+const parentFolders = document.querySelectorAll('.PS-Parent-Folders');
+
+parentFolders.forEach(folder => {
+    folder.addEventListener('click', () => {
+        const parentId = folder.getAttribute('data-id');
+        console.log('Clicked Parent ID:', parentId);
+
+        // Hide all child folders
+        const allChildFolders = document.querySelectorAll('.child-folders');
+        allChildFolders.forEach(child => {
+            child.style.display = 'none';
+        });
+
+        // Hide all policy folders
+        const allPoliciesFolder = document.querySelectorAll('.Policies-Folder');
+        allPoliciesFolder.forEach(policyFolder => {
+            policyFolder.style.display = 'none';
+        });
+
+        // Show matching child folders
+        const childToShow = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
+        if (childToShow) {
+            childToShow.style.display = 'flex';
+        }
+    });
+});
+
+//Policy Repository
+const searchInput = document.getElementById('searchInput');
+const searchButton = document.getElementById('searchButton');
+
+// Search function
+function searchPolicies() {
+    const searchTerm = searchInput.value.toLowerCase();
+
+    // Get everything
+    const parentFolders = document.querySelectorAll('.PS-Parent-Folders');
+    const childFolders = document.querySelectorAll('.PS-Child-Folders');
+    const policies = document.querySelectorAll('.PS-Policies');
+
+    // First, hide everything
+    parentFolders.forEach(parent => parent.style.display = 'none');
+    document.querySelectorAll('.child-folders').forEach(childFolder => childFolder.style.display = 'none');
+    childFolders.forEach(child => child.style.display = 'none');
+    document.querySelectorAll('.Policies-Folder').forEach(policyFolder => policyFolder.style.display = 'none');
+    policies.forEach(policy => policy.style.display = 'none');
+
+    let found = false; // to know if there are any matches
+
+    // Search in Parent Folders
+    parentFolders.forEach(parent => {
+        const parentName = parent.innerText.toLowerCase();
+        if (parentName.includes(searchTerm)) {
+            parent.style.display = 'flex';
+            found = true;
+        }
+    });
+
+    // Search in Child Folders
+    childFolders.forEach(child => {
+        const childName = child.innerText.toLowerCase();
+        if (childName.includes(searchTerm)) {
+            child.style.display = 'flex';
+            const parentId = child.closest('.child-folders').getAttribute('data-parent-id');
+            document.querySelector(`.PS-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
+            document.querySelector(`.child-folders[data-parent-id='${parentId}']`).style.display = 'flex';
+            found = true;
+        }
+    });
+
+    // Search in Policies
+    policies.forEach(policy => {
+        const policyName = policy.innerText.toLowerCase();
+        if (policyName.includes(searchTerm)) {
+            policy.style.display = 'flex';
+
+            const policiesFolder = policy.closest('.Policies-Folder');
+            policiesFolder.style.display = 'flex';
+
+            const childFolder = policiesFolder.previousElementSibling; // the previous .PS-Child-Folders
+            if (childFolder) childFolder.style.display = 'flex';
+
+            const parentId = childFolder.closest('.child-folders').getAttribute('data-parent-id');
+            document.querySelector(`.PS-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
+            document.querySelector(`.child-folders[data-parent-id='${parentId}']`).style.display = 'flex';
+
+            found = true;
+        }
+    });
+
+    if (!found) {
+        console.log('No results found.');
     }
+}
 
-    const cfOverlay = document.getElementById('confirm-dl');
-    const dlBtn = document.getElementById('.policy-submission-buttons button:first-child');
+// Attach search on button click
+searchButton.addEventListener('click', searchPolicies);
 
-    dlBtn.addEventListener('click', () => {
-        cfOverlay.style.display = cfOverlay.style.display === 'block' ? 'none' : 'block';
+// Optional: Search also when typing (Enter key)
+searchInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        searchPolicies();
+    }
+});
+
+// Child Folders click
+const childFolders = document.querySelectorAll('.PS-Child-Folders');
+
+childFolders.forEach(childFolder => {
+    childFolder.addEventListener('click', () => {
+        const childId = childFolder.getAttribute('data-id');
+        console.log('Clicked Child ID:', childId);
+
+        // Hide all policy folders first
+        const allPoliciesFolder = document.querySelectorAll('.Policies-Folder');
+        allPoliciesFolder.forEach(policyFolder => {
+            policyFolder.style.display = 'none';
+        });
+
+        // Show the policy folder for the clicked child
+        const policiesFolderToShow = document.querySelector(`.Policies-Folder[data-pol-id='${childId}']`);
+        if (policiesFolderToShow) {
+            policiesFolderToShow.style.display = 'flex';
+        }
     });
+});
 
-    document.getElementById("first-child").addEventListener("click", function () {
-        cfOverlay.style.display = "none";
-    });
+// Attach the function to the sidebar menu item
+document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
+document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
 
-    document.getElementById("last-child").addEventListener("click", function () {
-        cfOverlay.style.display = "none";
-    });
 
     

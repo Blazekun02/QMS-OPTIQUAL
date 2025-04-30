@@ -38,7 +38,7 @@ function directTo($accID){
             break;
         case 2://QA Director
             setMessage("Logged In Succesfully!","success");
-            header("");
+            header("Location: /qms_optiqual/QADSpecificComponents/QADMain/QAD-POV.php");
             break;
         case 3://QA Personnel
             setMessage("Logged In Succesfully!","success");

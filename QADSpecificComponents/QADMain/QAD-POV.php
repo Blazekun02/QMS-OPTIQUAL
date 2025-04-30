@@ -37,7 +37,7 @@
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Pro_Track.png" alt="Icon 3">
-                    <span class="icon-label">Request Tracker</span>
+                    <span class="icon-label">Process Tracker</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Task_Manage.png" alt="Icon 4">
@@ -109,21 +109,46 @@
                     $PRSubfolders = [];
                     if (mysqli_num_rows($resultPF) > 0) {
                         while ($row = mysqli_fetch_assoc($resultPF)) {
+                            echo '<div class="Parent-Block">'; // <--- ADD THIS WRAPPER!
+                        
                             echo '<div class="PS-Parent-Folders" data-id="' . $row['categoryID'] . '">';
                             echo '<p class="PS-Parent-Folder-Name">' . $row['categoryName'] . '</p>';
                             echo '</div>';
-                            
+                        
                             $queryCF = "SELECT * FROM categorytbl WHERE parentCategoryID = " . $row['categoryID'];
                             $resultCF = mysqli_query($conn, $queryCF);
+                        
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; // hide initially
+                        
                             if (mysqli_num_rows($resultCF) > 0) {
                                 while ($rowCF = mysqli_fetch_assoc($resultCF)) {
-                                    echo '<div class="PS-Child-Folders">';
+                                    echo '<div class="PS-Child-Folders" data-id="' . $rowCF['categoryID'] . '">';
                                     echo '<p class="PS-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
+                        
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'];
+                                    $resultPol = mysqli_query($conn, $queryPol);
+                        
+                                    echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; // correct id
+                        
+                                    if (mysqli_num_rows($resultPol) > 0) {
+                                        while ($rowPol = mysqli_fetch_assoc($resultPol)) {
+                                            echo '<div class="PS-Policies">';
+                                            echo '<p class="PS-Policies-Name">' . $rowPol['title'] . '</p>';
+                                            echo '</div>';
+                                        }
+                                    } else {
+                                        echo '<div class="PS-Policies">';
+                                        echo '<p class="PS-Policies-Name">No policies available</p>';
+                                        echo '</div>';
+                                    }
+                        
+                                    echo '</div>'; // close Policies-Folder
                                 }
                             }
-                            echo '</div>'; // end child-folders div
+                        
+                            echo '</div>'; // close child-folders
+                            echo '</div>'; // <--- CLOSE Parent-Block here!
                         }
                     }
                     
@@ -158,7 +183,7 @@
         <div class="submit-overlay" id="submitOverlay">
             <div class="submit-popUp">
                 <h2>Submission</h2>
-                <form action="submit_policy.php" method="POST" enctype="multipart/form-data">
+                <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
                 <div class="submit-field">
                     <p>Policy Title</p>
                 </div>
@@ -174,49 +199,6 @@
             </form> 
         </div>
         </div>
-
-        <?php
-            include '../../connect.php';
-
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $policyTitle = $_POST['policyTitle'];
-                $file = $_FILES['policyFile'];
-
-                // Foder to place the to be uploaded files
-                $targetDir = "../../uploads/";
-                if (!file_exists($targetDir)) {
-                    mkdir($targetDir, 0777, true);
-                }
-
-                $fileName = basename($file["name"]);
-                $targetFilePath = $targetDir . $fileName;
-                $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
-
-                // Allowed file types
-                $allowedTypes = array('pdf', 'doc', 'docx', 'txt');
-
-                if (in_array($fileType, $allowedTypes)) {
-                    // Upload Files to Server
-                    if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {
-                        // Insert to Database
-                        $stmt =  $conn->prepare("INSERT INTO policytbl (title, contentPath) VALUES (?, ?)");
-                        $stmt -> bind_param("ss", $policyTitle, $targetFilePath);
-                        if ($stmt -> execute()) {
-                            echo "<script>alert('File uploaded successfully.'); window.location.href='../../QAD-POV.php';</script>";
-                        } else {
-                            echo "❌ Error saving to database: " . $stmt->error;
-                        }
-
-                        $stmt -> close();
-                    } else {
-                        echo "<script>alert('Error moving uploaded file.');</script>";
-                    } 
-                } else {
-                    echo "<script>alert('Invalid file type.');</script>";
-                }
-            }
-            $conn -> close();
-        ?>
 
          <!-- Department Manager -->
           <div class="Department-Manager-Panel" style="display: none;">
