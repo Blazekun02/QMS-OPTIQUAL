@@ -624,6 +624,7 @@
             <button class="back-button with-overlay" onclick="showTable()">
                 <span class="back-arrow">&larr;</span>
             </button>
+            
             <span class="introduction-title">[Policy Title from Database]</span>
             <div class="header-actions">
                 <button id="viewPolicyButton" class="view-policy-button">View Policy</button>
@@ -732,7 +733,7 @@
 
 <script>
     //this is for the js of task manager
-   function showTaskManager() {
+function showTaskManager() {
     document.getElementById('policies-repository-content').style.display = 'none';
     document.getElementById('policy-submission-content').style.display = 'none';
     document.querySelector('.process-tracker').style.display = 'none';
@@ -746,6 +747,7 @@
     document.querySelector('.information').style.display = 'none';
 }
 
+//show selected policy content when clicked
 function showIntroduction(policyTitle, policyContent) {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
@@ -761,6 +763,7 @@ function showIntroduction(policyTitle, policyContent) {
     introductionSection.style.display = 'block';
 }
 
+// Show the task manager table and hide the introduction section
 function showTable() {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
@@ -771,6 +774,7 @@ function showTable() {
     introductionSection.style.display = 'none';
 }
 
+// Show the reply modal when the reply button is clicked
 function showReplyModal() {
     const replyOverlay = document.getElementById('replyOverlay');
     if (replyOverlay) {
@@ -778,6 +782,7 @@ function showReplyModal() {
     }
 }
 
+// Close the reply modal when the close button is clicked
 function closeReplyModal() {
     const replyOverlay = document.getElementById('replyOverlay');
     if (replyOverlay) {
@@ -785,6 +790,7 @@ function closeReplyModal() {
     }
 }
 
+// Close the confirmation modal when the close button is clicked
 function showConfirmReply() {
     const confirmReplyOverlay = document.getElementById('confirmReplyOverlay');
     if (confirmReplyOverlay) {
@@ -792,6 +798,7 @@ function showConfirmReply() {
     }
 }
 
+// Close the confirmation modal when the close button is clicked
 function closeConfirmReply() {
     const confirmReplyOverlay = document.getElementById('confirmReplyOverlay');
     if (confirmReplyOverlay) {
@@ -799,12 +806,14 @@ function closeConfirmReply() {
     }
 }
 
+// Handle the confirmation of the reply submission
 function handleReplyConfirmation() {
     alert("Reply Confirmed!");
     closeConfirmReply();
     closeReplyModal();
 }
 
+// Show the revision modal when the revision button is clicked
 function showRevisionModal() {
     const revisionOverlay = document.getElementById('revisionOverlay');
     if (revisionOverlay) {
@@ -812,6 +821,7 @@ function showRevisionModal() {
     }
 }
 
+// Close the revision modal when the close button is clicked
 function closeRevisionModal() {
     const revisionOverlay = document.getElementById('revisionOverlay');
     if (revisionOverlay) {
@@ -819,50 +829,6 @@ function closeRevisionModal() {
     }
 }
 
-
-// // Sample task data
-// const taskData = [
-//     {
-//         policyTitle: "Student Handbook",
-//         author: "Taylor Swift",
-//         dateSubmitted: "10/24/24",
-//         version: "5.0",
-//         status: "For Verification",
-//         description: "This is the detailed description for the Student Handbook policy."
-//     },
-//     {
-//         policyTitle: "Organizational Profile",
-//         author: "Sabrina Carpenter",
-//         dateSubmitted: "03/03/24",
-//         version: "3.0",
-//         status: "For Approval",
-//         description: "Details about the Organizational Profile."
-//     },
-//     {
-//         policyTitle: "Student Dress Code",
-//         author: "Ariana Grande",
-//         dateSubmitted: "06/07/24",
-//         version: "4.0",
-//         status: "For Revision",
-//         description: "Information regarding the Student Dress Code."
-//     },
-//     {
-//         policyTitle: "Cafeteria Guidelines",
-//         author: "Chapell Roan",
-//         dateSubmitted: "08/28/24",
-//         version: "2.3",
-//         status: "Revision Request",
-//         description: "Guidelines for the Cafeteria."
-//     },
-//     {
-//         policyTitle: "Cafeteria Guidelines",
-//         author: "Chapell Roan",
-//         dateSubmitted: "08/28/24",
-//         version: "2.3",
-//         status: "Revision Request",
-//         description: "Guidelines for the Cafeteria."
-//     }
-// ];
 
 function populateTaskTable(tasks) {
     const tableBody = document.getElementById('taskTableBody');
@@ -1004,9 +970,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => console.error('Error:', error));
-
-    // // Populate the task table on load
-    // populateTaskTable(taskData);
 });
 
 //overlay for the submission confirmation in request for revision button

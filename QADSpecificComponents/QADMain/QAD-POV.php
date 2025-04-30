@@ -37,7 +37,7 @@
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Pro_Track.png" alt="Icon 3">
-                    <span class="icon-label">Request Tracker</span>
+                    <span class="icon-label">Process Tracker</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Task_Manage.png" alt="Icon 4">
@@ -85,8 +85,6 @@
                 Sign out
             </div>
         </div>
-
-        
 
         <!-- Policy Repository --> 
         <div class="policy-repo-content" id="policy-repo-content">
@@ -183,7 +181,7 @@
         <div class="submit-overlay" id="submitOverlay">
             <div class="submit-popUp">
                 <h2>Submission</h2>
-                <form action="submit_policy.php" method="POST" enctype="multipart/form-data">
+                <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
                 <div class="submit-field">
                     <p>Policy Title</p>
                 </div>
@@ -199,49 +197,6 @@
             </form> 
         </div>
         </div>
-
-        <?php
-            include '../../connect.php';
-
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $policyTitle = $_POST['policyTitle'];
-                $file = $_FILES['policyFile'];
-
-                // Foder to place the to be uploaded files
-                $targetDir = "../../uploads/";
-                if (!file_exists($targetDir)) {
-                    mkdir($targetDir, 0777, true);
-                }
-
-                $fileName = basename($file["name"]);
-                $targetFilePath = $targetDir . $fileName;
-                $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
-
-                // Allowed file types
-                $allowedTypes = array('pdf', 'doc', 'docx', 'txt');
-
-                if (in_array($fileType, $allowedTypes)) {
-                    // Upload Files to Server
-                    if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {
-                        // Insert to Database
-                        $stmt =  $conn->prepare("INSERT INTO policytbl (title, contentPath) VALUES (?, ?)");
-                        $stmt -> bind_param("ss", $policyTitle, $targetFilePath);
-                        if ($stmt -> execute()) {
-                            echo "<script>alert('File uploaded successfully.'); window.location.href='/QMS-OPTIQUAL/QADSpecificComponents/QADMain/QAD-POV.php';</script>";
-                        } else {
-                            echo "❌ Error saving to database: " . $stmt->error;
-                        }
-
-                        $stmt -> close();
-                    } else {
-                        echo "<script>alert('Error moving uploaded file.');</script>";
-                    } 
-                } else {
-                    echo "<script>alert('Invalid file type.');</script>";
-                }
-            }
-            $conn -> close();
-        ?>
 
          <!-- Department Manager -->
           <div class="Department-Manager-Panel" style="display: none;">

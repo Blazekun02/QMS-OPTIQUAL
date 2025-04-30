@@ -28,13 +28,16 @@ require_once genMsg_dir . '/message_box.php';
 <div class="logIn-overlay">    
     <div class="login-container">
     <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
-        <h1>Asia Pacific College<br></h1>
-        <h2>Log In<br></h2>
-        <label for="email">Email address:</label>
-        <input type="email" id="email" name="email">
-        <label for="pwd">Password:</label>
-        <input type="password" id="pwd" name="pwd" autocomplete="current-password">
-        <a href="#">Forgot Password?</a>
+    <h1>Asia Pacific College<br></h1>
+    <h2>Log In<br></h2>
+    <form action="loginBE.php" method="POST">
+        <input type="text" name="email" placeholder="Email">
+        <input type="password" id="password" name="password" placeholder="Password">
+
+        <!-- Show Password Checkbox -->
+        <p><input type="checkbox" id="showPassword"> Show Password</p>
+
+        <a id="forgotPass" href="forgotPass.php">Forgot Password?</a>
 
         <div class="button-container">
             <button type="button" class="button back-button" id="backButton">Back</button>

@@ -48,13 +48,13 @@ try {
     $stmt->execute([$accID]);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Return data as JSON
+    // Return data as JSON 
     if ($tasks) {
         echo json_encode($tasks, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     } else {
         echo json_encode(['message' => 'No tasks found']);
     }
-} catch (PDOException $e) {
+} catch (PDOException $e) { 
      // Return a generic error message in production
      echo json_encode(['error' => 'An error occurred while fetching tasks']);
 }

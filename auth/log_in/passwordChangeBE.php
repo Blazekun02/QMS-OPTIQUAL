@@ -16,6 +16,8 @@ $newPassword = $confirmNewPassword = "";
 
 //Check if submitted
 if (isset($_POST["confirmPasswordButton"])) {
+    //Trim all input values to remove extra spaces
+    $_POST = array_map('trim', $_POST);
 
     //Check if password and confirm password are not empty
     if (empty($_POST["newPassword"]) || empty($_POST["confirmNewPassword"])) {
@@ -25,8 +27,8 @@ if (isset($_POST["confirmPasswordButton"])) {
     }
 
     //Retrieve form data and sanitize input
-    $newPassword = trim($_POST['newPassword']);
-    $confirmNewPassword = trim($_POST['confirmNewPassword']);
+    $newPassword = $_POST['newPassword'];
+    $confirmNewPassword = $_POST['confirmNewPassword'];
 
     // Validate password and confirm password match
     if ($newPassword !== $confirmNewPassword) {

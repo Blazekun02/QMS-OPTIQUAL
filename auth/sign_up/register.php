@@ -13,6 +13,8 @@ require_once genMsg_dir . '/setMessage.php';
 
 // Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    //Trim all input values to remove extra spaces
+    $_POST = array_map('trim', $_POST);
     
     // Validate required fields
     if (empty($_POST["firstName"]) || empty($_POST["lastName"]) || empty($_POST["email"]) || empty($_POST["password"])) {
@@ -22,10 +24,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Retrieve form data and sanitize input
-    $fname = trim($_POST["firstName"]);
-    $lname = trim($_POST["lastName"]);
-    $email = trim($_POST["email"]);
-    $password = trim($_POST["password"]);
+    $fname = $_POST["firstName"];
+    $lname = $_POST["lastName"];
+    $fullName = $fname . " " . $lname; // Concatenate first and last name
+    $email = $_POST["email"];
+    $password = $_POST["password"];
     $confirmPassword = $_POST["confirmPassword"];
     $PIN = random_int(100000, 999999); // Generate random verification token
 
@@ -93,9 +96,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $password = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert new user record
-        $INSERT = "INSERT INTO accdatatbl (fname, lname, email, password) VALUES (?, ?, ?, ?)";
+        $INSERT = "INSERT INTO accdatatbl (fName, lName, fullName email, password) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($INSERT);
-        $stmt->bind_param("ssss", $fname, $lname, $email, $password);
+        $stmt->bind_param("sssss", $fname, $lname, $fullName, $email, $password);
         
         if ($stmt->execute()) {
             //Retrieve accID from database
@@ -136,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 sendEmail_Verify( $email, $email_subject, $email_template);
     
                 //Set OTP type to 0 (email verification)
-                $_SESSION["otpType"] = 0;
+                $_SESSION["otpTypeRequest"] = 0;
 
                 // Redirect to OTP verification page
                 setMessage("Verification email has been sent succesfully!","success");
