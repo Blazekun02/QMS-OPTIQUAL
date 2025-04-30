@@ -235,7 +235,7 @@ childFolders.forEach(childFolder => {
 
     
 
-// Role Manager
+//department Manager
 
 function showDepartmentManager() {
     policyRepositoryPanel.style.display = 'none';
