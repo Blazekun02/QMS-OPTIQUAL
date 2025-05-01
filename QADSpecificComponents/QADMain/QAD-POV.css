@@ -1,3 +1,19 @@
+body{
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.image {
+    flex: 1;
+    background-image: url('../../assets/bg/apc2/your-image-name.png');
+    background-position:  center -2em;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: auto;
+    z-index: 1000;
+}
+
 .Sidebar {
     position: absolute;
     top: 0;
@@ -10,6 +26,8 @@
     flex-direction: column;
     align-items: flex-start;
     z-index: 1000;
+    flex-direction:column;
+    justify-content: space-between;
     
 }
 
@@ -32,8 +50,9 @@
     color: #fbaf41;
     font-size: 16px;
     font-family:"Bebas Neue";
-    margin-left: 10px;
+    margin-left: 0.6em;
     display: none;
+    margin-top:-0.8em;
 }
 
 .Sidebar.Sidebar.extended .extended-text {
@@ -41,11 +60,41 @@
 }
 
 .Logo {
-    max-height: 80%;
-    max-height: 80%;
+    max-height: 70%;
+    max-height: 70%;
     display: block;
+    text-align: center;
+    margin: 0.5em;
+    margin-top:-0.9em;
 }
 
+.fixed-icon {
+    margin-top: auto; /* Push the Information Icon to the bottom */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 0.2em;
+    width: 100%;
+    margin-bottom:-0.5em;
+    
+}
+
+.fixed-icon img {
+    width: 1.8em;
+    height: 1.8em;
+    cursor: pointer;
+}
+
+.fixed-icon .icon-label {
+    
+    color: white;
+    display: none; /* Hidden by default */
+    font-size:0.9em;
+}
+
+.Sidebar.extended .fixed-icon .icon-label {
+    display: block; /* Show label when sidebar is expanded */
+}
 
 .Sidebar-Menu {
     display: flex;
@@ -54,9 +103,9 @@
     width: 100%;
     height: 100%;
     padding-left: 15px;
+    gap: 1em;
     
 }
-
 
 
 .Sidebar-Menu li{
@@ -72,23 +121,19 @@
     color: orange;
 }
 
-.Sidebar-Menu img {
+.Sidebar-Menu img { 
     
-    width: 0.4in;
-    height: 0.4in;
+    width: 1.8em;
+    height: 1.8em;
     cursor: pointer;
-    
+    margin-left: 0.5em;
 }
 
-.Sidebar-Menu img {
-    width: 0.4in;
-    height: 0.4in;
-    cursor: pointer;
-}
 
 .icon-label {
     color: white;
     margin-left: 0.2in;
+    font-size:0.9em;
     display: none;
     transition: filter 0.3s ease;
 }
@@ -109,16 +154,16 @@
 
 .yellow-line{  
     position: absolute;
-    top: 80px;
+    top: 3em;
     background-color: #fbaf41;
     width: 100%;
-    height: 10px;
+    height: 0.3em;
     z-index: -10;
 }
 
 .hamburger-icon {
     position: absolute;
-    margin-top: 20px;
+    margin-top: 1em;
     left: 0.8in;
     transform: translateY(-50%);
     width: 0.4in;
@@ -148,7 +193,7 @@
 
 .user-btn, .notif-btn {
     position: absolute;
-    margin-top: 20px;
+    margin-top: 0.6em;
     top: 0.5%;
     background-color: white;
     border: none;
@@ -173,8 +218,8 @@
 
 .signOut-overlay {
     position: absolute;
-    top: 6vh;
-    right: 2vw;
+    top: 6.8vh;
+    right: 6.5vw;
     background-color: #343A40;
     border-radius: 20px;
     padding: 8px 15px;
@@ -211,8 +256,8 @@
     position: absolute;
     display: none;
     background-color: white;
-    top: 90px;
-    left: 0.9in;    
+    top: 80px;
+    left: 0.8in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 149px);
     border: 2px solid red;
@@ -348,8 +393,8 @@
 .policy-submission-content {
     position: absolute;
     background-color: white;
-    top: 90px;
-    left: 0.9in;    
+    top: 80px;
+    left: 0.8in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 149px);
     border: 2px solid red;
@@ -372,7 +417,7 @@
 .policy-submission h2 {
     color: white;
     margin-bottom: 1vw;
-    margin-top: 0.3vw;
+    margin-top: 0.1vw;
     font-size: 24px;
 }
 
@@ -486,6 +531,8 @@
     z-index: 1000;
     justify-content: center;
     align-items: center;
+    margin-top: -0.5em;
+    margin-left: -0.5em;
 }
 
 .confirm-popUp{
@@ -493,7 +540,7 @@
     color: white;
     padding: 1vw;
     border-radius: 10px;
-    width: 28vw;
+    width: 25vw;
     height: 20vh;
     margin-left: 35.5vw;
     margin-top: 38vh;
@@ -585,7 +632,7 @@
 
 /* Policy submission container */
 .policy-submission {
-    width: 90%; 
+    width: 40%; 
     height: auto; 
     padding: 2vw; 
     margin: 2vh auto; 
@@ -619,15 +666,15 @@
 
  /* Confirmation download modal */
 .confirm-popUp {
-    width: 45%; 
-    height: auto; 
-    margin: 42vh auto; 
-    padding: 2vw; 
-    font-size: 1.6em; 
+    width: 35%; 
+    height: 20%; 
+    margin: 42vh 35vw; 
+    padding: 1vw; 
+    font-size: 1em; 
 }
 
 .cf-buttons button {
-    padding: 1vh 5vw;
+    padding: 1vh 3vw;
     font-size: 2emm;
     margin-top: 2vh; 
 }
@@ -637,14 +684,14 @@
     width: 60%; 
     height: auto; 
     margin: 35vh auto; 
-    padding: 2vw; 
+    padding: 1vw; 
     font-size: 1.3em; 
 }
 
 .submit-buttons button {
-    padding: 1vh 4vw; 
+    padding: 1vh 5vw; 
     font-size: 0.7em; 
-    margin-top: 1vh; 
+    margin-top: 3em; 
 }
 
 }
@@ -654,8 +701,8 @@
 .Department-Manager-Panel {
     position: absolute;
     background-color: white;
-    top: 90px;
-    left: 0.9in;    
+    top: 80px;
+    left: 0.8in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 149px);
     border: 2px solid red;
@@ -708,7 +755,136 @@
     cursor: pointer;
 }
 
+/*Department Manager pop up*/
+.DM-assignName {
+    display: flex;
+    flex-direction: column; /* Arrange elements vertically */
+    justify-content: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    border-radius: 1em;
+    background-color: #293A82;
+    color: white;
+    font-size: 0.9em;
+    width: 25vw;
+    height: 30vh;
+    padding: 1em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
+.DM-assignName-field {
+    margin-bottom: 1em; /* Add spacing below the label */
+    text-align: flex-start;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: -1em; /* Add spacing above the label */
+}
+
+.DM-assignName-input {
+    width: 100%; /* Make the input field take full width */
+    margin-bottom: 1.5em; /* Add spacing below the input field */
+}
+
+.DM-assignName-input input {
+    width: 100%; /* Full width for the input field */
+    height: 2.5em;
+    border: none;
+    outline: none;
+    border-radius: 0.5em;
+    padding: 0 10px;
+    font-size: 1em;
+}
+
+.DM-assignName-buttons {
+    display: flex;
+    align-items:center;
+    margin-left: 3.5em;
+    justify-content: space-between;
+    width: 70%; /* Make buttons take full width */
+}
+
+.DM-assignName-buttons button {
+    background-color: #fbaf41;
+    color: black;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-size: 1em;
+    width: 45%; /* Make buttons take equal width */
+    text-align: center;
+}
+
+.DM-assignName-buttons button:hover {
+    background-color: #f9a31a;
+}
+
+
+
+
+
+
+
+/*Policy Manager Panel Styles*/
+.Policy-Manager-Panel {
+    position: absolute;
+    background-color: white;
+    top: 80px;
+    left: 0.8in;    
+    width: calc(100% - 0.9in);
+    height: calc(100vh - 149px);
+    border: 2px solid red;
+    z-index: 1;
+}
+
+.PMP-Divider {
+    position: absolute;
+    top: 60px;
+    background-color:  gray;
+    width: 100%;
+    height: 2px;
+}
+
+.Policy-Manager-Header {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.PM-Search-Container {
+    display: absolute;
+    align-items: center;
+    border: 2px solid gray;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    border-radius: 20px;
+    width: fit-content;
+    background: white;
+}
+
+.PM-Search-Container input[type="text"] {
+    flex: 1;
+    height: 30px;
+    border: none;
+    outline: none;
+    border-radius: 20px 0 0 20px;
+    padding: 0 10px;
+}
+
+.PM-Search-Container button {
+    background-color: #293A82;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    height: 30px;
+    border-radius: 0 20px 20px 0;
+    cursor: pointer;
+}
 
 
 

@@ -10,7 +10,7 @@
         top: 0;
         height: 2.8vw;
         background-color: white;
-        border-width: 0.3vw;
+        border-width: 0.2vw;
         border-style: solid;
         border-color: transparent transparent  #fbaf41 transparent;
     }

@@ -19,7 +19,7 @@
     </head>
 
     <body>
-    
+    <div class="image"></div>
         <!-- Sidebar -->
         <div class="Sidebar">
             <div class="Sidebar-Logo">
@@ -45,22 +45,28 @@
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Role_Manage.png" alt="Icon 6">
-                    <span class="icon-label">Manage Roles</span>
+                    <span class="icon-label">Role Manager</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/QD-Dept_Manage.png" alt="Icon 7" >
                     <span class="icon-label">Department Manager</span>
                 </li>
                 <li class="menu-icons">
-                    <img src="../QAP Sidebar Images/Not Clicked/QD_Policy_Manage.png" alt="Icon 8">
+                    <img src="../QAP Sidebar Images/Not Clicked/QD_Policy_Manage.png" alt="Icon 8" on click="showPolicyManager()">
                     <span class="icon-label">Policy Manager</span>
                 </li>
-                <li>
-                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9">
-                    <span class="icon-label">Information</span>
+                <li class="menu-icons">
+                    <img src="../../assets/reports.png" alt="Icon 9">
+                    <span class="icon-label"> Reports</span>
                 </li>
-            </ul>
-        </div>
+                <div class="fixed-icon">
+                    <li class="menu-icons">
+                        <img src="../../assets/info - notClicked.png" alt="Information Icon" onclick="showInformation()">
+                        <span class="icon-label">Information</span>
+                    </li>
+                 </div>
+            </div>           
+            
 
         <div class="blue-line"></div>
         <div class="yellow-line"></div>
@@ -160,7 +166,7 @@
             <div class="policy-submission">
                 <h2>Policy Submission</h2>
                 <div class="policy-submission-buttons">
-                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> <span class=".policy-submission-buttons button:first-child">New Policy Template</span></button>
+                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> <span class=".policy-submission-buttons button:first-child">Download Policy Template</span></button>
                     <button class="btn" id="submitButton">Submit</button>
         
                 </div>
@@ -187,8 +193,8 @@
                 </div>
         
             <div class="submit-input">
-                <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
-                <input type="file" name="policyFile" required style="margin-top:10px;">
+                <input type="text" name="policyTitle" id="policyTitle" style="width:100%;" placeholder="Enter policy title" required><br>
+                <input type="file" name="policyFile" required style="margin-top:1em; margin-bottom:2em;">
             </div>
             <div class="submit-buttons">
                 <button id="cancelBtn">Cancel</button>
@@ -198,7 +204,7 @@
         </div>
         </div>
 
-         <!-- Department Manager -->
+<!-- Department Manager -->
           <div class="Department-Manager-Panel" style="display: none;">
             <div class="Department-Manager-Header">
                 <h1>Department Manager</h1>
@@ -215,7 +221,47 @@
 
           
           <div class="add-department-button">
-            <button class="add-department-button">+</button>
-    <script src="QAD-POV.js"></script>
-    </body>
+    <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em;">+ Add </button>
+</div>
+
+<div class="DM-assignName" id="assignNamePanel" style="display: none;">
+    <div class="DM-assignName-Header" style="text-align: center; margin-bottom: 0.3em;">
+        <h1>Assign Name</h1>
+    </div>
+    <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
+        <div class="DM-assignName-field">
+            <p>Department Name</p>
+        </div>
+        <div class="DM-assignName-input">
+            <input type="text" name="departmentName" id="departmentName" placeholder="Enter department name" required>
+        </div>
+        <div class="DM-assignName-buttons">
+            <button id="cancelBtn" type="button">Cancel</button>
+            <button id="submitBtn" type="submit">Submit</button>
+        </div>
+    </form>
+</div>
+
+<!-- Policy Manager -->
+          <div class="Policy-Manager-Panel" style="display:none;">
+            <div class="Policy-Manager-Header">
+                <h1>Policy Manager</h1>
+
+                <div class="PM-Search-Container">
+                    <label>
+                        <input type="text" placeholder="Search" id="searchInput">
+                    </label>
+                    <button id="searchButton"><i class="fas fa-search"></i></button>
+                </div>
+                 
+          </div>
+          <div class="PMP-Divider"></div>
+ 
+        <div class="add-policy-button">
+            <button class="add-policy-button">+</button>
+        </div>
+</div>   
+
+<script src="QAD-POV.js"></script>
+</body>
 </html>

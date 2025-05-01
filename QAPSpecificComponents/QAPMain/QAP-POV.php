@@ -7,74 +7,81 @@
     
 ?>
 
+
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Quality Assurance Director</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="QAP-POV.css">
-    </head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty and Staff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.gaoogleapis.com/icon?family=Material+Icons">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="QAP-POV.css">
+</head>
 
-    <body>
+<body>
+    <!-- just the design lawl -->
+    <div class="yellow-line"></div>
+    <div class="image"></div>
+    <div class="white-line"></div>
+    <div class="blue-line"></div>
+    <div class="copyright-label">Copyright © 2024 OPTIQUAL. All rights reserved</div>
     
-        <!-- Sidebar -->
-        <div class="Sidebar">
-            <div class="Sidebar-Logo">
-                <img src="\qms_optiqual\assets\logos\logo.png" alt="Logo" class="Logo">
-                <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
+    <!-- sidebar, logo, and icons -->
+    <div class="grey-line" id="grey-line">
+        <div class="logo-wrapper">
+            <img src="../../assets/logos/logo.png" alt="Logo" class="logo">
+            <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
+        </div>
+    <div class="menu-icons">
+            <div class="icon-item">
+                <img src="../../assets/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
+                <span class="icon-label">Policies Repository</span>
             </div>
-            <ul class="Sidebar-Menu">
-                <li class="menu-icons">
-                    <img src="../../assets/QAP Sidebar/Not Clicked/Policy_Repo.png" alt="Icon 1">
-                    <span class="icon-label">Policies Repository</span>
-                </li>
-                <li class="menu-icons">
-                    <img src="../../assets/QAP Sidebar/Not Clicked/Create_Poli.png" alt="Icon 2">
-                    <span class="icon-label">Policy Submission</span>
-                </li>
-                <li class="menu-icons">
-                    <img src="../../assets/QAP Sidebar/Not Clicked/Pro_Track.png" alt="Icon 3">
-                    <span class="icon-label">Process Tracker</span>
-                </li>
-                <li class="menu-icons">
-                    <img src="../../assets/QAP Sidebar/Not Clicked/Task_Manage.png" alt="Icon 4">
-                    <span class="icon-label">Task Manager</span>
-                </li>
-                <li class="menu-icons">
-                    <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6">
-                    <span class="icon-label">Manage Roles</span>
-                </li>
-            </ul>
-        </div>
-
-        <div class="blue-line"></div>
-        <div class="yellow-line"></div>
-        <img src="../../assets/OIP.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
-        <div>
-            <button type="button" class="button user-btn" id="userButton">
-                <i class="fa fa-user-circle" style="font-size:24px"></i>
-                Name of the user
-            </button>
-            <button type="button" class="button notif-btn" id="notifButton">
-                <i class="fa fa-bell" style="font-size:24px"></i>
-            </button>
-        </div>
-
-        <div class="popupOverlay" id="popupOverlay" style="display: none;">
-            <?php include '../../generalComponents/header/Notification-Overlay.php';?>
-            
-        </div>
-
-        <div class="signOut-overlay" id="signOutOverlay">
-            <div class="signOut-content">
-                Sign out
+            <div class="icon-item">
+                <img src="../../assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
+                <span class="icon-label">Policy Submission</span>
             </div>
+            <div class="icon-item">
+                <img src="../../assets/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
+                <span class="icon-label">Process Tracker</span>
+            </div>
+            <div class="icon-item">
+                <img src="../../assets/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
+                <span class="icon-label">Task Manager</span>
+            </div>  
+            <div class="icon-item">
+                <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6" onclick="showRoleManager()">
+                <span class="icon-label">Role Manager</span>
+            </div>
+            <div class="icon-item">
+            <img src="../../assets/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
+            <span class="icon-label">Information</span>
         </div>
+    </div>
+</div>   
+    <!-- Hamburger, notif, and sign out -->
+    
+    <img src="../../assets/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+    <div class="header-buttons">
+        <button type="button" class="button notif-btn" id="notifButton">
+            <i class="fa fa-bell" style="font-size: 1.5em;"></i>
+        </button>
+        <button type="button" class="button user-btn" id="userButton">
+            <i class="fa fa-user-circle" style="font-size: 1.5em;"></i>
+            <span class="user-name">Name of the user</span>
+        </button>
+    </div>
 
-        
+    <div class="notification-overlay" id="notificationOverlay">
+        <div class="notification-content"></div>
+    </div>
+    <div class="signOut-overlay" id="signOutOverlay">
+        <div class="signOut-content">Sign out</div>
+    </div>
 
         <!-- Policy Repository --> 
         <div class="policy-repo-content" id="policy-repo-content">
