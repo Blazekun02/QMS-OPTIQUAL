@@ -45,7 +45,7 @@ require_once genMsg_dir . '/message_box.php';
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            overflow-x: hidden;
+            overflow: auto;
         }
 
         .image {

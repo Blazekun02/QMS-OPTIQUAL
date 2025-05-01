@@ -1,21 +1,30 @@
+<?php 
+//include filepaths
+require_once __DIR__ . '/../../filepaths.php';
+
+//include set message
+require_once genMsg_dir . '/setMessage.php';
+?>
+
 <style>
     /* for Task manager*/
     .task-manager {
             width: 93%;
-            margin-top: 2.1vh;
-            background-color:#293A82;
+            float: right;
+            margin: 8vh 0 0 0;
+            background-color: #293A82;
             display: none;
-            height: 93%;
-            padding: 2vw;
-            margin-left: 3.5vw;
+            padding: 2%;
             color: white;
             position: relative;
-            border-radius: 20px;
+            height: calc(100vh - 8vh); /* Make it take up the full height of the screen */
+            border-radius: 20px; /* Add rounded corners on the left side */
+            box-sizing: border-box;
         }
 
         .task-manager .task-header {
-           font-size: 24px;
-          font-weight: bold;
+            font-size: 24px;
+            font-weight: bold;
             margin-bottom: 1vh;
         }
 
@@ -28,7 +37,7 @@
             background-color: white;
             z-index: 10;
             display: none;
-             margin-bottom: 1vh;
+            margin-bottom: 1vh;
         }
 
 
@@ -83,7 +92,12 @@
 
 /* WHEN ROW IN THE TABLE IS CLICKED */
 
-      .introduction-header {
+        .introduction-section {
+            width: 100%;
+            height: 100%;
+        }
+
+        .introduction-header {
             display: flex;
             align-items: center;
             margin-bottom: 1.5vh;
@@ -624,7 +638,7 @@
             <button class="back-button with-overlay" onclick="showTable()">
                 <span class="back-arrow">&larr;</span>
             </button>
-            
+
             <span class="introduction-title">[Policy Title from Database]</span>
             <div class="header-actions">
                 <button id="viewPolicyButton" class="view-policy-button">View Policy</button>
@@ -638,11 +652,14 @@
             <div class = "taskWhite-line" style="margin-top: 1vh; display: flex"></div>
         </div>
         <p class="introduction-content">[Policy Description/Content Here]</p>
-        <div id="policyContentPlaceholder" style="display: none; margin-top: 20px; background-color:transparent; color: white;">
+        <div id="policyFeedbackContent" style="display: none; margin-top: 20px; background-color:transparent; color: white;">
             <h3>Policy Content Placeholder</h3>
             <p>This section will eventually display the actual policy content fetched from the database.</p>
             <p>For now, this is just a placeholder to show where the content will appear when the "View Policy" button is clicked.</p>
         </div>
+        <?php 
+        //include pdfViewer
+        require_once pdfViewer_dir . '/pdfViewer.php'; ?>
     </div>
 
     <div id="replyOverlay" class="overlay" style="display: none;">
@@ -731,6 +748,8 @@
     </table>
 </div>
 
+
+
 <script>
     //this is for the js of task manager
 function showTaskManager() {
@@ -738,29 +757,93 @@ function showTaskManager() {
     document.getElementById('policy-submission-content').style.display = 'none';
     document.querySelector('.process-tracker').style.display = 'none';
     document.querySelector('.task-manager').style.display = 'flex';
+    document.querySelector('.information').style.display = 'none';
+
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
+
     taskManagerHeaderContainer.style.display = 'block'; // Show header and line
     taskManagerTable.style.display = 'table'; // Show the table initially
     introductionSection.style.display = 'none'; // Ensure introduction is hidden initially
-    document.querySelector('.information').style.display = 'none';
 }
 
 //show selected policy content when clicked
-function showIntroduction(policyTitle, policyContent) {
+function showIntroduction(policyTitle, policyContent, pdfPath) {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
     const introductionTitleElement = introductionSection.querySelector('.introduction-title');
     const introductionContentElement = introductionSection.querySelector('.introduction-content');
+    const policyFeedbackContent = document.getElementById('policyFeedbackContent'); // Get the placeholder
+    const pdfViewerContainer = document.querySelector('.pdfViewerContainer'); // Get the PDF viewer container
+    const viewPolicyButton = document.getElementById('viewPolicyButton'); // Get the View Policy button
+    const introductionContent = document.querySelector('.introduction-content'); // Get the initial content
 
     introductionTitleElement.textContent = policyTitle;
     introductionContentElement.textContent = policyContent;
 
     taskManagerHeaderContainer.style.display = 'none'; // Hide header and line
     taskManagerTable.style.display = 'none';
+    pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
     introductionSection.style.display = 'block';
+    policyFeedbackContent.style.display = 'block'; // Show the placeholder  
+    introductionContent.style.display = 'block';
+    viewPolicyButton.textContent = 'View Policy';
+
+    // Add event listener to dynamically load the PDF when "View Policy" is clicked
+    let isPolicyVisible = false;
+    viewPolicyButton.addEventListener('click', function () {
+        if (!isPolicyVisible) {
+            introductionContent.style.display = 'none';
+            pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
+            policyFeedbackContent.style.display = 'none';
+            viewPolicyButton.textContent = 'View Feedback Report';
+            isPolicyVisible = true;
+
+            // Dynamically load the PDF into the viewer
+            const pdfUrl = `${pdfPath}`; // Adjust the path as needed
+            pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                document.getElementById('pageCount').textContent = pdfDoc.numPages;
+                renderPage(1); // Render the first page
+            });
+        } else {
+            introductionContent.style.display = 'block';
+            pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer
+            policyFeedbackContent.style.display = 'block';
+            viewPolicyButton.textContent = 'View Policy';
+            isPolicyVisible = false;
+        }
+    });
+}   
+
+function populateTaskTable(tasks) {
+    const tableBody = document.getElementById('taskTableBody');
+    tableBody.innerHTML = ''; // Clear any existing rows
+
+    console.log(tasks); // Log the tasks to check the data
+    tasks.forEach(task => {
+        const row = tableBody.insertRow();
+        row.onclick = function() {
+            showIntroduction(task.policyTitle, task.description, task.pdfPath);
+        };
+
+        const titleCell = row.insertCell();
+        titleCell.textContent = task.policyTitle;
+
+        const authorCell = row.insertCell();
+        authorCell.textContent = task.author;
+
+        const dateCell = row.insertCell();
+        dateCell.textContent = task.dateSubmitted;
+
+        const versionCell = row.insertCell();
+        versionCell.textContent = task.version;
+
+        const statusCell = row.insertCell();
+        statusCell.textContent = task.status;
+    });
 }
 
 // Show the task manager table and hide the introduction section
@@ -768,10 +851,12 @@ function showTable() {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
+    const pdfViewerContainer = document.querySelector('.pdfViewerContainer');
 
     taskManagerHeaderContainer.style.display = 'block';
     taskManagerTable.style.display = 'table';
     introductionSection.style.display = 'none';
+    pdfViewerContainer.style.display = 'none';
 }
 
 // Show the reply modal when the reply button is clicked
@@ -830,33 +915,7 @@ function closeRevisionModal() {
 }
 
 
-function populateTaskTable(tasks) {
-    const tableBody = document.getElementById('taskTableBody');
-    tableBody.innerHTML = ''; // Clear any existing rows
 
-    console.log(tasks); // Log the tasks to check the data
-    tasks.forEach(task => {
-        const row = tableBody.insertRow();
-        row.onclick = function() {
-            showIntroduction(task.policyTitle, task.description);
-        };
-
-        const titleCell = row.insertCell();
-        titleCell.textContent = task.policyTitle;
-
-        const authorCell = row.insertCell();
-        authorCell.textContent = task.author;
-
-        const dateCell = row.insertCell();
-        dateCell.textContent = task.dateSubmitted;
-
-        const versionCell = row.insertCell();
-        versionCell.textContent = task.version;
-
-        const statusCell = row.insertCell();
-        statusCell.textContent = task.status;
-    });
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     const menuIcon = document.querySelector('.menu-icon');
@@ -870,8 +929,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const revisionPopupContent = document.getElementById('revisionPopupContent'); // Target the correct content div
     const cancelRevisionButton = document.getElementById('cancelRevision');
     const viewPolicyButton = document.getElementById('viewPolicyButton'); // Get the View Policy button
-    const policyContentPlaceholder = document.getElementById('policyContentPlaceholder'); // Get the placeholder
+    const policyFeedbackContent = document.getElementById('policyFeedbackContent'); // Get the placeholder
     const introductionContent = document.querySelector('.introduction-content'); // Get the initial content
+    const pdfViewerContainer = document.querySelector('.pdfViewerContainer'); // Get the PDF viewer container
     let isPolicyVisible = false;
 
     if (menuIcon && menuDropdown) {
@@ -943,16 +1003,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // View Policy Button Functionality
-    if (viewPolicyButton && policyContentPlaceholder && introductionContent) {
+    if (viewPolicyButton && policyFeedbackContent && introductionContent) {
         viewPolicyButton.addEventListener('click', function() {
             if (!isPolicyVisible) {
                 introductionContent.style.display = 'none';
-                policyContentPlaceholder.style.display = 'block';
+                pdfViewerContainer.style.display = 'block'; // Show the PDF viewer container
+                policyFeedbackContent.style.display = 'none';
                 viewPolicyButton.textContent = 'View Feedback Report';
                 isPolicyVisible = true;
             } else {
                 introductionContent.style.display = 'block';
-                policyContentPlaceholder.style.display = 'none';
+                pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
+                policyFeedbackContent.style.display = 'block';
                 viewPolicyButton.textContent = 'View Policy';
                 isPolicyVisible = false;
             }
@@ -960,7 +1022,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fetch task data from the server
-    fetch('../../generalComponents/taskManager/taskManagerBE.php')
+    fetch('/qms_optiqual/generalComponents/taskManager/taskManagerBE.php')
         .then(response => response.json())
         .then(data => {
             if (data.error) {
