@@ -49,6 +49,7 @@ function showPolicyRepository() {
     console.log("Policy Repository Triggered");
     policyRepositoryPanel.style.display = 'block';
     policySubmissionPanel.style.display = 'none';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none'; 
     policyManagerPanel.style.display = 'none';
 }
@@ -61,6 +62,7 @@ function showPolicySubmission() {
     
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'flex';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none';
     policyManagerPanel.style.display = 'none';
     
@@ -232,14 +234,22 @@ childFolders.forEach(childFolder => {
     });
 });
 
+// Process Tracker
+function showProcessTracker() {
+    policyRepositoryPanel.style.display = 'none';
+    policySubmissionPanel.style.display = 'none';
+    departmentPanel.style.display = 'none'; 
+    processTrackerPanel.style.display = 'block';
+}
 
     
 
-//department Manager
+// Role Manager
 
 function showDepartmentManager() {
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'none';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'block';
     policyManagerPanel.style.display = 'none';
 }
