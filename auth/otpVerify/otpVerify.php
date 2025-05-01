@@ -11,11 +11,11 @@ include_once genMsg_dir . '/message_box.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Verification - Asia Pacific College</title>
-    <link rel="stylesheet" href="otpVerify.css">
+    <link rel="stylesheet" href="otpVerification.css">    
 </head>
 <body>
     
-
+<div class="overlay"></div>
     <div class="form-container" id="VerifyForm">
         <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
         <h2>Asia Pacific College<br></h2>
@@ -27,5 +27,6 @@ include_once genMsg_dir . '/message_box.php'; ?>
             <button type="submit" class="button confirm-button" name="signup">Confirm</button>
         </form>
     </div>
+</div>    
 </body>
 </html>

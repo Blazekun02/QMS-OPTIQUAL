@@ -19,9 +19,14 @@ require_once genMsg_dir . '/message_box.php';
     <title>Log In Page</title>
     <link rel="stylesheet" href="login.css">
 </head>
-<body>
+<style>
 
-<div class="login-container">
+
+</style>
+
+<body>
+<div class="logIn-overlay">    
+    <div class="login-container">
     <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
     <h1>Asia Pacific College<br></h1>
     <h2>Log In<br></h2>
@@ -34,11 +39,13 @@ require_once genMsg_dir . '/message_box.php';
 
         <a id="forgotPass" href="forgotPass.php">Forgot Password?</a>
 
-        <button type="submit" class="button confirm-button" name="confirmButton">Confirm</button>
-    </form>
-    <p>Don't have an account? <a href="../../auth/sign_up/signup.php" id="signUpLink">Sign Up</a></p>
+        <div class="button-container">
+            <button type="button" class="button back-button" id="backButton">Back</button>
+            <button type="button" class="button signIn-button" id="signInButton">Sign In</button>
+        </div>
+        <b>Don't have an account?<a href="signUp.php">Sign up here</a></b>
+    </div>
 </div>
-
 <script src="login.js"></script>
 </body>
 </html>
