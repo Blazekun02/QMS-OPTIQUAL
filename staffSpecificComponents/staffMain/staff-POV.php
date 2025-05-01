@@ -10,7 +10,6 @@ require_once __DIR__ . '/../../filepaths.php';
 // Include message generation
 require_once genMsg_dir . '/message_box.php';
 
-
 ?>
 
 
@@ -1330,123 +1329,8 @@ require_once genMsg_dir . '/message_box.php';
     
 
     <!--FOR TASK MANAGER-->
-    <div class="task-manager">
-        <div class="task-manager-header-container">
-            <h2 class="task-header">Task Manager <br> </h2>
-            <div class = "taskWhite-line" style="display: flex">
-            </div>
-        </div>
-    
-        <div class="introduction-section" style="display: none;">
-            <div class="introduction-header">
-                <button class="back-button with-overlay" onclick="showTable()">
-                    <span class="back-arrow">&larr;</span>
-                </button>
-                <span class="introduction-title">[Policy Title from Database]</span>
-                <div class="header-actions">
-                    <button id="viewPolicyButton" class="view-policy-button">View Policy</button>
-                    <button class="menu-icon">&#9776;</button>
-                </div>
-                <div class="menu-dropdown">
-                    <button class="dropdown-button">Reply</button>
-                    <button class="dropdown-button" onclick="showRevisionModal()">Request for Revision</button>
-                    <button class="dropdown-button">Download Change Request Form</button>
-                </div>
-                <div class = "taskWhite-line" style="margin-top: 1vh; display: flex"></div>
-            </div>
-            <p class="introduction-content">[Policy Description/Content Here]</p>
-            <div id="policyContentPlaceholder" style="display: none; margin-top: 20px; background-color:transparent; color: white;">
-                <h3>Policy Content Placeholder</h3>
-                <p>This section will eventually display the actual policy content fetched from the database.</p>
-                <p>For now, this is just a placeholder to show where the content will appear when the "View Policy" button is clicked.</p>
-            </div>
-        </div>
-    
-        <div id="replyOverlay" class="overlay" style="display: none;">
-            <div class="reply-modal">
-                <div class="reply-header">
-                    <h2>Reply</h2>
-                    <button class="close-button" onclick="closeReplyModal()">&times;</button>
-                </div>
-                <div class="reply-content">
-                    <label>
-                        <textarea placeholder="Enter your reply here..."></textarea>
-                    </label>
-                    <button class="submit-reply-button">Submit</button>
-                </div>
-            </div>
-        </div>
-    
-        <div id="confirmReplyOverlay" class="overlay" style="display: none;">
-            <div class="confirm-reply-modal">
-                <h2>Confirm Reply?</h2>
-                <div class="confirm-actions">
-                    <button class="cancel-button" onclick="closeConfirmReply()">Cancel</button>
-                    <button class="confirm-button" onclick="handleReplyConfirmation()">Confirm</button>
-                </div>
-            </div>
-        </div>
-    
-        <div id="revisionOverlay" class="overlay" style="display: none;">
-            <div class="reply-modal">
-                <div class="reply-header">
-                    <h2>Request for Revision</h2>
-                    <button class="close-button" onclick="closeRevisionModal()">
-                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 1.2em; height: 1.2em;">
-                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="reply-content">
-                    <p class="attach-option">
-                        <i class="fa fa-paperclip" style="margin-right: 0.5em;"></i> Attach
-                    </p>
-                    <div class="button-container">
-                        <button id="cancelRevision">Cancel</button>
-                        <button id="submitRevision">Submit</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    
-        <div id="submitRevisionConfirmationOverlay">
-            <div class="submit-revision-confirmation-modal">
-                <h2>Confirm Submission?</h2>
-                <div class="confirm-actions">
-                    <button id="revisionConfirmNo" class="cancel-button">No</button>
-                    <button id="revisionConfirmYes" class="confirm-button">Yes</button>
-                </div>
-            </div>
-        </div>
-    
-        <div id="downloadConfirmationOverlay" class="overlay" style="display: none;">
-            <div class="download-confirm-modal">
-                <div class="download-header">
-                    <i class="fa fa-download fa-2x" style="margin-right: 0.5em; margin-top: -0.2em; font-size: 1.5em;"></i>
-                    <h2>Confirm Download?</h2>
-                </div>
-                <div class="download-actions">
-                    <button id="downloadConfirmNo" class="cancel-button">No</button>
-                    <button id="downloadConfirmYes" class="confirm-button">Yes</button>
-                </div>
-            </div>
-        </div>
-    
-    
-        <table class="task-manager-table" style="display: none;">
-            <thead>
-            <tr>
-                <th>Policy Title</th>
-                <th> Author</th>
-                <th>Date Submitted</th>
-                <th>Version no.</th>
-                <th>Status</th>
-            </tr>
-            </thead>
-            <tbody id="taskTableBody">
-            </tbody>
-        </table>
-    </div>
+    <?php 
+    require_once taskManager_dir . '/taskManager.php'; ?>
     
     
     
