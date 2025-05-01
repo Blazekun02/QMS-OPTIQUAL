@@ -41,7 +41,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
     const policyRepositoryPanel = document.getElementById('policy-repo-content');
     const policySubmissionPanel = document.getElementById('policy-submission-content');
     const departmentPanel = document.querySelector('.Department-Manager-Panel');
-    
+    const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2');
     
 
 // Policy Repository
@@ -49,6 +49,7 @@ function showPolicyRepository() {
     console.log("Policy Repository Triggered");
     policyRepositoryPanel.style.display = 'block';
     policySubmissionPanel.style.display = 'none';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none'; 
 }
 
@@ -60,6 +61,7 @@ function showPolicySubmission() {
     
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'flex';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none';
 
     
@@ -232,14 +234,22 @@ childFolders.forEach(childFolder => {
     });
 });
 
+// Process Tracker
+function showProcessTracker() {
+    policyRepositoryPanel.style.display = 'none';
+    policySubmissionPanel.style.display = 'none';
+    departmentPanel.style.display = 'none'; 
+    processTrackerPanel.style.display = 'block';
+}
 
     
 
-//department Manager
+// Role Manager
 
 function showDepartmentManager() {
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'none';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'block';
 }
 
@@ -247,5 +257,6 @@ function showDepartmentManager() {
 document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
 document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
 document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
+document.querySelector('.menu-icons:nth-child(3)').addEventListener('click', showProcessTracker);
 
     

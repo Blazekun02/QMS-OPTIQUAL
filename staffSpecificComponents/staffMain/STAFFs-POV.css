@@ -75,6 +75,8 @@
                 transition: width 0.3s ease;
                 z-index: 20;
                 display: flex;
+                flex-direction: column; /* Arrange items vertically */
+                justify-content: space-between; /* Push Icon 5 to the bottom */
                 align-items: flex-start;
             }
     
@@ -85,16 +87,17 @@
     /*LOGO AND TEXT SA SIDEBAR*/
             .logo-wrapper {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 3em;
-                margin-top: 0.8em;
-                margin-left: 0.5em;
+                align-items: center; 
+                justify-content: flex-start;
+                width: 100%; 
+                padding: 0.5em; 
+                margin-top: 0.5em; 
+                margin-left: 0; 
             }
     
             .logo {
-                max-width: 90%;
-                max-height: 90%;
+                max-width: 3em;
+                max-height: 3em;
                 display: block;
                 transition: filter 0.3s ease;
             }
@@ -103,9 +106,9 @@
                 color: #fbaf41;
                 font-size: 0.8em;
                 font-family:"Bebas Neue";
-                margin-left: 1em;
+                margin-left: 1.2em;
                 display: none;
-                margin-top: 0.5em;
+                margin-top: 0.3em;
                 transition: filter 0.3s ease;
             }
     
@@ -361,17 +364,19 @@
             .menu-icons {
                 position: absolute;
                 top: 12vw;
-                left: 1.1vw;
+                left: 1vw;
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
                 height: auto;
+                
             }
     
             .menu-icons .icon-item {
                 display: flex;
                 align-items: center;
                 margin-bottom: 4vw;
+                gap:0.3vw;
             }
     
             .menu-icons img {
@@ -395,6 +400,24 @@
             .grey-line.extended .icon-label {
                 display: inline;
     
+            }
+
+            .fixed-icon{
+                margin-bottom: 0.6vw;
+                margin-left: 1.1vw;
+            }
+
+            .fixed-icon .icon-item {
+                display: flex;
+                align-items: center;
+                gap: 0.3vw; /* Add spacing between icon and label */
+            }
+            
+            .fixed-icon img {
+                width: 2vw;
+                height: 2vw;
+                cursor: pointer;
+                transition: filter 0.3s ease;
             }
     
     /*POLICY REPOSITORY*/
@@ -1117,7 +1140,7 @@
 /* PROCESS TRACKER CONTAINER */
             .process-tracker {
                 width: 93vw;
-                margin-top: 8vh;
+                margin-top: 6vh;
                 background-color:#293A82;
                 display: none;
                 height: 100%;

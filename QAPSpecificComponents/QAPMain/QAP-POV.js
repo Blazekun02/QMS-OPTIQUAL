@@ -1,6 +1,7 @@
 const sidebar = document.querySelector('.Sidebar');
 const hamburgerIcon = document.getElementById('hamburger-icon');
 
+
     sidebar.addEventListener('mouseenter', () => {
         sidebar.classList.add('extended');
         hamburgerIcon.style.left = '2.5in';
@@ -34,9 +35,9 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
         signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
     });
 
-    document.getElementById("signOutOverlay").addEventListener("click", function () {
-        window.location.href = "landingPage.html";
-    });
+document.getElementById("signOutOverlay").addEventListener("click", function () {
+    window.location.href = "landingPage.html";
+});
 
     const policyRepositoryPanel = document.getElementById('policy-repo-content');
     const policySubmissionPanel = document.getElementById('policy-submission-content');

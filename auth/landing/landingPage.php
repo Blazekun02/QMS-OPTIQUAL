@@ -18,9 +18,10 @@ require_once genMsg_dir . '/setMessage.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Management System</title>
-    <link rel="stylesheet" href="landingPage.css">
+    <link rel="stylesheet" href="landingPAge.css">
 </head>
 <body>
+<div class="landing-overlay">
 <div class="box">
     <!-- use ../../assets/ to access the image -->
     <img src="../../assets/logos/logo.png" alt="School Logo">
@@ -29,7 +30,7 @@ require_once genMsg_dir . '/setMessage.php';
     <button onclick="redirecttodataPrivacy()">Sign Up</button>
     <button onclick="redirectToLogin()">Log In</button>
 </div>
-
+</div>    
 <script>
     function redirecttodataPrivacy() {
         window.location.href = "../../auth/dataPriv/dataPrivacy.html";

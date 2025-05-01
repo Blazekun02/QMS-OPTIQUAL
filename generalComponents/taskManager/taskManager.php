@@ -753,12 +753,20 @@ require_once genMsg_dir . '/setMessage.php';
 <script>
     //this is for the js of task manager
 function showTaskManager() {
+    //Staff Display
     document.getElementById('policies-repository-content').style.display = 'none';
     document.getElementById('policy-submission-content').style.display = 'none';
     document.querySelector('.process-tracker').style.display = 'none';
     document.querySelector('.task-manager').style.display = 'flex';
     document.querySelector('.information').style.display = 'none';
 
+
+    //QAP Display
+    policyRepositoryPanel.style.display = 'none'; 
+    policySubmissionPanel.style.display = 'none';
+    
+
+    //QAD Display
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');

@@ -1,3 +1,7 @@
+body {
+    overflow-x: hidden;
+}
+
 .Sidebar {
     position: absolute;
     top: 0;
@@ -73,7 +77,6 @@
 }
 
 .Sidebar-Menu img {
-    
     width: 0.4in;
     height: 0.4in;
     cursor: pointer;
@@ -707,6 +710,7 @@
     border-radius: 0 20px 20px 0;
     cursor: pointer;
 }
+
 
 
 
