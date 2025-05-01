@@ -4,8 +4,11 @@
     } else {
         echo "<script>alert('✅ Connected successfully');</script>";
     }
-    
+
+
 ?>
+
+
 
 <!DOCTYPE html>
 <html>
@@ -196,6 +199,11 @@
             </div>
             </form> 
         </div>
+        </div>
+
+        <!-- Process Tracker -->
+        <div class="Process-Tracker-Panel2" style ="display: block;">
+            <?php include '../../generalComponents/processTracker/processTracker.php';?>
         </div>
 
          <!-- Department Manager -->
