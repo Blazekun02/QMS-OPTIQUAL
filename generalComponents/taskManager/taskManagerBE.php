@@ -17,7 +17,8 @@ require_once BASE_DIR . '/connect.php';
 
 try {
     if (!isset($_SESSION['accID'])) {
-        echo json_encode(['error' => 'User not logged in or accID not set']);
+        setMessage("Session expired. Please log in again.", "error");
+        header("Location: /qms_optiqual/staffSpecificComponents/staffMain/staff-POV.php");
         exit;
     }
 
@@ -34,7 +35,8 @@ try {
             a.fullName AS author,
             t.dateCreated AS dateSubmitted,
             p.versionNo AS version,
-            tt.taskTypeName AS status
+            tt.taskTypeName AS status,
+            p.contentPath AS pdfPath
             
         FROM tasktbl t
         LEFT JOIN policytbl p ON t.policyAssigned = p.policyID -- Join with policy table

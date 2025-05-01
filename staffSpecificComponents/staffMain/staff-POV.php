@@ -28,6 +28,1091 @@ require_once genMsg_dir . '/message_box.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="STAFFs-POV.css">
 </head>
+    <style>
+        /* General styling */
+        * {
+/* FOR OVERALL USE */
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0; 
+            padding: 0;
+            font-family: 'Istok Web', sans-serif;
+            background-color: rgb(255, 255, 255);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow: auto;
+        }
+
+        .image {
+            flex: 1;
+            background-image: url('.idea/images/apc.jpg');
+            background-position: 0 -4em;
+            background-size: 100vw;
+            background-repeat: no-repeat;
+            width: 100vw;
+            height: auto;
+        }
+
+        /* Header styling */
+        .white-line,.blue-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: auto;
+        }
+        .white-line {
+            top: 0;
+            height: 2.8vw;
+            background-color: white;
+            border-width: 0.3vw;
+            border-style: solid;
+            border-color: transparent transparent  #fbaf41 transparent;
+        }
+
+        .blue-line {
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            height: 2em;
+            background-color: #293A82;
+            z-index: 15;
+        }
+
+        .copyright-label {
+            position: fixed;
+            bottom: 0;
+            left: 4.5vw;
+            width: auto;
+            max-width: 80%;
+            font-size: 16px;
+            background-color: transparent;
+            color: white;
+            padding: 0.3vw;
+            border-radius: 5px;
+            z-index: 15;
+        }
+
+/*THIS IS THE SIDEBAR*/
+        .grey-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 4.5vw;
+            height: 100%;
+            background-color: #343A40;
+            transition: width 0.3s ease;
+            z-index: 20;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .grey-line.extended {
+            width: 14vw;
+        }
+
+/*LOGO AND TEXT SA SIDEBAR*/
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1em;
+            margin-top: 0.5em;
+        }
+
+        .logo {
+            max-width: 90%;
+            max-height: 90%;
+            display: block;
+            transition: filter 0.3s ease;
+        }
+
+        .extended-text {
+            color: #fbaf41;
+            font-size: 1em;
+            font-family:"Bebas Neue";
+            margin-left: 1.7em;
+            display: none;
+            margin-top: 0.5em;
+            transition: filter 0.3s ease;
+        }
+
+        .grey-line.extended .extended-text {
+            display: inline;
+
+        }
+
+/*HAMBURGER, NOTIF, AND USER BUTTON*/
+        .hamburger-icon {
+            position: absolute;
+            top: 1.2vw;
+            left: 5.5vw;
+            transform: translateY(-50%);
+            width: 2vw;
+            height: 2vw;
+            background-color: transparent;
+            cursor: pointer;
+            transition: left 0.5s ease;        
+        }
+
+        .hamburger-icon::before,
+        .hamburger-icon::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            background-color: transparent;
+        }
+
+        .user-btn, .notif-btn {
+            position: absolute;
+            top: 0.2vw;
+            background-color:transparent;
+            border: none;
+            color: black;
+            text-align: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .user-btn {
+            left: 73em;
+        }
+
+        .notif-btn {
+            left: 71em;
+        }
+
+
+        .notification-overlay {
+            position: fixed;
+            top: 2.1vw;
+            right: 15.5vw;
+            display: none;
+            z-index: 1000;
+
+        }
+
+        .notification-content {
+            color: white;
+            background-color: #343A40;
+            width: 15vw;
+            height: 17vw;
+            border-radius: 0.5em;
+        }
+
+
+        .signOut-overlay {
+            position: absolute;
+            top: 2.4vw;
+            right: 6.7vw;
+            background-color: #343A40;
+            border-radius: 1.5em;
+            padding: 0.8vh 1.7vw;
+            display: none;
+            z-index: 1002;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .signOut-overlay::before {
+            content: '';
+            position: absolute;
+            bottom: 98%;
+            left: 1.3vw;
+            transform: translateX(-50%);
+            border-width: 0.5vw;
+            border-style: solid;
+            border-color: transparent transparent #343A40 transparent;
+        }
+
+        .signOut-content {
+            cursor: pointer;
+            transition: color 0.3s;
+            text-align: center;
+            width: 3.7vw;
+        }
+
+        .signOut-content:hover {
+            color: red;
+        }
+
+        .signout-link {
+        color: white;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 12px;
+        }
+
+        .signout-link:hover {
+            color: red;
+        }
+
+
+/*ICONS SA MENU*/
+        .menu-icons {
+            position: absolute;
+            top: 12vw;
+            left: 1.1vw;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: auto;
+        }
+
+        .menu-icons .icon-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4vw;
+        }
+
+        .menu-icons img {
+            width: 2vw;
+            height: 2vw;
+            cursor: pointer;
+            transition: filter 0.3s ease;
+        }
+
+        .icon-label {
+            color: white;
+            margin-left: 0.3vw;
+            display: none;
+            transition: filter 0.3s ease;
+        }
+
+        .icon-item:hover .icon-label {
+            color: #fbaf41;
+         }
+
+        .grey-line.extended .icon-label {
+            display: inline;
+
+        }
+
+/*POLICY REPOSITORY*/
+        .policies-repository-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            padding: 0.2vw;
+            background-color: white;
+            min-height: calc(100vh - 0.4in);
+            overflow-y: auto;
+            padding-bottom: 0.6vw;
+        }
+
+        .policies-repository-content h2 {
+           margin-bottom: 0.5vw;
+            display: inline-block;
+            margin-left: 5.10vw;
+            margin-top: 2.3vw;
+            position: absolute;
+
+        }
+
+/*SEARCH BAR*/
+        .search-container {
+            width: 30vw;
+            margin-bottom: 2vw;
+            margin-top: 2.6vw;
+            margin-right: -7.60vw;
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-end;
+            position: absolute;
+        }
+
+
+        .policies-repository-content .search-container .filter-button {
+            background-color: white !important;
+            color: #293A82 !important;
+            padding: 0.8vw 1.5vw;
+            border: 0.10vw solid black;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-left: 0.5vw;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .policies-repository-content .search-container .filter-button:hover{
+            background-color: #ccc !important;
+            border: 0.15vw solid black;
+            color: #0A185F;
+        }
+
+        .policies-repository-content .search-container .filter-button svg {
+            width: 0.1vw;
+            height: 0.1vh;
+            fill: none !important;
+            stroke: #ccc !important;
+        }
+
+        .policies-repository-content .search-container .filter-button svg:hover {
+            stroke: #0A185F !important;
+        }
+
+/*JUST THE BLACK LINE BELOW THE POLICY REPOSITORY*/
+        .blackLine {
+            position: absolute;
+            top: 21vh;
+            width: 93%;
+            margin-left: 4.5em;
+            height: 0.2vw;
+            background-color: black;
+            z-index: 15;
+            display: none;
+        }
+
+/*FILTER BUTTON AND POP UP*/
+        .filter-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-popup {
+            background-color: #293A82;
+            color: white;
+            padding: 0.8vw;
+            border-radius: 10px;
+            width: 20.40vw;
+            height: 42vh;
+            text-align: left;
+        }
+
+        .filter-popup h2 {
+            margin-top: 0.1vw;
+            text-align: center;
+            margin-left: 2.8vw;
+        }
+
+        .filter-section {
+            margin-bottom: 1vh;
+        }
+
+        .filter-section label {
+            display: block;
+            margin-top: 2.9vw;
+            margin-bottom: 0.7vh;
+
+        }
+
+        .filter-section select {
+            width: 100%;
+            padding: 0.4vw;
+            border-radius: 5px;
+            border: 0.1vw solid #ccc;
+            background-color: white;
+            color: black;
+        }
+
+        .filter-buttons {
+            text-align: center;
+            margin-top: 0.7vw;
+        }
+
+        .filter-buttons button {
+            color: black;
+            padding: 0.3vw 2.7vh;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 1.2vw;
+            margin-right: 1.2vw;
+        }
+
+        #applyFilter {
+            background-color: #fbaf41;
+        }
+
+        .search-container input[type="text"] {
+            flex: 1;
+            padding: 0.5vw;
+            border: 0.1vw solid #ccc;
+            border-radius: 0.9vw 0 0 0.9vw;
+        }
+
+        .search-container button {
+            background-color: #293A82;
+            color: white;
+            padding: 1.2vh 0.9vw;
+            border: none;
+            border-radius: 0 0.9vw 0.9vw 0;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #0A185F;
+
+        }
+
+/*MAIN CATEGORY SA FOLDERS*/
+        .category {
+            width: calc(100vw - 9.3vw);
+            max-height: 5.5vh;
+            margin-left: 5.4vw;
+            background-color: #4963D4;
+            color: white;
+            padding: 0.5vw;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.4vh;
+            position: relative;
+            top: 16.5vh;
+        }
+
+        .category:hover{
+            background-color: #23278D;
+        }
+
+        .category .expand-icon {
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+
+            .category-content {
+            width: calc(100vw - 9.3vw);
+            display: none;
+            padding: 0;
+            color: #293A82;
+            border-radius: 5px 5px 5px 5px;
+            margin-left: 5.1vw;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: absolute; /* Revert to absolute positioning */
+            top: 5.7vh;
+            left: -5.10vw;
+            z-index: 10;
+            background-color: white;
+            max-height: 35vh;
+        }
+
+
+        .category-content::-webkit-scrollbar {
+            width: 0.5vw;
+        }
+
+        .category-content::-webkit-scrollbar-thumb {
+            background: #808080;
+            border-radius: 8px;
+        }
+
+        .category-content::-webkit-scrollbar-track {
+            background: #D3D3D3;
+        }
+
+        .category.expanded .category-content {
+            display: block;
+        }
+
+/*SUBCATEGORY INSIDE THE MAIN CATEGORY*/
+
+        .subcategory {
+           width: calc(100vw - 10vw);
+            height: 5.5vh;
+            cursor: pointer;
+            background-color: #7B8EDE;
+            color: white;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 5px 5px 5px 5px;
+            margin-left: 0.2vw;
+            margin-bottom: 0.1vh;
+            position: relative;
+
+        }
+
+        .subcategory .expand-icon {
+            margin-right: 0.5vw;
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .subcategory.expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+        .subcategory:hover {
+            background-color: #5d74d9;
+        }
+
+        .nested-subcategory-content {
+            display: none;
+            padding-left: 0.3vw;
+        }
+
+        .subcategory.expanded .nested-subcategory-content {
+            display: flex; /* Change to flex to respect flex-direction */
+        }
+
+/*SUBCATEGORY2 OR THE SUBCATEGORY INSIDE THE SUBCATEGORY*/
+        .nested-subcategory-content {
+            width: 100%;
+            padding-left: 0.2vw;
+            margin-top: 0.1vh;
+            display: none;
+            border-radius: 0 0 5px 5px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 11;
+            flex-direction: column;
+        }
+
+        .nested-subcategory {
+             width: calc(100% - 0.4vw);
+            height: 5.5vh;
+            cursor: pointer;
+            background-color: #a3b8f7;
+            color: white;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            padding-left: 1vw;
+            border-radius: 5px;
+            margin-bottom: 0.1vh;
+        }
+
+        .nested-subcategory:hover {
+            background-color: #8aa6f5;
+        }
+
+
+/*POLICY SUBMISSION CONTAINER*/
+
+        .policy-submission-content {
+            flex: 1;
+            width: calc(100vw - 55vw);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 0.4vh);
+            background-color: white;
+        }
+
+        .policy-submission {
+            border-radius: 10px;
+            width: 22.40vw;
+            height: 45vh;
+            background-color: #293A82;
+            text-align: center;
+            padding: 2vh;
+            margin-bottom: 1vh;
+        }
+
+        .policy-submission h2 {
+            color: white;
+            margin-bottom: 1vw;
+            margin-top: 0.3vw;
+            font-size: 24px;
+        }
+
+
+        .policy-submission-buttons button {
+            width: 100%;
+            padding: 1vh 1vw;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+
+/*DOWNLOAD TEMPLATE BUTTON*/
+        .policy-submission-buttons button:first-child  {
+            background-color: white;
+            border-radius: 15px;
+            margin-top: 0.7vh;
+            margin-bottom: 20vh;
+            color: #343A40;
+            text-align: left;
+
+        }
+
+        .policy-submission-buttons button:first-child:hover {
+            background-color: #343A40;
+            color:white;
+        }
+
+/*SUBMIT BUTTON*/
+        .policy-submission-buttons button:last-child {
+            background-color: #fbaf41;
+            color: white;
+        }
+
+        .policy-submission-buttons button:last-child:hover {
+            background-color: #db8804;
+            color:black;
+        }
+
+/*SUBMIT BUTTON ONCE CLICKED/ SUBMIT CONTENT*/
+        .submit-overlay{
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .submit-popUp{
+            background-color: #293A82;
+            color: white;
+            padding: 1vw;
+            border-radius: 10px;
+            width: 30vw;
+            height: 35vh;
+            text-align: center;
+            align-items: center;
+            margin-left: 35.2vw;
+            margin-top: 33vh;
+            font-size: 20px;
+        }
+
+        .submit-field {
+            text-align: left;
+            font-size: 14px;
+            margin-left: 0.3vw;
+            margin-top: -0.4vw;
+        }
+
+        .submit-buttons {
+            text-align: center;
+        }
+
+        .submit-buttons button {
+            color: black;
+            padding: 0.3vw 2.5vh ;
+            border-radius: 20px;
+            border: #fbaf41;
+            cursor: pointer;
+            background-color: #fbaf41;
+            font-size: 18px;
+            margin-left: 1vw;
+            margin-right: 0.6vw;
+            align-items: center;
+            margin-top: 1.5vh;
+        }
+
+        .submit-buttons button:hover{
+            background-color: #db8804;
+            color:black;
+        }
+
+        .submit-input {
+            border-radius: 9em;
+            align-items: left;
+            margin-top: -1.3vh;
+
+        }
+
+/* CONFIRMATION ONCE DOWNLOAD TEMPLATE IS CLICKED*/
+        .confirm-dl{
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirm-popUp{
+            background-color: #293A82;
+            color: white;
+            padding: 1vw;
+            border-radius: 10px;
+            width: 28vw;
+            height: 20vh;
+            margin-left: 35.5vw;
+            margin-top: 38vh;
+            text-align: center;
+            align-items: center;
+            font-size: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .cf-buttons {
+            text-align: center;
+        }
+
+        .cf-buttons button {
+            color: white;
+            padding: 0.8vh 2.3vw;
+            border-radius: 10px;
+            border: #fbaf41;
+            cursor: pointer;
+            margin-top: 3vh;
+            background-color: #fbaf41;
+            font-size: 18px;
+            margin-left: 1vw;
+            margin-right: 1vw;
+        }
+
+        .cf-buttons button:hover{
+            background-color: #db8804;
+            color:black;
+        }
+
+        .confirmSubmit-dl{
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirmSubmit-popUp{
+            background-color: #293A82;
+            color: white;
+            padding: 1vw;
+            border-radius: 10px;
+            width: 28vw;
+            height: 20vh;
+            margin-left: 35.5vw;
+            margin-top: 38vh;
+            text-align: center;
+            align-items: center;
+            font-size: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .cfSubmit-buttons {
+            text-align: center;
+        }
+
+        .cfSubmit-buttons button {
+            color: white;
+            padding: 0.8vh 2.3vw;
+            border-radius: 10px;
+            border: #fbaf41;
+            cursor: pointer;
+            margin-top: 3vh;
+            background-color: #fbaf41;
+            font-size: 18px;
+            margin-left: 1vw;
+            margin-right: 1vw;
+        }
+
+        .cfSubmit-buttons button:hover{
+            background-color: #db8804;
+            color:black;
+        }
+
+
+
+
+/* PROCESS TRACKER CONTAINER */
+        .process-tracker {
+            width: 93%;
+            margin-top: 2.1vh;
+            background-color:#293A82;
+            display: none;
+            height: 93%;
+            padding: 2vw;
+            margin-left: 3.5vw;
+            color: white;
+            position: relative;
+            border-radius: 20px;
+        }
+
+        .process-tracker .tracker-header {
+           font-size: 24px;
+          font-weight: bold;
+
+        }
+
+/* PROCESS TRACKER LINE UNDER THE HEADER */
+        .ptWhite-line {
+            position: absolute;
+            top: 11vh;
+            width: 96.5%;
+            margin-left: -0.3vw;
+            height: 0.2vw;
+            background-color: white;
+            z-index: 10;
+            display: none;
+
+        }
+
+/* PROCESS TRACKER SUBMISSION/REPORT FEEDBACK BUTTON */
+        .process-tracker .submissions-button {
+            padding: 1vh 2.3vw;
+            border-radius: 15px;
+            border: none;
+            color: grey;
+            font-size: 0.7em;
+            align-self: flex-end;
+            margin-left: 66.6vw;
+            margin-bottom: 79vh;
+            cursor: pointer;
+        }
+
+        .process-tracker .submissions-button:hover {
+            color: white;
+            background-color: #A9A9A9;
+        }
+
+/* PROCESS TRACKER TABLE*/
+        .process-tracker-table {
+          width: 96%;
+          color: black;
+          font-family: Istok-Web;
+          margin-left: 1.7vw;
+          margin-top: 15.3vh;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
+    .process-tracker-table th,
+    .process-tracker-table td {
+          padding: 1vh 2vw;
+          text-align: left;
+        }
+
+        .process-tracker-table tHead th {
+          background-color: #fbaf41;
+          color: black;
+          text-align: left;
+
+        }
+
+        .process-tracker-table tBody tr:nth-child(odd) td {
+          background-color: #E0E0E0;
+        }
+
+        .process-tracker-table tBody tr:nth-child(even) td {
+          background-color: #FFFFFF;
+        }
+
+
+          .process-tracker-table tBody tr:hover td {
+            background-color: grey;
+        }
+
+        .process-tracker-table tBody tr:nth-child(odd):hover td {
+            background-color: #343A40;
+        }
+
+        .process-tracker-table td:nth-child(4) {
+          text-align: left;
+        }
+
+        .process-tracker-table .status-reviewed {
+          color: black;
+        }
+
+        .process-tracker-table .status-verified {
+          color: #2196F3;
+        }
+
+
+        .process-tracker-table .status-approved {
+           color: #4CAF50;
+        }
+
+        .process-tracker-table .status-submitted {
+            color: black;
+        }
+
+        .process-tracker-table .status-addressed {
+            color: black;
+        }
+
+
+
+/* Information CSS*/
+        .information {
+            width: 89%;
+            margin-top: 2.1vh;
+            background-color: #293A82;
+            display: none;
+            height: 93%;
+            padding: 2vw;
+            margin-left: 3.5vw;
+            color: white;
+            position: relative;
+            border-radius: 20px;
+        }
+
+        .information .info-header {
+           font-size: 1.8em;
+          font-weight: bold;
+
+        }
+
+        .information .infoWhite-line {
+            position: absolute;
+            top: 11vh;
+            width: 96.5%;
+            margin-left: -0.3vw;
+            height: 0.2vw;
+            background-color: white;
+            z-index: 10;
+            display: none;
+
+        }
+
+        .moduleCategory {
+            width: 100%;
+            max-height: 5.5vh;
+             line-height: 1.2;
+            margin-left: -10.4vw;
+            background-color: #4963D4;
+            color: white;
+            padding: 0.5vw;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.4vh;
+            position: relative;
+            top: 9.5vh;
+            z-index: 11;
+        }
+
+        .moduleCategory:hover{
+            background-color: #162033;
+        }
+
+        .moduleCategory .expand-icon {
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .moduleCategory.expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+
+        .moduleCategory .module-text {
+            position: absolute;
+            left: 1vw;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .moduleCategory .expand-icon {
+            position: absolute;
+            right: 1vw;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+
+        .moduleCategory-content {
+            width: 98%;
+            display: none;
+            padding: 0;
+            color: black;
+            border-radius: 5px 5px 5px 5px;
+            margin-left: 5.1vw;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: absolute;
+            top: 5.7vh;
+            z-index: 11;
+            background-color: #a3b8f7;
+            max-height: 35vh;
+        }
+
+        .moduleCategory-content::-webkit-scrollbar {
+            width: 0.5vw;
+        }
+
+        .moduleCategory-content::-webkit-scrollbar-thumb {
+            background: #808080;
+            border-radius: 8px;
+        }
+
+        .moduleCategory-content::-webkit-scrollbar-track {
+            background: #D3D3D3;
+        }
+
+        .moduleCategory.expanded .moduleCategory-content {
+            display: block;
+        }
+
+        .nested-moduleSubcategory-content {
+            width: 100%;
+            padding-left: 1vw;
+            margin-top: 26.6vh;
+            margin-left: 0.2vw;
+            display: none;
+            border-radius: 0 0 5px 5px;
+            background-color: #a3b8f7;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            flex-direction: column;
+            color: white;
+            position: relative;
+            padding: 0.5vw 1vw;
+            font-weight: bold;
+        }
+
+        .nested-moduleSubcategory {
+            width: 100%;
+            height: 7vh;
+            cursor: pointer;
+            background-color: #a3b8f7;
+            color: black;
+            font-size: 22px;
+            text-align: left;
+            display: block;
+            align-items: center;
+            padding-left: 1vw;
+            border-radius: 5px;
+            margin-bottom: 0.1vh;
+            padding: 0.8vw 1vw;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .nested-moduleSubcategory .nested-blackLine{
+            position: absolute;
+            top: 7.5vh;
+            width: 96.5%;
+            margin-left: -0.3vw;
+            height: 0.1vw;
+            background-color:black;
+            z-index: 11;
+            display: none;
+        }
+
+    </style>
 
 <body>
     <!-- just the design lawl -->

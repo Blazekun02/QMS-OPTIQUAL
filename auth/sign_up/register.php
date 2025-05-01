@@ -96,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $password = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert new user record
-        $INSERT = "INSERT INTO accdatatbl (fName, lName, fullName email, password) VALUES (?, ?, ?, ?, ?)";
+        $INSERT = "INSERT INTO accdatatbl (fName, lName, fullName, email, password) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($INSERT);
         $stmt->bind_param("sssss", $fname, $lname, $fullName, $email, $password);
         
