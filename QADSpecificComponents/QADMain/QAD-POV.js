@@ -49,7 +49,6 @@ function showPolicyRepository() {
     console.log("Policy Repository Triggered");
     policyRepositoryPanel.style.display = 'block';
     policySubmissionPanel.style.display = 'none';
-    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none'; 
     policyManagerPanel.style.display = 'none';
 }
@@ -62,7 +61,6 @@ function showPolicySubmission() {
     
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'flex';
-    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none';
     policyManagerPanel.style.display = 'none';
     
@@ -234,56 +232,246 @@ childFolders.forEach(childFolder => {
     });
 });
 
-// Process Tracker
-function showProcessTracker() {
-    policyRepositoryPanel.style.display = 'none';
-    policySubmissionPanel.style.display = 'none';
-    departmentPanel.style.display = 'none'; 
-    processTrackerPanel.style.display = 'block';
-}
 
     
 
-// Role Manager
+//department Manager
+document.addEventListener('DOMContentLoaded', () => {
+    const addDepartmentButton = document.getElementById('addDepartmentButton');
+    const assignNameContainer = document.getElementById('assignNameContainer');
+    const overlay = document.getElementById('overlay');
+    const cancelAssignNameButton = document.getElementById('cancelAssignName');
+    const confirmAssignNameButton = document.getElementById('confirmAssignName');
+    const departmentNameInput = document.getElementById('departmentNameInput');
+    const departmentListContainer = document.getElementById('departmentListContainer');
+    const assignRoleContainer = document.getElementById('assignRoleContainer');
+    const departmentStructureContainer = document.getElementById('departmentStructureContainer');
+    const cancelStructureButton = document.getElementById('cancelStructure');
+    const confirmStructureButton = document.getElementById('confirmStructure');
+    const renameDepartmentContainer = document.getElementById('renameDepartmentContainer');
+    const cancelRenameButton = document.getElementById('cancelRename');
+    const confirmRenameButton = document.getElementById('confirmRenameButton');
+    const renameDepartmentInput = document.getElementById('renameDepartmentInput');
+    const deleteConfirmationContainer = document.getElementById('deleteConfirmationContainer');
+    const cancelDeleteButton = document.getElementById('cancelDelete');
+    const confirmDeleteButton = document.getElementById('confirmDelete');
+    let departmentToDelete = null; // To store the department to be deleted
+    let currentTargetDepartment = null; // To store the department being assigned a role
+
+    
+
+
+    addDepartmentButton.addEventListener('click', () => {
+        assignNameContainer.style.display = 'block';
+        overlay.style.display = 'block';
+    });
+
+    cancelAssignNameButton.addEventListener('click', () => {
+        assignNameContainer.style.display = 'none';
+        overlay.style.display = 'none';
+        departmentNameInput.value = '';
+    });
+
+    confirmAssignNameButton.addEventListener('click', () => {
+        const departmentName = departmentNameInput.value.trim();
+
+        if (departmentName) {
+            displayNewDepartment(departmentName);
+            assignNameContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            departmentNameInput.value = '';
+        } else {
+            alert('Please enter a department name.');
+        }
+    });
+
+    function displayNewDepartment(name) {
+        const departmentDiv = document.createElement('div');
+        departmentDiv.classList.add('department-item');
+        departmentDiv.dataset.departmentName = name;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        departmentDiv.appendChild(nameSpan);
+        nameSpan.id = `department-name-${Date.now()}`; // Assign a unique ID
+        console.log('Generated nameSpan.id:', nameSpan.id); // CHECKPOINT 1
+
+        const iconsDiv = document.createElement('div');
+        iconsDiv.classList.add('department-icons');
+
+        const addUserIcon = document.createElement('i');
+        addUserIcon.classList.add('fas', 'fa-user-plus');
+        addUserIcon.addEventListener('click', () => {
+            assignRoleContainer.style.display = 'block';
+            overlay.style.display = 'block';
+            currentTargetDepartment = departmentDiv; // ADD THIS LINE!
+            assignRoleContainer.dataset.targetDepartment = departmentDiv;
+        });
+        iconsDiv.appendChild(addUserIcon);
+
+        const structureIcon = document.createElement('i');
+        structureIcon.classList.add('fas', 'fa-sitemap');
+        structureIcon.addEventListener('click', () => {
+            departmentStructureContainer.style.display = 'block';
+            overlay.style.display = 'block';
+        });
+        iconsDiv.appendChild(structureIcon);
+
+        const editIcon = document.createElement('i');
+        editIcon.classList.add('fas', 'fa-pencil-alt');
+        editIcon.addEventListener('click', () => {
+            renameDepartmentContainer.style.display = 'block';
+            overlay.style.display = 'block';
+            renameDepartmentInput.value = nameSpan.textContent;
+            renameDepartmentContainer.dataset.targetDepartmentSpan = nameSpan.id;
+            console.log('Stored targetSpanId in renameDepartmentContainer:', renameDepartmentContainer.dataset.targetDepartmentSpan); // CHECKPOINT 2
+        });
+        iconsDiv.appendChild(editIcon);
+
+        const deleteIcon = document.createElement('i');
+        deleteIcon.classList.add('fas', 'fa-trash-alt');
+        deleteIcon.addEventListener('click', () => {
+            deleteConfirmationContainer.style.display = 'block';
+            overlay.style.display = 'block';
+            departmentToDelete = departmentDiv; // Store the department to delete
+        });
+        iconsDiv.appendChild(deleteIcon);
+
+        departmentDiv.appendChild(iconsDiv);
+        departmentListContainer.appendChild(departmentDiv);
+    }
+
+    const cancelAssignRoleButton = document.getElementById('cancelAssignRole');
+    const confirmAssignRoleButton = document.getElementById('confirmAssignRole');
+
+    if (cancelAssignRoleButton) {
+        cancelAssignRoleButton.addEventListener('click', () => {
+            assignRoleContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            document.getElementById('positionInput').value = '';
+            document.getElementById('nameInput').value = '';
+        });
+    }
+    if (confirmAssignRoleButton) {
+        confirmAssignRoleButton.addEventListener('click', () => {
+            const position = document.getElementById('positionInput').value.trim();
+            const name = document.getElementById('nameInput').value.trim();
+
+            if (position && name && currentTargetDepartment) {
+                const assignedRoleDiv = document.createElement('div');
+                assignedRoleDiv.classList.add('assigned-role-item');
+                assignedRoleDiv.innerHTML = `
+                    <span>${position} - ${name}</span>
+                    <div class="assigned-role-icons">
+                        <i class="fas fa-pencil-alt"></i>
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                `;
+
+                // Insert the assigned role div AFTER the target department
+                currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
+
+                assignRoleContainer.style.display = 'none';
+                overlay.style.display = 'none';
+                document.getElementById('positionInput').value = '';
+                document.getElementById('nameInput').value = '';
+                currentTargetDepartment = null; // Clear the target department
+            } else {
+                alert('Please fill in both Position and Name.');
+            }
+        });
+    }
+
+    if (cancelStructureButton) {
+        cancelStructureButton.addEventListener('click', () => {
+            departmentStructureContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            document.getElementById('structureNameInput').value = ''; // Clear the input
+        });
+    }
+
+    if (confirmStructureButton) {
+        confirmStructureButton.addEventListener('click', () => {
+            const structureName = document.getElementById('structureNameInput').value.trim();
+
+            if (structureName) {
+                console.log('Structure Name:', structureName);
+                departmentStructureContainer.style.display = 'none';
+                overlay.style.display = 'none';
+                document.getElementById('structureNameInput').value = ''; // Clear the input
+            } else {
+                alert('Please enter a structure name.');
+            }
+        });
+    }
+
+    if (cancelRenameButton) {
+        cancelRenameButton.addEventListener('click', () => {
+            renameDepartmentContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            renameDepartmentInput.value = '';
+            renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+        });
+    }
+
+    if (confirmRenameButton) {
+        confirmRenameButton.addEventListener('click', () => {
+            const newDepartmentName = renameDepartmentInput.value.trim();
+            const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
+            console.log('Retrieved targetSpanId on confirm:', targetSpanId); // CHECKPOINT 3
+            if (newDepartmentName && targetSpanId) {
+                const targetNameSpan = document.getElementById(targetSpanId);
+                console.log('Found targetNameSpan element:', targetNameSpan); // CHECKPOINT 4
+                if (targetNameSpan) {
+                    targetNameSpan.textContent = newDepartmentName;
+                    renameDepartmentContainer.style.display = 'none';
+                    overlay.style.display = 'none';
+                    renameDepartmentInput.value = '';
+                    renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+                } else {
+                    console.error('Target department name span not found!');
+                    alert('Error updating department name.');
+                }
+            } else if (!newDepartmentName) {
+                alert('Please enter a new department name.');
+            }
+        });
+    }
+    if (cancelDeleteButton) {
+        cancelDeleteButton.addEventListener('click', () => {
+            deleteConfirmationContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            departmentToDelete = null; // Clear the stored department
+        });
+    }
+
+    if (confirmDeleteButton) {
+        confirmDeleteButton.addEventListener('click', () => {
+            if (departmentToDelete) {
+                departmentToDelete.remove(); // Delete the stored department
+            }
+            deleteConfirmationContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            departmentToDelete = null; // Clear the stored department
+        });
+    }
+});
 
 function showDepartmentManager() {
-    policyRepositoryPanel.style.display = 'none';
-    policySubmissionPanel.style.display = 'none';
-    processTrackerPanel.style.display = 'none';
-    departmentPanel.style.display = 'block';
-    policyManagerPanel.style.display = 'none';
-}
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
 
-function showPolicyManager() {
-    policyRepositoryPanel.style.display = 'none';
-    policySubmissionPanel.style.display = 'none';
-    departmentPanel.style.display = 'none';
-    policyManagerPanel.style.display = 'flex';
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (departmentPanel) departmentPanel.style.display = 'block';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
 }
 
 
 // Attach the function to the sidebar menu item
-document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
-document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
+document.querySelector('.menu-icons:nth-child(1)')
+document.querySelector('.menu-icons:nth-child(2)')
 document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
-document.querySelector('.menu-icons:nth-child(7)').addEventListener('click', showPolicyManager);
-
-
-document.addEventListener('DOMContentLoaded', () => {
-
-const addDepartmentButton = document.getElementById('addDepartmentButton');
-const assignNamePanel = document.getElementById('assignNamePanel');
-const cancelBtn = document.getElementById('cancelBtn');
-
-    // Show the Assign Name panel when the Add Department button is clicked
-    addDepartmentButton.addEventListener('click', () => {
-        assignNamePanel.style.display = 'flex'; // Show the panel
-    });
-
-    // Hide the Assign Name panel when the Cancel button is clicked
-    cancelBtn.addEventListener('click', () => {
-        console.log("Cancel button clicked");
-        assignNamePanel.style.display = 'none'; // Hide the panel
-    });
-
-});
+document.querySelector('.menu-icons:nth-child(7)')

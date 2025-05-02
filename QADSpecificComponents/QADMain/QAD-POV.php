@@ -4,11 +4,8 @@
     } else {
         echo "<script>alert('✅ Connected successfully');</script>";
     }
-
-
+    
 ?>
-
-
 
 <!DOCTYPE html>
 <html>
@@ -18,11 +15,18 @@
         <title>Quality Assurance Director</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="your-integrity-hash" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
         <link rel="stylesheet" href="QAD-POV.css">
     </head>
 
     <body>
-    <div class="image"></div>
+    <div class="content-container">
+    <div class="panel Policy-Repository-Panel" style="display: none;">Policy Repository Content</div>
+    <div class="panel Policy-Submission-Panel" style="display: none;">Policy Submission Content</div>
+    <div class="panel Department-Manager-Panel" style="display: none;">Department Manager Content</div>
+    <div class="panel Policy-Manager-Panel" style="display: none;">Policy Manager Content</div>
+    </div>
         <!-- Sidebar -->
         <div class="Sidebar">
             <div class="Sidebar-Logo">
@@ -71,7 +75,7 @@
             </div>           
             
 
-        <div class="blue-line"></div>
+        <div class="blue-line">Copyright © 2024 OPTIQUAL. All rights reserved</div>
         <div class="yellow-line"></div>
         <img src="../QAP Sidebar Images/Not Clicked/OIP.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
         <div>
@@ -207,43 +211,112 @@
         </div>
         </div>
 
+
 <!-- Department Manager -->
-          <div class="Department-Manager-Panel" style="display: none;">
-            <div class="Department-Manager-Header">
-                <h1>Department Manager</h1>
-
-                <div class="DM-Search-Container">
-                    <label>
-                        <input type="text" placeholder="Search" id="searchInput">
-                    </label>
-                    <button id="searchButton"><i class="fas fa-search"></i></button>
-                </div>
-                 
-          </div>
-          <div class="DMP-Divider"></div>
-
-          
-          <div class="add-department-button">
-    <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em;">+ Add </button>
-</div>
-
-<div class="DM-assignName" id="assignNamePanel" style="display: none;">
-    <div class="DM-assignName-Header" style="text-align: center; margin-bottom: 0.3em;">
-        <h1>Assign Name</h1>
+<div class="Department-Manager-Panel" style="display: none;">
+    <div class="Department-Manager-Header">
+        <h1>Department Manager</h1>
+        <div class="DM-Search-Container">
+            <label>
+                <input type="text" placeholder="Search" id="searchInput">
+            </label>
+            <button id="searchButton"><i class="fas fa-search"></i></button>
+        </div>
     </div>
-    <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
-        <div class="DM-assignName-field">
-            <p>Department Name</p>
-        </div>
-        <div class="DM-assignName-input">
-            <input type="text" name="departmentName" id="departmentName" placeholder="Enter department name" required>
-        </div>
-        <div class="DM-assignName-buttons">
-            <button id="cancelBtn" type="button">Cancel</button>
-            <button id="submitBtn" type="submit">Submit</button>
-        </div>
-    </form>
+    <div class="DMP-Divider"></div>
+
+    <div class="add-department-button">
+        <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em; margin-top: 0.9em;">+ Add </button>
+    </div>
+    <div id="departmentListContainer">
+    </div>
 </div>
+
+<div id="overlay"></div>
+
+<div id="assignNameContainer">
+    <h2>Assign Name</h2>
+    <input type="text" id="departmentNameInput" placeholder="Enter Department Name">
+    <div class="assign-name-buttons">
+        <button id="cancelAssignName">Cancel</button>
+        <button id="confirmAssignName">Confirm</button>
+    </div>
+</div>
+
+<!-- 1st icon -->
+<div id="assignRoleContainer">
+    <h2>Assign Role</h2>
+    <div class="form-group">
+        <label for="positionInput">Position</label>
+        <input type="text" id="positionInput" placeholder="Enter Position Here">
+    </div>
+    <div class="form-group">
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" placeholder="Enter Name Here"> 
+    </div>
+    <div class="form-group">
+        <label for="accountInput">Assign role to account</label>
+        <div class="scrollable-account-list">
+            <?php
+            // Query to fetch accounts from the database
+            $query = "SELECT accID, fullName, email FROM accdatatbl";
+            $result = mysqli_query($conn, $query);
+  if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
+                    echo '<input type="checkbox" id="account-' . $row['accID'] . '" name="accounts[]" value="' . $row['accID'] . '" >';
+                    echo '<label for="account-' . $row['accID'] . '">' . $row['fullName'] . ' (' . $row['email'] . ')</label>';
+                    echo '</div>';
+                }
+            } else {
+                echo '<p>No accounts available</p>';
+            }
+            ?>
+        </div>
+    </div>
+    <div class="button-group">
+        <button id="cancelAssignRole">Cancel</button>
+        <button id="confirmAssignRole">Confirm</button>
+    </div>
+</div>
+
+<!-- 2nd icon -->
+<div id="departmentStructureContainer" class="popup-container" style="display: none;">
+    <h2>Assign Name</h2>
+    <div class="form-group">
+        <input type="text" id="structureNameInput" placeholder="Enter Name">
+    </div>
+    <div class="button-group">
+        <button id="cancelStructure">Cancel</button>
+        <button id="confirmStructure">Confirm</button>
+    </div>
+</div>
+
+<!-- 3rd icon -->
+<div id="renameDepartmentContainer" class="popup-container" style="display: none;">
+    <h2>Rename</h2>
+    <div class="form-group">
+        <input type="text" id="renameDepartmentInput" placeholder="Enter New Name">
+    </div>
+    <div class="button-group">
+        <button id="cancelRename">Cancel</button>
+        <button id="confirmRename">Confirm</button>
+    </div>
+</div>
+
+<!-- 4th icon -->
+<div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
+    <h2>Confirm Deletion?</h2>
+    <div class="button-group">
+        <button id="cancelDelete">Cancel</button>
+        <button id="confirmDelete">Confirm</button>
+    </div>
+</div>
+
+
+
+
+
 
 <!-- Policy Manager -->
           <div class="Policy-Manager-Panel" style="display:none;">
@@ -266,5 +339,6 @@
 </div>   
 
 <script src="QAD-POV.js"></script>
+
 </body>
 </html>
