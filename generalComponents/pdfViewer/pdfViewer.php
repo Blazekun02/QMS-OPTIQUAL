@@ -32,7 +32,7 @@ require_once genMsg_dir . '/setMessage.php';
     canvas {
         display: block;
         margin: 0 auto;
-        transform-origin: top left; /* Ensure scaling happens from the top-left corner */
+        transform-origin: top center; /* Ensure scaling happens from the top-left corner */
     }
     .pdf_controls {
         display: flex;
