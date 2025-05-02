@@ -232,9 +232,6 @@ childFolders.forEach(childFolder => {
     });
 });
 
-
-    
-
 //department Manager
 document.addEventListener('DOMContentLoaded', () => {
     const addDepartmentButton = document.getElementById('addDepartmentButton');
@@ -255,10 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteConfirmationContainer = document.getElementById('deleteConfirmationContainer');
     const cancelDeleteButton = document.getElementById('cancelDelete');
     const confirmDeleteButton = document.getElementById('confirmDelete');
+    const renameRoleContainer = document.getElementById('renameRoleContainer');
+    const cancelRenameRoleButton = document.getElementById('cancelRenameRole');
+    const confirmRenameRoleButton = document.getElementById('confirmRenameRole');
+    const renameRoleInput = document.getElementById('renameRoleInput');
     let departmentToDelete = null; // To store the department to be deleted
     let currentTargetDepartment = null; // To store the department being assigned a role
-
-    
+    let currentlyEditingRoleTextSpan = null; // To store the span being edited
+    let roleToDelete = null; // To store the role to be deleted
 
 
     addDepartmentButton.addEventListener('click', () => {
@@ -292,9 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nameSpan = document.createElement('span');
         nameSpan.textContent = name;
-        departmentDiv.appendChild(nameSpan);
-        nameSpan.id = `department-name-${Date.now()}`; // Assign a unique ID
-        console.log('Generated nameSpan.id:', nameSpan.id); // CHECKPOINT 1
+        nameSpan.id = `department-name-${Date.now()}`; // Assign the unique ID FIRST
+        departmentDiv.appendChild(nameSpan); // Then append
 
         const iconsDiv = document.createElement('div');
         iconsDiv.classList.add('department-icons');
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addUserIcon.addEventListener('click', () => {
             assignRoleContainer.style.display = 'block';
             overlay.style.display = 'block';
-            currentTargetDepartment = departmentDiv; // ADD THIS LINE!
+            currentTargetDepartment = departmentDiv;
             assignRoleContainer.dataset.targetDepartment = departmentDiv;
         });
         iconsDiv.appendChild(addUserIcon);
@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.style.display = 'block';
             renameDepartmentInput.value = nameSpan.textContent;
             renameDepartmentContainer.dataset.targetDepartmentSpan = nameSpan.id;
-            console.log('Stored targetSpanId in renameDepartmentContainer:', renameDepartmentContainer.dataset.targetDepartmentSpan); // CHECKPOINT 2
+            console.log('Stored targetSpanId in renameDepartmentContainer:', renameDepartmentContainer.dataset.targetDepartmentSpan);
         });
         iconsDiv.appendChild(editIcon);
 
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteIcon.addEventListener('click', () => {
             deleteConfirmationContainer.style.display = 'block';
             overlay.style.display = 'block';
-            departmentToDelete = departmentDiv; // Store the department to delete
+            departmentToDelete = departmentDiv;
         });
         iconsDiv.appendChild(deleteIcon);
 
@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cancelAssignRoleButton = document.getElementById('cancelAssignRole');
     const confirmAssignRoleButton = document.getElementById('confirmAssignRole');
+    let currentlyEditingRole = null;
 
     if (cancelAssignRoleButton) {
         cancelAssignRoleButton.addEventListener('click', () => {
@@ -350,37 +351,116 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.style.display = 'none';
             document.getElementById('positionInput').value = '';
             document.getElementById('nameInput').value = '';
+            currentlyEditingRole = null; // Reset
         });
     }
-    if (confirmAssignRoleButton) {
-        confirmAssignRoleButton.addEventListener('click', () => {
-            const position = document.getElementById('positionInput').value.trim();
-            const name = document.getElementById('nameInput').value.trim();
 
-            if (position && name && currentTargetDepartment) {
-                const assignedRoleDiv = document.createElement('div');
-                assignedRoleDiv.classList.add('assigned-role-item');
-                assignedRoleDiv.innerHTML = `
-                    <span>${position} - ${name}</span>
-                    <div class="assigned-role-icons">
-                        <i class="fas fa-pencil-alt"></i>
-                        <i class="fas fa-trash-alt"></i>
-                    </div>
-                `;
 
-                // Insert the assigned role div AFTER the target department
-                currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
+// Automatically populate the "Name" input field when a checkbox is checked
+const nameInput = document.getElementById('nameInput');
+const accountCheckboxes = document.querySelectorAll('.scrollable-account-list input[type="checkbox"]');
 
-                assignRoleContainer.style.display = 'none';
-                overlay.style.display = 'none';
-                document.getElementById('positionInput').value = '';
-                document.getElementById('nameInput').value = '';
-                currentTargetDepartment = null; // Clear the target department
-            } else {
-                alert('Please fill in both Position and Name.');
-            }
-        });
-    }
+accountCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        const selectedCheckboxes = document.querySelectorAll('.scrollable-account-list input[type="checkbox"]:checked');
+
+        // Ensure only one checkbox is selected
+        if (selectedCheckboxes.length > 1) {
+            alert('You can only select one account.');
+            checkbox.checked = false; // Uncheck the current checkbox
+            return;
+        }
+
+        // Populate the "Name" input field with the selected account's name
+        if (checkbox.checked) {
+            const accountLabel = checkbox.nextElementSibling.textContent; // Get the label text
+            const [fullName] = accountLabel.split(' ('); // Extract the name before the email
+            nameInput.value = fullName.trim(); // Populate the name input field with the name only
+        } else {
+            nameInput.value = ''; // Clear the name input field if unchecked
+        }
+    });
+});
+
+ // Confirm Assign Role Button Logic
+if (confirmAssignRoleButton) {
+    confirmAssignRoleButton.addEventListener('click', () => {
+        const positionInput = document.getElementById('positionInput');
+        const position = positionInput.value.trim();
+        const name = nameInput.value.trim();
+
+        // Get all checked checkboxes
+        const selectedAccounts = document.querySelectorAll('.scrollable-account-list input[type="checkbox"]:checked');
+
+        // Validation for inputs and checkboxes
+        if (!position) {
+            alert('Please fill in the Position field.');
+            return;
+        }
+
+        if (selectedAccounts.length === 0) {
+            alert('Please select at least one account.');
+            return;
+        }
+
+        if (selectedAccounts.length > 1) {
+            alert('You can only select one account.');
+            return;
+        }
+
+        // Proceed with assigning the role
+        const selectedAccountLabel = selectedAccounts[0].nextElementSibling.textContent; // Get the label text
+        const [fullName, email] = selectedAccountLabel.split(' ('); // Extract the name and email
+        const emailOnly = email.replace(')', '').trim(); // Remove the closing parenthesis and trim
+
+        const newRoleText = `${position} - ${fullName.trim()} (${emailOnly})`; // Use the name and email
+
+        if (currentlyEditingRole) {
+            // Update the existing role
+            const roleTextSpan = currentlyEditingRole.querySelector('span');
+            roleTextSpan.textContent = newRoleText;
+            currentlyEditingRole = null; // Reset editing state
+        } else {
+            // Create a new role
+            const assignedRoleDiv = document.createElement('div');
+            assignedRoleDiv.classList.add('assigned-role-item');
+            assignedRoleDiv.innerHTML = `
+                <span>${newRoleText}</span>
+                <div class="assigned-role-icons">
+                    <i class="fas fa-pencil-alt edit-role-icon" title="Rename Role"></i>
+                    <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
+                </div>
+            `;
+            const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
+            const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
+            const roleTextSpan = assignedRoleDiv.querySelector('span');
+
+            editRoleIcon.addEventListener('click', () => {
+                const currentRoleText = roleTextSpan.textContent;
+                const [currentPosition, currentName] = currentRoleText.split(' - ');
+                renameRoleInput.value = currentName;
+                currentlyEditingRoleTextSpan = roleTextSpan;
+                renameRoleContainer.style.display = 'block';
+                overlay.style.display = 'block';
+            });
+
+            deleteRoleIcon.addEventListener('click', () => {
+                deleteConfirmationContainer.style.display = 'block';
+                overlay.style.display = 'block';
+                roleToDelete = assignedRoleDiv;
+            });
+
+            currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
+        }
+         // Reset the form and close the modal
+         assignRoleContainer.style.display = 'none';
+         overlay.style.display = 'none';
+         positionInput.value = '';
+         nameInput.value = '';
+         selectedAccounts.forEach(account => account.checked = false); // Uncheck all checkboxes
+         currentTargetDepartment = null;
+     });
+ }
 
     if (cancelStructureButton) {
         cancelStructureButton.addEventListener('click', () => {
@@ -416,43 +496,106 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (confirmRenameButton) {
         confirmRenameButton.addEventListener('click', () => {
+            console.log('--- Confirm Rename Clicked ---'); // Added
             const newDepartmentName = renameDepartmentInput.value.trim();
             const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
-            console.log('Retrieved targetSpanId on confirm:', targetSpanId); // CHECKPOINT 3
+            console.log('New department name:', newDepartmentName); // CHECKPOINT C (Relabeled)
+            console.log('Retrieved targetSpanId:', targetSpanId); // CHECKPOINT B (Relabeled)
+
             if (newDepartmentName && targetSpanId) {
+                console.log('Both newDepartmentName and targetSpanId are truthy.'); // Added
                 const targetNameSpan = document.getElementById(targetSpanId);
-                console.log('Found targetNameSpan element:', targetNameSpan); // CHECKPOINT 4
+                console.log('Attempting to get element with ID:', targetSpanId); // Added
+                console.log('Found targetNameSpan element:', targetNameSpan); // CHECKPOINT D (Relabeled)
                 if (targetNameSpan) {
+                    console.log('targetNameSpan element exists. Updating textContent.'); // Added
                     targetNameSpan.textContent = newDepartmentName;
                     renameDepartmentContainer.style.display = 'none';
                     overlay.style.display = 'none';
                     renameDepartmentInput.value = '';
                     renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+                    console.log('Department name updated successfully!'); // CHECKPOINT E (Relabeled)
                 } else {
-                    console.error('Target department name span not found!');
+                    console.error('Target department name span NOT found!'); // CHECKPOINT F (Relabeled)
                     alert('Error updating department name.');
                 }
-            } else if (!newDepartmentName) {
-                alert('Please enter a new department name.');
+            } else {
+                console.log('Either newDepartmentName or targetSpanId is falsy.'); // Added
+                if (!newDepartmentName) {
+                    alert('Please enter a new department name.'); // CHECKPOINT G (Relabeled)
+                } else {
+                    console.log('targetSpanId is falsy:', targetSpanId); // Added
+                    alert('Error: Target department information missing.'); // More informative alert
+                }
             }
+            console.log('--- Confirm Rename Click End ---'); // Added
         });
     }
+
     if (cancelDeleteButton) {
         cancelDeleteButton.addEventListener('click', () => {
             deleteConfirmationContainer.style.display = 'none';
             overlay.style.display = 'none';
-            departmentToDelete = null; // Clear the stored department
+            departmentToDelete = null;
+            roleToDelete = null;
         });
     }
 
     if (confirmDeleteButton) {
         confirmDeleteButton.addEventListener('click', () => {
             if (departmentToDelete) {
-                departmentToDelete.remove(); // Delete the stored department
+                console.log("Deleting department:", departmentToDelete);
+    
+                // Remove all assigned roles within the department
+                const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
+                assignedRoles.forEach(role => {
+                    console.log("Removing assigned role:", role);
+                    role.remove(); // Remove each assigned role
+                });
+    
+                // Remove the department itself
+                departmentToDelete.remove();
+                departmentToDelete = null;
+    
+                console.log("Department and all assigned roles deleted successfully.");
+            } else if (roleToDelete) {
+                console.log("Deleting role:", roleToDelete);
+                roleToDelete.remove();
+                roleToDelete = null;
+
+                console.log("Role deleted successfully.");
             }
+    
+            // Close the delete confirmation modal
             deleteConfirmationContainer.style.display = 'none';
             overlay.style.display = 'none';
-            departmentToDelete = null; // Clear the stored department
+        });
+    }
+    
+    
+    if (cancelRenameRoleButton) {
+        cancelRenameRoleButton.addEventListener('click', () => {
+            renameRoleContainer.style.display = 'none';
+            overlay.style.display = 'none';
+            renameRoleInput.value = '';
+            currentlyEditingRoleTextSpan = null;
+        });
+    }
+
+    if (confirmRenameRoleButton) {
+        confirmRenameRoleButton.addEventListener('click', () => {
+            const newRoleName = renameRoleInput.value.trim();
+            if (newRoleName && currentlyEditingRoleTextSpan) {
+                const currentRoleTextParts = currentlyEditingRoleTextSpan.textContent.split(' - ');
+                const currentPosition = currentRoleTextParts[0];
+                currentlyEditingRoleTextSpan.textContent = `${currentPosition} - ${newRoleName}`;
+                renameRoleContainer.style.display = 'none';
+                overlay.style.display = 'none';
+                renameRoleInput.value = '';
+                currentlyEditingRoleTextSpan = null;
+            } else {
+                alert('Please enter a new role name.');
+            }
         });
     }
 });
@@ -471,7 +614,7 @@ function showDepartmentManager() {
 
 
 // Attach the function to the sidebar menu item
-document.querySelector('.menu-icons:nth-child(1)')
-document.querySelector('.menu-icons:nth-child(2)')
+document.querySelector('.menu-icons:nth-child(1)');
+document.querySelector('.menu-icons:nth-child(2)');
 document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
-document.querySelector('.menu-icons:nth-child(7)')
+document.querySelector('.menu-icons:nth-child(7)');

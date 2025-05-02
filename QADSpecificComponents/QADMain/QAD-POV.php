@@ -21,12 +21,6 @@
     </head>
 
     <body>
-    <div class="content-container">
-    <div class="panel Policy-Repository-Panel" style="display: none;">Policy Repository Content</div>
-    <div class="panel Policy-Submission-Panel" style="display: none;">Policy Submission Content</div>
-    <div class="panel Department-Manager-Panel" style="display: none;">Department Manager Content</div>
-    <div class="panel Policy-Manager-Panel" style="display: none;">Policy Manager Content</div>
-    </div>
         <!-- Sidebar -->
         <div class="Sidebar">
             <div class="Sidebar-Logo">
@@ -244,7 +238,7 @@
 </div>
 
 <!-- 1st icon -->
-<div id="assignRoleContainer">
+<div id="assignRoleContainer" class="popup-container" style="display: none;">
     <h2>Assign Role</h2>
     <div class="form-group">
         <label for="positionInput">Position</label>
@@ -252,7 +246,7 @@
     </div>
     <div class="form-group">
         <label for="nameInput">Name</label>
-        <input type="text" id="nameInput" placeholder="Enter Name Here"> 
+        <input type="text" id="nameInput" placeholder="Name will display here" readonly>
     </div>
     <div class="form-group">
         <label for="accountInput">Assign role to account</label>
@@ -261,10 +255,10 @@
             // Query to fetch accounts from the database
             $query = "SELECT accID, fullName, email FROM accdatatbl";
             $result = mysqli_query($conn, $query);
-  if (mysqli_num_rows($result) > 0) {
+            if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
-                    echo '<input type="checkbox" id="account-' . $row['accID'] . '" name="accounts[]" value="' . $row['accID'] . '" >';
+                    echo '<input type="checkbox" id="account-' . $row['accID'] . '" name="accounts[]" value="' . $row['accID'] . '">';
                     echo '<label for="account-' . $row['accID'] . '">' . $row['fullName'] . ' (' . $row['email'] . ')</label>';
                     echo '</div>';
                 }
@@ -294,15 +288,16 @@
 
 <!-- 3rd icon -->
 <div id="renameDepartmentContainer" class="popup-container" style="display: none;">
-    <h2>Rename</h2>
+    <h2>Rename Folder</h2>
     <div class="form-group">
         <input type="text" id="renameDepartmentInput" placeholder="Enter New Name">
     </div>
     <div class="button-group">
         <button id="cancelRename">Cancel</button>
-        <button id="confirmRename">Confirm</button>
+        <button id="confirmRenameButton">Confirm</button>
     </div>
 </div>
+
 
 <!-- 4th icon -->
 <div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
@@ -313,6 +308,18 @@
     </div>
 </div>
 
+
+<!-- rename for the assignedrole created -->
+<div id="renameRoleContainer" class="renameroleContainer" style="display: none;">
+    <h2>Rename Role</h2>
+    <div class="form-group">
+        <input type="text" id="renameRoleInput" placeholder="Enter New Role Name">
+    </div>
+    <div class="button-group">
+        <button id="cancelRenameRole">Cancel</button>
+        <button id="confirmRenameRole">Confirm</button>
+    </div>
+</div>
 
 
 

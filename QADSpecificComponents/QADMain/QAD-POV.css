@@ -1114,6 +1114,7 @@ body{
 
 /* 3rd icon */
 /* Styles for Rename Department Pop-up (Matching Assign Name) */
+/* 3rd icon - Revised Rename Department Pop-up Styles */
 #renameDepartmentContainer {
     display: none;
     position: fixed;
@@ -1122,64 +1123,66 @@ body{
     transform: translate(-50%, -50%);
     background-color: #293A82;
     color: white;
-    padding: 20px;
+    padding: 10px;
     border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    z-index: 1004; /* Ensure it's above other popups if needed */
-    width: 20vw;
-    height: 20vh;
+    z-index: 1004; /* Ensure it's above other popups */
+    width: 250px; /* Slightly more explicit width */
+    height: auto; /* Adjust height based on content */
+    text-align: center; /* Center the content */
 }
 
 #renameDepartmentContainer h2 {
     margin-top: 0;
-    align-items: center;
-    text-align: center;
+    margin-bottom: 15px;
+}
+
+#renameDepartmentContainer .form-group {
+    margin-bottom: 15px;
 }
 
 #renameDepartmentContainer input[type="text"] {
-    width: 100%;
+    width: calc(100% - 20px); /* Account for padding */
+    padding: 5px;
     border: 1px solid #ccc;
     border-radius: 0.5em;
     color: black;
-    height: 2.5em;
-    margin-bottom: 1.3em;
+    font-size: 0.8em;
+    box-sizing: border-box; /* Ensure padding doesn't affect overall width */
 }
 
 #renameDepartmentContainer .button-group {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    justify-content: center; /* Center buttons horizontally */
+    gap: 15px; /* Space between buttons */
+    margin-top: 10px;
 }
 
 #renameDepartmentContainer button {
     background-color: #fbaf41;
     color: white;
     border: none;
-    padding: 10px 18px;
-    border-radius: 0.8em;
+    padding: 7px 16px; /* More standard padding */
+    border-radius: 0.5em;
     cursor: pointer;
-    margin-right: 2em;
+    font-size: 0.8em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
 }
 
 #renameDepartmentContainer button#cancelRename {
     background-color: #D3D3D3;
-    margin-right: 2em;
-    border-radius: 0.8em;
     color: black;
-    margin-left: 3em;
 }
 
 #renameDepartmentContainer button:hover {
     background-color: darkgoldenrod;
-    color: white;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #renameDepartmentContainer button#cancelRename:hover {
     background-color: #b0b0b0;
-    color: black;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 
 /* 4th icon */
 /* Styles for Delete Confirmation Pop-up */
@@ -1228,4 +1231,75 @@ body{
 
 #deleteConfirmationContainer button:hover {
     opacity: 0.9;
+}
+
+
+/* subfolder when assign role is confirmed */
+/* rename of role */
+.renameroleContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #293A82;
+    color: white;
+    padding: 25px;
+    border-radius: 1em;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 1004;
+    width: 300px;
+    text-align: center;
+}
+
+.renameroleContainer h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.4em;
+}
+
+.renameroleContainer .form-group {
+    margin-bottom: 25px;
+}
+
+.renameroleContainer input[type="text"] {
+    width: calc(100% - 20px);
+    padding: 5px 20px;
+    border: 1px solid #ccc;
+    border-radius: 0.5em;
+    color: black;
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+
+.renameroleContainer .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.renameroleContainer button {
+    background-color: #D3D3D3;
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.renameroleContainer button#confirmRenameRole {
+    background-color: #FBAF41;
+    color: white;
+}
+
+.renameroleContainer button:hover {
+    background-color: #b0b0b0;
+}
+
+.renameroleContainer button#confirmRenameRole:hover {
+    background-color: darkgoldenrod;
 }
