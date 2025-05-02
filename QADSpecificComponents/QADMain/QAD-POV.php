@@ -63,14 +63,10 @@
                     <span class="icon-label">Policy Manager</span>
                 </li>
                 <li>
-                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9">
+                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9" onclick="showInformation()">
                     <span class="icon-label">Information</span>
                 </li>
-                <div class="fixed-icon">
-                    <li class="menu-icons">
-                        <img src="../../assets/info - notClicked.png" alt="Information Icon" onclick="showInformation()">
-                        <span class="icon-label">Information</span>
-                    </li>
+                
             </ul>
                  </div>
             </div>           
