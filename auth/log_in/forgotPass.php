@@ -6,7 +6,7 @@
 <!-- Forgot Password -->
 <!DOCTYPE html>
 <html lang="en">
-<h>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password</title>
@@ -123,19 +123,19 @@
 
 <body>
 <div class="logIn-overlay">
-        <div class="login-container">
-            <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
-            <h1>Asia Pacific College<br></h1>
-            <div class="forgot-h2">Forgot Password?<br></div>
-            <form action="forgotPassBE.php" method="POST">
-                <input type="text" name="email" placeholder="Enter email for password reset">
-                <div class="action-container">
-                  <p>Back to <a href="login.php" id="signUpLink">Log in</a></p>
-                    <button class="submit-button" name="submit">Send Password</button>
-                </div>
-            </form>
-        </div>
+    <div class="login-container">
+        <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
+        <h1>Asia Pacific College<br></h1>
+        <div class="forgot-h2">Forgot Password?<br></div>
+        <form action="forgotPassBE.php" method="POST">
+            <input type="text" name="email" placeholder="Enter email for password reset">
+            <div class="action-container">
+                <p>Back to <a href="login.php" id="signUpLink">Log in</a></p>
+                <button class="submit-button" name="submit">Send Password</button>
+            </div>
+        </form>
     </div>
+</div>
 
 </body>
 <script src="login.js"></script>
