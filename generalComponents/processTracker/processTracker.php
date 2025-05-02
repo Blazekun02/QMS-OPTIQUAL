@@ -10,6 +10,7 @@ include("../../connect.php");
 
 .Process-Tracker-Panel {
     position: absolute;
+    display: block;
     background-color: #293A82;
     border-radius: 20px;
     top: 100px;
@@ -114,8 +115,6 @@ thead th:last-child {
         </div>
         <div class="PT-Divider"></div>
     </div>
-    
-
     <table>
         <thead>
             <tr>
@@ -137,7 +136,7 @@ thead th:last-child {
 
                 while ($row = mysqli_fetch_assoc($my_sqli)) { 
             ?>
-                <tr class="folder-row">
+                <tr class="folder-row" data-id="<?= $row['policyID'] ?>">
                     <td><?= htmlspecialchars($row['title']) ?></td>
                     <td><?= htmlspecialchars($row['dateSubmitted']) ?></td>
                     <td><?= htmlspecialchars($row['versionNo'] ?? 'New') ?></td>
@@ -152,6 +151,7 @@ thead th:last-child {
 <style>
     .Process-Tracker-Content {
         position: absolute;
+        display: none;
         background-color: #293A82;
         border-radius: 20px;
         top: 100px;
@@ -189,14 +189,7 @@ thead th:last-child {
         
     }
 
-    .First_Circle, .Second_Circle, .Third_Circle, .Fourth_Circle, .Fifth_Circle {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        background-color:rgb(70, 70, 70);
-
-    }
+   
 
     .circle_container {
     display: flex;
@@ -219,6 +212,27 @@ thead th:last-child {
     font-size: 12px;
     line-height: 1.2;
 }
+
+.circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .status-green {
+        background-color: green;
+    }
+
+    .status-red {
+        background-color: red;
+    }
+
+    .status-gray {
+        background-color: gray;
+    }
     
 
 </style>
@@ -249,41 +263,53 @@ thead th:last-child {
 
     $result = mysqli_query($conn, $query);
     $policy = mysqli_fetch_assoc($result);
-?>
+
+    $statusID = (int) ($policy['policyStatusID'] ?? 0);
+
+    function getCircleClass($step, $statusID) {
+        if ($step < $statusID) {
+            return 'status-green'; // already done
+        } elseif ($step == $statusID) {
+            return 'status-green'; // just completed
+        } elseif ($step == $statusID + 1) {
+            return 'status-red'; // in progress
+        } else {
+            return 'status-gray'; // not started
+        }
+    }
+    ?>
 
 
-    <div class="PTC-Trackers">
-        <div class="circle_container">
+<div class="PTC-Trackers">
+    <div class="circle_container">
         <p><em>Submitted</em></p>
-            <div class="First_Circle"></div>
-            <span><?= htmlspecialchars($policy['dateSubmitted']) ?></span>
-        </div>
-        <div class="circle_container">
-        <p><em>Reviewed</em></p>
-            <div class="Second_Circle"></div>
-            <span><?= htmlspecialchars($policy['dateReviewed'] ?? '-') ?></span>
-            <span><?= htmlspecialchars($policy['reviewerName'] ?? 'No Reviewer') ?></span>
-        </div>
-        <div class="circle_container">
-        <p><em>Verified</em></p>
-            <div class="Third_Circle"></div>
-            <span><?= htmlspecialchars($policy['dateVerified'] ?? '-') ?></span>
-            <span><?= htmlspecialchars($policy['verifierName'] ?? 'No Verifier') ?></span>
-        </div>
-        <div class="circle_container">
-        <p><em>Approved</em></p>
-            <div class="Fourth_Circle"></div>
-            <span><?= htmlspecialchars($policy['dateApproved'] ?? '-') ?></span>
-            <span><?= htmlspecialchars($policy['approverName'] ?? 'No Approver') ?></span>
-        </div>
-        <div class="circle_container">
-        <p><em>Uploaded</em></p>
-            <div class="Fifth_Circle"></div>
-            <span><?= htmlspecialchars($policy['dateUploaded'] ?? '-') ?></span>
-            
-        </div>
-
+        <div class="circle <?= getCircleClass(1, $statusID) ?>"></div>
+        <span><?= htmlspecialchars($policy['dateSubmitted']) ?></span>
     </div>
+    <div class="circle_container">
+        <p><em>Reviewed</em></p>
+        <div class="circle <?= getCircleClass(2, $statusID) ?>"></div>
+        <span><?= htmlspecialchars($policy['dateReviewed'] ?? '-') ?></span>
+        <span><?= htmlspecialchars($policy['reviewerName'] ?? 'No Reviewer') ?></span>
+    </div>
+    <div class="circle_container">
+        <p><em>Verified</em></p>
+        <div class="circle <?= getCircleClass(3, $statusID) ?>"></div>
+        <span><?= htmlspecialchars($policy['dateVerified'] ?? '-') ?></span>
+        <span><?= htmlspecialchars($policy['verifierName'] ?? 'No Verifier') ?></span>
+    </div>
+    <div class="circle_container">
+        <p><em>Approved</em></p>
+        <div class="circle <?= getCircleClass(4, $statusID) ?>"></div>
+        <span><?= htmlspecialchars($policy['dateApproved'] ?? '-') ?></span>
+        <span><?= htmlspecialchars($policy['approverName'] ?? 'No Approver') ?></span>
+    </div>
+    <div class="circle_container">
+        <p><em>Uploaded</em></p>
+        <div class="circle <?= getCircleClass(5, $statusID) ?>"></div>
+        <span><?= htmlspecialchars($policy['dateUploaded'] ?? '-') ?></span>
+    </div>
+</div>
 
 
 </div>
@@ -295,6 +321,5 @@ thead th:last-child {
     document.querySelector('policy-submission-content').style.display = 'none';
     document.querySelector('.Department-Manager-Panerl').style.display = 'none';
     document.querySelector('.Process-Tracker-Panel').style.display = 'block';
-
     }
 </script> -->
