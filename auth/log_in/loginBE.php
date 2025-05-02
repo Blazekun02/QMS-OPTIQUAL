@@ -13,7 +13,7 @@ require_once genMsg_dir . "/setMessage.php";
 $inputtedPassword = $hashedPassword = "";
 
 //Check if submitted
-if (isset($_POST["confirmButton"])) {
+if (isset($_POST["signInButton"])) {
     //Trim all input values to remove extra spaces
     $_POST = array_map('trim', $_POST);
 

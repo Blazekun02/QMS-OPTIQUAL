@@ -10,6 +10,7 @@ require_once __DIR__ . '/../../filepaths.php';
 // Include message generation
 require_once genMsg_dir . '/message_box.php';
 
+
 ?>
 
 
@@ -25,7 +26,7 @@ require_once genMsg_dir . '/message_box.php';
     <link rel="stylesheet" href="https://fonts.gaoogleapis.com/icon?family=Material+Icons">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="STAFFs-POV.css">
+    <link rel="stylesheet" href="STAFF-POV.css">
 </head>
     <style>
         /* General styling */
@@ -1114,248 +1115,667 @@ require_once genMsg_dir . '/message_box.php';
     </style>
 
 <body>
-    <!-- just the design lawl -->
-    <div class="yellow-line"></div>
-    <div class="image"></div>
-    <div class="white-line"></div>
-    <div class="blue-line"></div>
-    <div class="copyright-label">Copyright © 2024 OPTIQUAL. All rights reserved</div>
-    
-    <!-- sidebar, logo, and icons -->
-    <div class="grey-line" id="grey-line">
-        <div class="logo-wrapper">
-            <img src="../../assets/logos/logo.png" alt="Logo" class="logo">
-            <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
-        </div>
-    <div class="menu-icons">
-            <div class="icon-item">
-                <img src="../../assets/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
-                <span class="icon-label">Policies Repository</span>
-            </div>
-            <div class="icon-item">
-                <img src="../../assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
-                <span class="icon-label">Policy Submission</span>
-            </div>
-            <div class="icon-item">
-                <img src="../../assets/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
-                <span class="icon-label">Process Tracker</span>
-            </div>
-            <div class="icon-item">
-                <img src="../../assets/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
-                <span class="icon-label">Task Manager</span>
-            </div>  
-        </div>
 
-         <!-- Fixed Icon 5 -->
-    <div class="fixed-icon">
+<!-- just the design lawl -->
+<div class="yellow-line"></div>
+<div class="image"></div>
+<div class="white-line"></div>
+<div class="blue-line"></div>
+<div class="copyright-label">Copyright © 2024 OPTIQUAL. All rights reserved</div>
+
+<!-- sidebar, logo, and icons -->
+<div class="grey-line" id="grey-line">
+    <div class="logo-wrapper">
+        <img src="../../assets/logos/logo.png" alt="Logo" class="logo">
+    </div>
+        <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
+    <div class="menu-icons">
         <div class="icon-item">
-            <img src="../../assets/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
+            <img src=".idea/images/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
+            <span class="icon-label">Policies Repository</span>
+        </div>
+        <div class="icon-item">
+            <img src=".idea/images/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
+            <span class="icon-label">Policy Submission</span>
+        </div>
+        <div class="icon-item">
+            <img src=".idea/images/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
+            <span class="icon-label">Process Tracker</span>
+        </div>
+        <div class="icon-item">
+            <img src=".idea/images/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
+            <span class="icon-label">Task Manager</span>
+        </div>
+        <div class="icon-item">
+            <img src=".idea/images/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
             <span class="icon-label">Information</span>
         </div>
     </div>
-</div>   
-    <!-- Hamburger, notif, and sign out -->
-    
-    <img src="../../assets/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
-    <div class="header-buttons">
-        <button type="button" class="button notif-btn" id="notifButton">
-            <i class="fa fa-bell" style="font-size: 1.5em;"></i>
-        </button>
-        <button type="button" class="button user-btn" id="userButton">
-            <i class="fa fa-user-circle" style="font-size: 1.5em;"></i>
-            <span class="user-name">Name of the user</span>
+</div>
+
+<!-- Hamburger, notif, and sign out -->
+<img src=".idea/images/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+<div>
+    <button type="button" class="button user-btn" id="userButton">
+        <i class="fa fa-user-circle" style="font-size:1.5em"></i>
+        Name of the user
+    </button>
+    <button type="button" class="button notif-btn" id="notifButton">
+        <i class="fa fa-bell" style="font-size:1.5em"></i>
+    </button>
+</div>
+
+<div class="notification-overlay" id="notificationOverlay">
+    <div class="notification-content"> Notifications </div>
+</div>
+<div class="signOut-overlay" id="signOutOverlay">
+    <div class="signOut-content">
+        <a href="#" class="signout-link" id="signOutLink">Sign Out</a>   
+    </div>
+</div>
+
+
+
+<!-- POLICY REPOSITORY -->
+
+<div class="policies-repository-content" id="policies-repository-content" style="display: none;">
+    <h2>Policies Repository<br></h2>
+    <div class="blackLine" id="blackLine" style="display:flex;"></div>
+    <div class="search-container">
+        <label>
+            <input type="text" placeholder="Search" id="searchInput">
+        </label>
+        <button id="searchButton"><i class="fas fa-search"></i></button>
+        <button class="filter-button" id="filterButton">
+            <i class="fas fa-filter"></i>
         </button>
     </div>
 
-    <div class="notification-overlay" id="notificationOverlay">
-        <div class="notification-content"></div>
-    </div>
-    <div class="signOut-overlay" id="signOutOverlay">
-        <div class="signOut-content">Sign out</div>
-    </div>
-    
-    <!-- POLICY REPOSITORY -->
-    
-    <div class="policies-repository-content" id="policies-repository-content" style="display: none;">
-        <h2>Policies Repository<br></h2>
-        <div class="blackLine" id="blackLine" style="display:flex;"></div>
-        <div class="search-container">
-            <label>
-                <input type="text" placeholder="Search" id="searchInput">
-            </label>
-            <button id="searchButton"><i class="fas fa-search"></i></button>
-            <button class="filter-button" id="filterButton">
-                <i class="fas fa-filter"></i>
-            </button>
-        </div>
-
-        <div id="main-content">
-        </div>
-    
-        <div class="filter-overlay" id="filterOverlay">
-            <div class="filter-popup">
-                <h2>Filter & Sort</h2>
-                <div class="filter-section">
-                    <label for="categoryFilter">Filter By Category</label>
-                    <select id="categoryFilter">
-                        <option value="">-Select Category-</option>
-                        <option value="guidance">Guidance Office</option>
-                        <option value="office-guidelines">Office Guidelines</option>
-                        <option value="organizational-profile">Organizational Profile</option>
-                        <option value="discipline">Discipline Office</option>
-                        <option value="blue-slip">Blue Slip procedures</option>
-                        <option value="behavioral-sanctions">Behavioral sanctions</option>
-                        <option value="registrar">Office of the Registrar</option>
-                    </select>
-                </div>
-                <div class="filter-section">
-                    <label for="sortFilter">Sort By</label>
-                    <select id="sortFilter">
-                        <option value="a-z">A-Z</option>
-                        <option value="z-a">Z-A</option>
-                    </select>
-                </div>
-                <div class="filter-buttons">
-                    <button id="cancelFilter">Cancel</button>
-                    <button id="applyFilter">Apply</button>
-                </div>
+    <div class="filter-overlay" id="filterOverlay">
+        <div class="filter-popup">
+            <h2>Filter & Sort</h2>
+            <div class="filter-section">
+                <label for="categoryFilter">Filter By Category</label>
+                <select id="categoryFilter">
+                    <option value="">-Select Category-</option>
+                    <option value="guidance">Guidance Office</option>
+                    <option value="office-guidelines">Office Guidelines</option>
+                    <option value="organizational-profile">Organizational Profile</option>
+                    <option value="discipline">Discipline Office</option>
+                    <option value="blue-slip">Blue Slip procedures</option>
+                    <option value="behavioral-sanctions">Behavioral sanctions</option>
+                    <option value="registrar">Office of the Registrar</option>
+                </select>
+            </div>
+            <div class="filter-section">
+                <label for="sortFilter">Sort By</label>
+                <select id="sortFilter">
+                    <option value="a-z">A-Z</option>
+                    <option value="z-a">Z-A</option>
+                </select>
+            </div>
+            <div class="filter-buttons">
+                <button id="cancelFilter">Cancel</button>
+                <button id="applyFilter">Apply</button>
             </div>
         </div>
+    </div>
 
 </div>
-     
-    
+
+
 <!-- POLICY SUBMISSION -->
-    <div class="policy-submission-content" id="policy-submission-content" >
-        <div class="policy-submission">
-            <h2>Policy Submission</h2>
-            <div class="policy-submission-buttons">
-                <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> <span class=".policy-submission-buttons button:first-child">New Policy Template</span></button>
-                <button class="btn" id="submitButton">Submit</button>
-    
+<div class="policy-submission-content" id="policy-submission-content" >
+    <div class="policy-submission">
+        <h2>Policy Submission</h2>
+        <div class="policy-submission-buttons">
+            <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> <span class=".policy-submission-buttons button:first-child">New Policy Template</span></button>
+            <button class="btn" id="submitButton">Submit</button>
+
+        </div>
+    </div>
+</div>
+
+    <div class="confirm-dl" id="confirm-dl">
+        <div class= "confirm-popUp">
+            <h2> Confirm Download?</h2>
+            <div class="cf-buttons">
+                <button id="first-child">No</button>
+                <button id="last-child">Yes</button>
             </div>
         </div>
     </div>
-    
-        <div class="confirm-dl" id="confirm-dl">
-            <div class= "confirm-popUp">
+
+<div class="submit-overlay" id="submitOverlay">
+    <div class="submit-popUp">
+        <h2>Submission</h2>
+        <div class="submit-field">
+            <p>Policy Title</p>
+        </div>
+
+    <div class="submit-input">
+        <label for="policyTitle"></label><input type="text" id="policyTitle" placeholder="Enter policy title" size="33vw" required><br>
+        <button style="font-size:14px; color:white; background-color:#293A82; border:#293A82; margin-top:0.2vh; margin-left: -1vw; display: flex;gap: 0.4vw; padding: 1vh 1.2vw;">
+            <i class="material-icons" style="vertical-align: middle;">attachment</i> Attach File
+        </button>
+    </div>
+    <div class="submit-buttons">
+    <button id="cancelBtn">Cancel</button>
+    <button id="submitBtn">Submit</button>
+    </div>
+        <div class="confirm-dl" id="confirmSubmit-dl">
+            <div class= "confirmSubmit-popUp">
                 <h2> Confirm Download?</h2>
-                <div class="cf-buttons">
-                    <button id="first-child">No</button>
-                    <button id="last-child">Yes</button>
+                <div class="cfSubmit-buttons">
+                    <button id="cfNoBtn">No</button>
+                    <button id="cfYesBtn">Yes</button>
                 </div>
             </div>
         </div>
+</div>
+</div>
 
-    
-    <div class="submit-overlay" id="submitOverlay">
-        <div class="submit-popUp">
-            <h2>Submission</h2>
-            <div class="submit-field">
-                <p>Policy Title</p>
-            </div>
-    
-        <div class="submit-input">
-            <label for="policyTitle"></label><input type="text" id="policyTitle" placeholder="Enter policy title" size="33vw" required><br>
-            <button style="font-size:14px; color:white; background-color:#293A82; border:#293A82; margin-top:0.2vh; margin-left: -1vw; display: flex;gap: 0.4vw; padding: 1vh 1.2vw;">  
-                <form action="/action_page.php">
-                <input type="file" id="myFile" name="filename">
-                </form>
-            </button>
-        </div>
-        <div class="submit-buttons">
-        <button id="cancelBtn">Cancel</button>
-        <button id="submitBtn">Submit</button>
-        </div> 
-    </div>
-    </div>
+<!--for process tracker-->
+<div class="process-tracker">
+    <h2 class="tracker-header">Process Tracker <br> </h2>
+    <div class = "ptWhite-line" style = "display:flex;"></div>
+    <button class="submissions-button" id ="processTrackerSub-btn">Submissions</button>
+    <table class="process-tracker-table">
+        <thead>
+        <tr>
+            <th>Policy Title</th>
+            <th>Date Submitted</th>
+            <th>Version no.</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody id="processTrackerTableBody">
+        </tbody>
+    </table>
+</div>
 
-    <!--for process tracker-->
-    <div class="process-tracker">
-        <div class="tracker-header-container">
-            <button class="back-button" onclick="showProcessTracker()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h2 class="tracker-header">Process Tracker</h2>
-        </div>
+<!--for task manager-->
+<?php require_once taskManager_dir . '/taskManager.php'; ?>
 
-        <div class="process-flow">
-            <div class="step submission">
-                <div class="step-indicator"></div>
-                <div class="step-label">Submission</div>
-                <div class="step-date">1-10-25</div>
-                <div class="step-person">John Doe</div>
-            </div>
-            <div class="step review">
-                <div class="step-indicator"></div>
-                <div class="step-label">Review</div>
-                <div class="step-date">1-12-25</div>
-                <div class="step-person">John Doe</div>
-            </div>
-            <div class="step verification">
-                <div class="step-indicator"></div>
-                <div class="step-label">Verification</div>
-                <div class="step-date">Date</div>
-                <div class="step-person">John Doe</div>
-            </div>
-            <div class="step approval">
-                <div class="step-indicator"></div>
-                <div class="step-label">Approval</div>
-                <div class="step-date">Date</div>
-                <div class="step-person">John Doe</div>
-            </div>
-    </div>
+<!--for information-->
+<div class="information">
+    <h2 class="info-header"> Guidelines <br> </h2>
+    <div class="infoWhite-line" style="display:flex;"></div>
 
-        <div class="below-process-flow-placeholder" style="display: none;">
-            <h3>Policy Content Placeholder</h3>
-            Content will go here once the database is connected.
+    <div class="moduleCategory" data-category="policyRepository">
+        <div class="module-text">Policy Repository</div>
+        <i class="fas fa-chevron-right expand-icon"></i>
+        <div class="nested-moduleSubcategory-content" style="display: none;">
+            <div class="nested-moduleSubcategory" data-subcategory="about">
+                <h4 style="margin-bottom:1.5vh;font-weight: Bold; margin-top: -0.5vh;">About<br></h4>
+                <div class="nested-blackLine" style="margin-top:1vh; display:flex;"><br></div>
+                <p style="padding-left: 2.5vw; padding-top:4vh; color: black; font-size: 18px; font-weight: normal;">It contains all the policies of Asia Pacific College</p>
+            </div>
         </div>
 
-        <div class = "ptWhite-line" style = "display:flex;"></div>
-        <button class="submissions-button" id ="processTrackerSub-btn">Submissions</button>
-        <table class="process-tracker-table">
-            <thead>
-            <tr>
-                <th>Policy Title</th>
-                <th>Date Submitted</th>
-                <th>Version no.</th>
-                <th>Status</th>
-            </tr>
-            </thead>
-            <tbody id="processTrackerTableBody">
-            </tbody>
-        </table>
     </div>
-    
 
-    <!--FOR TASK MANAGER-->
-    <?php 
-    require_once taskManager_dir . '/taskManager.php'; ?>
-    
-    
-    
-    <div class="information">
-        <h2 class="info-header"> Guidelines <br> </h2>
-        <div class="infoWhite-line" style="display:flex;"></div>
-    
-        <div class="moduleCategory" data-category="policyRepository">
-            <div class="module-text">Policy Repository</div>
-            <i class="fas fa-chevron-right expand-icon"></i>
-            <div class="nested-moduleSubcategory-content" style="display: none;">
-                <div class="nested-moduleSubcategory" data-subcategory="about">
-                    <h4 style="margin-bottom:1.5vh;font-weight: Bold; margin-top: -0.5vh;">About<br></h4>
-                    <div class="nested-blackLine" style="margin-top:1vh; display:flex;"><br></div>
-                    <p style="padding-left: 2.5vw; padding-top:4vh; color: black; font-size: 18px; font-weight: normal;">It contains all the policies of Asia Pacific College</p>
-                </div>
-            </div>
-    
-        </div>
-    
-    
-    </div>
+
+</div>
+
+
 
 </body>
+<script>
+
+// JS FOR SIDEBAR
+    const greyLine = document.getElementById('grey-line');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
 
 
-<script src="STAFF-POV.js"></script>
+    greyLine.addEventListener('mouseenter', () => {
+        greyLine.classList.add('extended');
+        hamburgerIcon.style.left = '14.5vw';
+    });
+
+    greyLine.addEventListener('mouseleave', () => {
+        greyLine.classList.remove('extended');
+        hamburgerIcon.style.left = '5.5vw';
+    });
+
+    hamburgerIcon.addEventListener('click', () => {
+            const isExtended = greyLine.classList.toggle('extended');
+            hamburgerIcon.style.left = isExtended ? '13vw' : '4vw';
+        });
+
+
+
+
+// JS for notif and sign out
+
+    const notificationOverlay = document.getElementById('notificationOverlay');
+    const notifButton = document.getElementById('notifButton');
+    notifButton.addEventListener('click', () => {
+        notificationOverlay.style.display = notificationOverlay.style.display === 'block' ? 'none' : 'block';
+    });
+
+    const signOutOverlay = document.getElementById('signOutOverlay');
+    const userButton = document.getElementById('userButton');
+    userButton.addEventListener('click', () => {
+        signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.getElementById('signOutLink').addEventListener('click', function (e) {
+    e.preventDefault(); // Prevent default link behavior
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/qms_optiqual/auth/sign_out/signoutBE.php';
+    document.body.appendChild(form);
+    form.submit();
+});
+
+
+
+
+
+// js for policy repository
+
+function showPoliciesRepository() {
+    document.getElementById('policies-repository-content').style.display = 'flex';
+    document.getElementById('policy-submission-content').style.display='none';
+    document.querySelector('.process-tracker').style.display='none';
+    document.querySelector('.task-manager').style.display = 'none';
+    document.querySelector('.information').style.display = 'none';
+}
+
+// Placeholder data for the policy repository
+const policyCategoriesData = [
+    {
+        name: "Academic Services",
+        subcategories: [
+            {
+                name: "Guidance Office",
+                nestedSubcategories: ["Counseling Services", "Workshops"]
+            },
+            {
+                name: "Office Guidelines",
+                nestedSubcategories: ["Office Hours", "Client Assistance", "Appointment and Scheduling"]
+            },
+            {
+                name: "Organizational Profile",
+                nestedSubcategories: ["Vision", "Mission", "Core Values", "Academic Offerings"]
+            },
+            {
+                name: "Discipline Office",
+                nestedSubcategories: ["Confidentiality and Records Policy", "Dress Code and Decorum Policy"]
+            },
+            {
+                name: "Blue Slip procedures",
+                nestedSubcategories: ["No ID, No Entry", "Monday to Thursday", "Friday and Saturday", "Foot Wear"]
+            },
+            {
+                name: "Behavioral sanctions",
+                nestedSubcategories: ["Verbal Warning", "Bullying", "Cheating"]
+            },
+            {
+                name: "Office of the Registrar",
+                nestedSubcategories: ["Online Transactions Policy", "ID Verification Policy", "Enrollment and Registration Policy"]
+            }
+        ]
+    },
+    {
+        name: "School Programs",
+        subcategories: [
+            {
+                name: "School of Engineering",
+                nestedSubcategories: ["Computer Engineering", "Civil Engineering", "Electronics Engineering"]
+            },
+            {
+                name: "School of Computing and Information Technology",
+                nestedSubcategories: ["Computer Science", "Information Technology", "Associate in Computer Technology", "AI Manifesto", "soCIT Digi-X"]
+            },
+            {
+                name: "School of Management",
+                nestedSubcategories: ["Accountancy", "Business Administration", "Tourism Management", "Finance Management", "Management Accounting"]
+            },
+            {
+                name: "School of Multimedia Arts",
+                nestedSubcategories: ["Multimedia and Arts", "Arts in Psychology"]
+            },
+            {
+                name: "School of Architecture",
+                nestedSubcategories: [] // No nested subcategories for this one in your HTML
+            },
+            {
+                name: "Senior High School",
+                nestedSubcategories: ["Stem", "ABM", "HUMMS"]
+            },
+            {
+                name: "Graduate School",
+                nestedSubcategories: ["Master of Science in Computer Science", "Master in Information System", "Master in Information Technology", "Master of Engineering Major in Computer Engineering", "Master in Game Design", "Master in Management"]
+            }
+        ]
+    }
+];
+
+function generatePolicyRepository(data) {
+    const repositoryContent = document.getElementById('policies-repository-content');
+    const searchContainer = repositoryContent.querySelector('.search-container');
+    const blackLine = repositoryContent.querySelector('.blackLine');
+    let insertionPoint = blackLine ? blackLine.nextSibling : searchContainer ? searchContainer.nextSibling : repositoryContent.firstChild;
+
+
+    const existingCategories = repositoryContent.querySelectorAll('.category');
+    existingCategories.forEach(category => category.remove());
+
+    data.forEach(categoryData => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.classList.add('category');
+        categoryDiv.dataset.category = categoryData.name.toLowerCase().replace(/ /g, '-');
+        categoryDiv.innerHTML = `
+            ${categoryData.name}
+            <i class="fas fa-chevron-right expand-icon"></i>
+            <div class="category-content"></div>
+        `;
+        repositoryContent.insertBefore(categoryDiv, insertionPoint);
+        insertionPoint = categoryDiv.nextSibling;
+
+        const categoryContentDiv = categoryDiv.querySelector('.category-content');
+        categoryData.subcategories.forEach(subcategoryData => {
+            const subcategoryDiv = document.createElement('div');
+            subcategoryDiv.classList.add('subcategory');
+            subcategoryDiv.dataset.subcategory = subcategoryData.name.toLowerCase().replace(/ /g, '-');
+            subcategoryDiv.innerHTML = `
+                ${subcategoryData.name}
+                <i class="fas fa-chevron-right expand-icon"></i>
+                <div class="nested-subcategory-content"></div>
+            `;
+            categoryContentDiv.appendChild(subcategoryDiv);
+
+            const nestedContentDiv = subcategoryDiv.querySelector('.nested-subcategory-content');
+            subcategoryData.nestedSubcategories.forEach(nestedSubcategoryName => {
+                const nestedSubcategoryDiv = document.createElement('div');
+                nestedSubcategoryDiv.classList.add('nested-subcategory');
+                nestedSubcategoryDiv.dataset.nestedSubcategory = nestedSubcategoryName.toLowerCase().replace(/ /g, '-');
+                nestedSubcategoryDiv.textContent = nestedSubcategoryName;
+                nestedContentDiv.appendChild(nestedSubcategoryDiv);
+            });
+        });
+    });
+
+    attachPolicyRepositoryEventListeners();
+}
+
+function attachPolicyRepositoryEventListeners() {
+    document.querySelectorAll('.category').forEach(category => {
+        category.addEventListener('click', function() {
+            this.classList.toggle('expanded');
+        });
+    });
+
+    document.querySelectorAll('.subcategory').forEach(subcategory => {
+        subcategory.addEventListener('click', function(event) {
+            event.stopPropagation();
+            this.classList.toggle('expanded');
+
+            const parentCategoryContent = this.closest('.category-content');
+            if (parentCategoryContent) {
+                parentCategoryContent.querySelectorAll('.subcategory.expanded').forEach(otherSubcategory => {
+                    if (otherSubcategory !== this) {
+                        otherSubcategory.classList.remove('expanded');
+                    }
+                });
+            }
+        });
+    });
+}
+
+
+
+
+// js for filter in Pol Rep
+
+function filterSubcategories(category, sort) {
+    const subcategories = document.querySelectorAll('.subcategory');
+    subcategories.forEach(subcategory => {
+        const subcategoryName = subcategory.getAttribute('data-subcategory');
+        const showCategory = !category || category === subcategoryName;
+
+        if (showCategory) {
+            subcategory.style.display = 'flex';
+        } else {
+            subcategory.style.display = 'none';
+        }
+    });
+
+    if (sort) {
+        console.log(`Sorting by: ${sort} (Not yet implemented)`);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    generatePolicyRepository(policyCategoriesData);
+
+    const filterButton = document.getElementById('filterButton');
+    const filterOverlay = document.getElementById('filterOverlay');
+    const cancelFilter = document.getElementById('cancelFilter');
+    const applyFilter = document.getElementById('applyFilter');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const sortFilter = document.getElementById('sortFilter');
+
+    if (filterButton && filterOverlay && cancelFilter && applyFilter && categoryFilter && sortFilter) {
+        filterButton.addEventListener('click', () => {
+            filterOverlay.style.display = 'flex';
+        });
+
+        cancelFilter.addEventListener('click', () => {
+            filterOverlay.style.display = 'none';
+        });
+
+        applyFilter.addEventListener('click', () => {
+            const selectedCategory = categoryFilter.value;
+            const selectedSort = sortFilter.value;
+
+            filterSubcategories(selectedCategory, selectedSort);
+            filterOverlay.style.display = 'none';
+        });
+    }
+});
+
+
+
+// js for policy submission
+
+    function showPolicySubmission() {
+        document.getElementById('policies-repository-content').style.display = 'none';
+        document.getElementById('policy-submission-content').style.display = 'flex';
+        document.querySelector('.process-tracker').style.display= 'none';
+         document.querySelector('.task-manager').style.display = 'none';
+         document.querySelector('.information').style.display = 'none';
+    }
+
+    const cfOverlay = document.getElementById('confirm-dl');
+    const dlBtn = document.querySelector('.policy-submission-buttons button:first-child');
+
+    dlBtn.addEventListener('click', () => {
+        cfOverlay.style.display = cfOverlay.style.display === 'block' ? 'none' : 'block';
+
+    });
+
+    document.getElementById("first-child").addEventListener("click", function () {
+        cfOverlay.style.display = "none";
+        alert("Download cancelled");
+
+    });
+
+    document.getElementById("last-child").addEventListener("click", function () {
+        cfOverlay.style.display = "none";
+        alert("Downloading template");
+    });
+
+    const submitOverlay = document.getElementById('submitOverlay');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+
+    submitButton.addEventListener('click', () => {
+        submitOverlay.style.display = submitOverlay.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.getElementById("submitBtn").addEventListener("click", function () {
+        submitOverlay.style.display = "none";
+
+    });
+
+    document.getElementById("cancelBtn").addEventListener("click", function () {
+        submitOverlay.style.display = "none";
+    });
+
+
+
+
+// js for process tracker
+
+    function showProcessTracker() {
+    document.getElementById('policies-repository-content').style.display = 'none';
+    document.getElementById('policy-submission-content').style.display = 'none';
+    document.querySelector('.process-tracker').style.display = 'flex';
+    document.querySelector('.task-manager').style.display = 'none';
+    document.querySelector('.information').style.display = 'none';
+}
+
+// Sample process tracker data for Submissions view
+const submissionsData = [
+    {
+        policyTitle: "Student Handbook",
+        dateSubmitted: "10/24/24",
+        version: "5.0",
+        status: "Reviewed"
+    },
+    {
+        policyTitle: "Organizational Profile",
+        dateSubmitted: "03/03/24",
+        version: "3.0",
+        status: "Verified"
+    },
+    {
+        policyTitle: "Student Dress Code",
+        dateSubmitted: "06/07/24",
+        version: "4.0",
+        status: "Approved"
+    }
+];
+
+// Sample process tracker data for Feedbacks view
+const feedbacksData = [
+    {
+        policyReported: "Student Handbook",
+        dateSubmitted: "10/24/24",
+        status: "Reviewed"
+    },
+    {
+        policyReported: "Organizational Profile",
+        dateSubmitted: "03/03/24",
+        status: "Submitted"
+    },
+    {
+        policyReported: "Student Dress Code",
+        dateSubmitted: "06/07/24",
+        status: "Addressed"
+    }
+];
+
+function populateProcessTrackerTable(data, isFeedbackView = false) {
+    const tableBody = document.getElementById('processTrackerTableBody');
+    tableBody.innerHTML = ''; // Clear existing rows
+
+    data.forEach(item => {
+        const row = tableBody.insertRow();
+
+        if (isFeedbackView) {
+            const policyCell = row.insertCell();
+            policyCell.textContent = item.policyReported;
+
+            const dateCell = row.insertCell();
+            dateCell.textContent = item.dateSubmitted;
+
+            const statusCell = row.insertCell();
+            statusCell.textContent = item.status;
+            statusCell.className = `status-${item.status.toLowerCase()}`; // Apply status class
+        } else {
+            const titleCell = row.insertCell();
+            titleCell.textContent = item.policyTitle;
+
+            const dateCell = row.insertCell();
+            dateCell.textContent = item.dateSubmitted;
+
+            const versionCell = row.insertCell();
+            versionCell.textContent = item.version;
+
+            const statusCell = row.insertCell();
+            statusCell.textContent = item.status;
+            statusCell.className = `status-${item.status.toLowerCase()}`; // Apply status class
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const submissionsButton = document.getElementById('processTrackerSub-btn');
+
+    // Initial population of the table with Submissions data
+    populateProcessTrackerTable(submissionsData);
+
+    if (submissionsButton) {
+        submissionsButton.addEventListener('click', function() {
+            if (this.textContent === 'Submissions') {
+                this.textContent = 'Feedbacks';
+                populateProcessTrackerTable(feedbacksData, true);
+                // Update table headers for Feedbacks view
+                const tableHeaderRow = document.querySelector('.process-tracker-table thead tr');
+                tableHeaderRow.innerHTML = `
+                    <th>Policy Reported</th>
+                    <th>Date Submitted</th>
+                    <th>Status</th>
+                `;
+            } else {
+                this.textContent = 'Submissions';
+                populateProcessTrackerTable(submissionsData);
+                // Update table headers for Submissions view
+                const tableHeaderRow = document.querySelector('.process-tracker-table thead tr');
+                tableHeaderRow.innerHTML = `
+                    <th>Policy Title</th>
+                    <th>Date Submitted</th>
+                    <th>Version no.</th>
+                    <th>Status</th>
+                `;
+            }
+        });
+    }
+});
+
+// this is for the js of information
+    function showInformation() {
+        document.getElementById('policies-repository-content').style.display = 'none';
+        document.getElementById('policy-submission-content').style.display = 'none';
+        document.querySelector('.process-tracker').style.display = 'none';
+        document.querySelector('.task-manager').style.display = 'none';
+        document.querySelector('.information').style.display = 'flex';
+    }
+
+
+//also for information but the js for the clicking of folders
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const policyRepositoryCategory = document.querySelector('.moduleCategory[data-category="policyRepository"]');
+    const nestedContent = document.querySelector('.nested-moduleSubcategory-content');
+    const expandIcon = policyRepositoryCategory.querySelector('.expand-icon');
+
+    policyRepositoryCategory.addEventListener('click', function() {
+        if (nestedContent.style.display === 'none' || nestedContent.style.display === '') {
+            nestedContent.style.display = 'block';
+            policyRepositoryCategory.classList.add('expanded');
+        } else {
+            nestedContent.style.display = 'none';
+            policyRepositoryCategory.classList.remove('expanded');
+        }
+    });
+});
+
+
+</script>
 </html>
