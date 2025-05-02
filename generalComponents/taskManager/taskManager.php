@@ -178,6 +178,11 @@ require_once genMsg_dir . '/setMessage.php';
             font-size: 2.5vh;
             text-align: center;
         }
+/* Style for QAP policy management buttons */
+        .QAP_management_btns {
+            display: none;
+        }
+
 
 /*hamburger button in task manager*/
         .menu-icon {
@@ -623,6 +628,11 @@ require_once genMsg_dir . '/setMessage.php';
             background-color: #db8804;
         }
 
+/* Buttons for document signing for either review, verification, approval */
+        .signDocuBtns {
+            display: none;
+        }
+
 </style>
 
 <!--FOR TASK MANAGER-->
@@ -644,18 +654,40 @@ require_once genMsg_dir . '/setMessage.php';
                 <button id="viewPolicyButton" class="view-policy-button">View Policy</button>
                 <button class="menu-icon">&#9776;</button>
             </div>
+
+            <!-- For Staff -->
             <div class="menu-dropdown">
                 <button class="dropdown-button">Reply</button>
                 <button class="dropdown-button" onclick="showRevisionModal()">Request for Revision</button>
                 <button class="dropdown-button">Download Change Request Form</button>
+                <button class="dropdown-button">Submit Revision</button>
+                <button class="dropdown-button">Download Editable File</button>
             </div>
+
+            <!-- QAP policy management buttons-->
+            <div class="QAP_management_btns">
+                <button class="QAP_general_btns">Reject</button>
+                <button class="QAP_general_btns">Assign</button>
+                <button class="QAP_general_btns">Upload</button>
+                <button class="QAP_revisionRequest_btns">Reject</button>
+                <button class="QAP_revisionRequest_btns">Send</button>
+            </div>
+
             <div class = "taskWhite-line" style="margin-top: 1vh; display: flex"></div>
         </div>
+
+        <div class="signDocuBtns">
+            <form action="signDocument.php" method="POST">
+                <button type="button" id="rejectDocuBtn" name = "reject">Reject Document</button>  
+                <button type="submit" id="signDocuBtn" name="sign">Sign Document</button>
+            </form>     
+        </div>
+
         <p class="introduction-content">[Policy Description/Content Here]</p>
         <div id="policyFeedbackContent" style="display: none; margin-top: 20px; background-color:transparent; color: white;">
-            <h3>Policy Content Placeholder</h3>
-            <p>This section will eventually display the actual policy content fetched from the database.</p>
-            <p>For now, this is just a placeholder to show where the content will appear when the "View Policy" button is clicked.</p>
+            <h3>Policy Feedback Placeholder</h3>
+            <p>This section will eventually display the actual policy feedback fetched from the database.</p>
+            <p>For now, this is just a placeholder to show where the feedback message will appear when the selected policy is opened.</p>
         </div>
         <?php 
         //include pdfViewer
@@ -753,20 +785,12 @@ require_once genMsg_dir . '/setMessage.php';
 <script>
     //this is for the js of task manager
 function showTaskManager() {
-    //Staff Display
     document.getElementById('policies-repository-content').style.display = 'none';
     document.getElementById('policy-submission-content').style.display = 'none';
     document.querySelector('.process-tracker').style.display = 'none';
     document.querySelector('.task-manager').style.display = 'flex';
     document.querySelector('.information').style.display = 'none';
 
-
-    //QAP Display
-    policyRepositoryPanel.style.display = 'none'; 
-    policySubmissionPanel.style.display = 'none';
-    
-
-    //QAD Display
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
