@@ -41,7 +41,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
     const policyRepositoryPanel = document.getElementById('policy-repo-content');
     const policySubmissionPanel = document.getElementById('policy-submission-content');
     const departmentPanel = document.querySelector('.Department-Manager-Panel');
-    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2');
     
 
 // Policy Repository
@@ -50,7 +50,6 @@ function showPolicyRepository() {
     policyRepositoryPanel.style.display = 'block';
     policySubmissionPanel.style.display = 'none';
     departmentPanel.style.display = 'none'; 
-    policyManagerPanel.style.display = 'none';
 }
 
 // Policy Submission
@@ -62,7 +61,7 @@ function showPolicySubmission() {
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'flex';
     departmentPanel.style.display = 'none';
-    policyManagerPanel.style.display = 'none';
+
     
 
 }
@@ -88,6 +87,7 @@ document.getElementById("last-child").addEventListener("click", function () {
 
 const submitOverlay = document.getElementById('submitOverlay');
 const submitBtn = document.getElementById('submitBtn');
+const cancelBtn = document.getElementById('cancelBtn');
 
 
 submitButton.addEventListener('click', () => {
@@ -105,7 +105,7 @@ document.getElementById("cancelBtn").addEventListener("click", function () {
   
 
 // Policy Repository
-const parentFolders = document.querySelectorAll('.PS-Parent-Folders');
+const parentFolders = document.querySelectorAll('.PR-Parent-Folders');
 
 parentFolders.forEach(folder => {
     folder.addEventListener('click', () => {
@@ -141,9 +141,9 @@ function searchPolicies() {
     const searchTerm = searchInput.value.toLowerCase();
 
     // Get everything
-    const parentFolders = document.querySelectorAll('.PS-Parent-Folders');
-    const childFolders = document.querySelectorAll('.PS-Child-Folders');
-    const policies = document.querySelectorAll('.PS-Policies');
+    const parentFolders = document.querySelectorAll('.PR-Parent-Folders');
+    const childFolders = document.querySelectorAll('.PR-Child-Folders');
+    const policies = document.querySelectorAll('.PR-Policies');
 
     // First, hide everything
     parentFolders.forEach(parent => parent.style.display = 'none');
@@ -169,7 +169,7 @@ function searchPolicies() {
         if (childName.includes(searchTerm)) {
             child.style.display = 'flex';
             const parentId = child.closest('.child-folders').getAttribute('data-parent-id');
-            document.querySelector(`.PS-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
+            document.querySelector(`.PR-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
             document.querySelector(`.child-folders[data-parent-id='${parentId}']`).style.display = 'flex';
             found = true;
         }
@@ -188,7 +188,7 @@ function searchPolicies() {
             if (childFolder) childFolder.style.display = 'flex';
 
             const parentId = childFolder.closest('.child-folders').getAttribute('data-parent-id');
-            document.querySelector(`.PS-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
+            document.querySelector(`.PR-Parent-Folders[data-id='${parentId}']`).style.display = 'flex';
             document.querySelector(`.child-folders[data-parent-id='${parentId}']`).style.display = 'flex';
 
             found = true;
@@ -211,7 +211,7 @@ searchInput.addEventListener('keypress', function (e) {
 });
 
 // Child Folders click
-const childFolders = document.querySelectorAll('.PS-Child-Folders');
+const childFolders = document.querySelectorAll('.PR-Child-Folders');
 
 childFolders.forEach(childFolder => {
     childFolder.addEventListener('click', () => {
