@@ -418,10 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmRenameButton.addEventListener('click', () => {
             const newDepartmentName = renameDepartmentInput.value.trim();
             const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
-            console.log('Retrieved targetSpanId on confirm:', targetSpanId); // CHECKPOINT 3
+            console.log('Retrieved targetSpanId on confirm:', targetSpanId); 
             if (newDepartmentName && targetSpanId) {
                 const targetNameSpan = document.getElementById(targetSpanId);
-                console.log('Found targetNameSpan element:', targetNameSpan); // CHECKPOINT 4
+                console.log('Found targetNameSpan element:', targetNameSpan);
                 if (targetNameSpan) {
                     targetNameSpan.textContent = newDepartmentName;
                     renameDepartmentContainer.style.display = 'none';
@@ -471,7 +471,7 @@ function showDepartmentManager() {
 
 
 // Attach the function to the sidebar menu item
-document.querySelector('.menu-icons:nth-child(1)')
-document.querySelector('.menu-icons:nth-child(2)')
+document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
+document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
 document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
 document.querySelector('.menu-icons:nth-child(7)')
