@@ -50,7 +50,7 @@ require_once genMsg_dir . '/message_box.php';
 
         .image {
             flex: 1;
-            background-image: url('.idea/images/apc.jpg');
+            background-image: url('/qms_optiqual/assets/apc.jpg');
             background-position: 0 -4em;
             background-size: 100vw;
             background-repeat: no-repeat;
@@ -1126,35 +1126,35 @@ require_once genMsg_dir . '/message_box.php';
 <!-- sidebar, logo, and icons -->
 <div class="grey-line" id="grey-line">
     <div class="logo-wrapper">
-        <img src="../../assets/logos/logo.png" alt="Logo" class="logo">
+        <img src="/qms_optiqual/assets/logos/logo.png" alt="Logo" class="logo">
     </div>
         <span class="extended-text" id="extended-text">ASIA<br> PACIFIC<br> COLLEGE<br> </span>
     <div class="menu-icons">
         <div class="icon-item">
-            <img src=".idea/images/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
+            <img src="/qms_optiqual/assets/policy lib-notClicked.png" alt="Icon 1" onclick="showPoliciesRepository()">
             <span class="icon-label">Policies Repository</span>
         </div>
         <div class="icon-item">
-            <img src=".idea/images/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
+            <img src="/qms_optiqual/assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
             <span class="icon-label">Policy Submission</span>
         </div>
         <div class="icon-item">
-            <img src=".idea/images/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
+            <img src="/qms_optiqual/assets/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
             <span class="icon-label">Process Tracker</span>
         </div>
         <div class="icon-item">
-            <img src=".idea/images/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
+            <img src="/qms_optiqual/assets/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
             <span class="icon-label">Task Manager</span>
         </div>
         <div class="icon-item">
-            <img src=".idea/images/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
+            <img src="/qms_optiqual/assets/info - notClicked.png" alt="Icon 5" onclick="showInformation()">
             <span class="icon-label">Information</span>
         </div>
     </div>
 </div>
 
 <!-- Hamburger, notif, and sign out -->
-<img src=".idea/images/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+<img src="/qms_optiqual/assets/hamburger.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
 <div>
     <button type="button" class="button user-btn" id="userButton">
         <i class="fa fa-user-circle" style="font-size:1.5em"></i>

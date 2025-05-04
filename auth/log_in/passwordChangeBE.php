@@ -67,13 +67,21 @@ if (isset($_POST["confirmPasswordButton"])) {
     // Include database connection
     require_once BASE_DIR . "/connect.php";
 
+
+    //retieve the email from the session
+    $email = $_SESSION["email"];
+
+    if (empty($email)) {
+        die("Error: Email is not set in the session.");
+    }
+
     //Hash the password
     $newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
     
     //Update Password
     $sql_update_password = "UPDATE accdatatbl SET password = ? WHERE email = ?";
     $stmt = $conn->prepare($sql_update_password);
-    $stmt->bind_param("ss", $newPassword, $_SESSION['email']);
+    $stmt->bind_param("ss", $newPassword, $email);
     if ($stmt->execute()) {
         //unset the session variable
         session_unset();

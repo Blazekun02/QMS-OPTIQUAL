@@ -90,6 +90,9 @@ if ($_SERVER["REQUEST_METHOD"]==="POST"){
         //set accID to session
         $_SESSION["accID"] = $accID;
 
+        //set email to session
+        $_SESSION["email"] = $email;
+
         //redirect to the OTP verification page
         setMessage("A verification code has been sent to your email.","success");
         header("Location: ../otpVerify/otpVerify.php");
