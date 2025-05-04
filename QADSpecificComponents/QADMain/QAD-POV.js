@@ -502,11 +502,13 @@ if (confirmAssignRoleButton) {
             console.log('New department name:', newDepartmentName); // CHECKPOINT C (Relabeled)
             console.log('Retrieved targetSpanId:', targetSpanId); // CHECKPOINT B (Relabeled)
 
+            console.log('Retrieved targetSpanId on confirm:', targetSpanId); 
             if (newDepartmentName && targetSpanId) {
                 console.log('Both newDepartmentName and targetSpanId are truthy.'); // Added
                 const targetNameSpan = document.getElementById(targetSpanId);
                 console.log('Attempting to get element with ID:', targetSpanId); // Added
                 console.log('Found targetNameSpan element:', targetNameSpan); // CHECKPOINT D (Relabeled)
+                console.log('Found targetNameSpan element:', targetNameSpan);
                 if (targetNameSpan) {
                     console.log('targetNameSpan element exists. Updating textContent.'); // Added
                     targetNameSpan.textContent = newDepartmentName;
@@ -614,7 +616,7 @@ function showDepartmentManager() {
 
 
 // Attach the function to the sidebar menu item
-document.querySelector('.menu-icons:nth-child(1)');
-document.querySelector('.menu-icons:nth-child(2)');
+document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
+document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
 document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
 document.querySelector('.menu-icons:nth-child(7)');

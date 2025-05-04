@@ -39,9 +39,6 @@ include("../../connect.php");
     justify-content: space-between;
 }
 
-
-
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -99,14 +96,9 @@ thead th:last-child {
     background-color: #1f2d66;
     color: white;
 }
-
-
-
-
-
 </style>
 
-<div class="Process-Tracker-Panel" style="display: none;">
+<div class="Process-Tracker-Panel" style="display: block;">
     <div class="Process-Tracker-Header">
         <h1>Process Tracker</h1>
 
@@ -213,14 +205,14 @@ thead th:last-child {
     line-height: 1.2;
 }
 
-.circle {
+    .circle {
         width: 50px;
         height: 50px;
         border-radius: 50%;
         display: flex;
         justify-content: center;
         align-items: center;
-    }
+        }
 
     .status-green {
         background-color: green;
@@ -238,6 +230,7 @@ thead th:last-child {
 </style>
 
 <div class="Process-Tracker-Content">
+    
     <div class="Process-Tracker-Content-Header">
         <h1>Process Tracker</h1>
         <div class="PTC-Header-Buttons">
@@ -245,75 +238,92 @@ thead th:last-child {
         </div>
         <div class="PTC-Divider"></div>
     </div>
-
-    <?php 
-    // Replace this with your actual policy ID condition if needed
-    $query = "
-        SELECT p.*, 
-               r.lName AS reviewerName, 
-               v.lName AS verifierName, 
-               a.lName AS approverName
-        FROM policytbl p
-        LEFT JOIN accdatatbl r ON p.policyReviewer = r.accID
-        LEFT JOIN accdatatbl v ON p.policyVerifier = v.accID
-        LEFT JOIN accdatatbl a ON p.policyApprover = a.accID
-        ORDER BY p.dateSubmitted DESC
-        LIMIT 1
-    ";
-
-    $result = mysqli_query($conn, $query);
-    $policy = mysqli_fetch_assoc($result);
-
-    $statusID = (int) ($policy['policyStatusID'] ?? 0);
-
-    function getCircleClass($step, $statusID) {
-        if ($step < $statusID) {
-            return 'status-green'; // already done
-        } elseif ($step == $statusID) {
-            return 'status-green'; // just completed
-        } elseif ($step == $statusID + 1) {
-            return 'status-red'; // in progress
-        } else {
-            return 'status-gray'; // not started
-        }
-    }
-    ?>
-
-
-<div class="PTC-Trackers">
-    <div class="circle_container">
-        <p><em>Submitted</em></p>
-        <div class="circle <?= getCircleClass(1, $statusID) ?>"></div>
-        <span><?= htmlspecialchars($policy['dateSubmitted']) ?></span>
+    <div class="PTC-Trackers">
+        <!-- Process Tracker Circles will be loaded here via AJAX -->
     </div>
-    <div class="circle_container">
-        <p><em>Reviewed</em></p>
-        <div class="circle <?= getCircleClass(2, $statusID) ?>"></div>
-        <span><?= htmlspecialchars($policy['dateReviewed'] ?? '-') ?></span>
-        <span><?= htmlspecialchars($policy['reviewerName'] ?? 'No Reviewer') ?></span>
-    </div>
-    <div class="circle_container">
-        <p><em>Verified</em></p>
-        <div class="circle <?= getCircleClass(3, $statusID) ?>"></div>
-        <span><?= htmlspecialchars($policy['dateVerified'] ?? '-') ?></span>
-        <span><?= htmlspecialchars($policy['verifierName'] ?? 'No Verifier') ?></span>
-    </div>
-    <div class="circle_container">
-        <p><em>Approved</em></p>
-        <div class="circle <?= getCircleClass(4, $statusID) ?>"></div>
-        <span><?= htmlspecialchars($policy['dateApproved'] ?? '-') ?></span>
-        <span><?= htmlspecialchars($policy['approverName'] ?? 'No Approver') ?></span>
-    </div>
-    <div class="circle_container">
-        <p><em>Uploaded</em></p>
-        <div class="circle <?= getCircleClass(5, $statusID) ?>"></div>
-        <span><?= htmlspecialchars($policy['dateUploaded'] ?? '-') ?></span>
-    </div>
+
+    <?php
+include("../../connect.php");
+
+$policyID = $_GET['policyID'];
+
+$query = "
+    SELECT p.*, 
+           r.lName AS reviewerName, 
+           v.lName AS verifierName, 
+           a.lName AS approverName
+    FROM policytbl p
+    LEFT JOIN accdatatbl r ON p.policyReviewer = r.accID
+    LEFT JOIN accdatatbl v ON p.policyVerifier = v.accID
+    LEFT JOIN accdatatbl a ON p.policyApprover = a.accID
+    WHERE p.policyID = $policyID
+    LIMIT 1
+";
+
+$result = mysqli_query($conn, $query);
+$policy = mysqli_fetch_assoc($result);
+
+$statusID = (int) ($policy['policyStatusID'] ?? 0);
+
+function getCircleClass($step, $statusID) {
+    if ($step < $statusID) return 'status-green';
+    if ($step == $statusID) return 'status-green';
+    if ($step == $statusID + 1) return 'status-red';
+    return 'status-gray';
+}
+?>
+
+<div class="circle_container">
+    <p><em>Submitted</em></p>
+    <div class="circle <?= getCircleClass(1, $statusID) ?>"></div>
+    <span><?= htmlspecialchars($policy['dateSubmitted']) ?></span>
+</div>
+<div class="circle_container">
+    <p><em>Reviewed</em></p>
+    <div class="circle <?= getCircleClass(2, $statusID) ?>"></div>
+    <span><?= htmlspecialchars($policy['dateReviewed'] ?? '-') ?></span>
+    <span><?= htmlspecialchars($policy['reviewerName'] ?? 'No Reviewer') ?></span>
+</div>
+<div class="circle_container">
+    <p><em>Verified</em></p>
+    <div class="circle <?= getCircleClass(3, $statusID) ?>"></div>
+    <span><?= htmlspecialchars($policy['dateVerified'] ?? '-') ?></span>
+    <span><?= htmlspecialchars($policy['verifierName'] ?? 'No Verifier') ?></span>
+</div>
+<div class="circle_container">
+    <p><em>Approved</em></p>
+    <div class="circle <?= getCircleClass(4, $statusID) ?>"></div>
+    <span><?= htmlspecialchars($policy['dateApproved'] ?? '-') ?></span>
+    <span><?= htmlspecialchars($policy['approverName'] ?? 'No Approver') ?></span>
+</div>
+<div class="circle_container">
+    <p><em>Uploaded</em></p>
+    <div class="circle <?= getCircleClass(5, $statusID) ?>"></div>
+    <span><?= htmlspecialchars($policy['dateUploaded'] ?? '-') ?></span>
 </div>
 
 
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.folder-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const policyID = this.getAttribute('data-id');
+            console.log("Clicked policy ID:", policyID); // Debug log
+
+            document.querySelector('.Process-Tracker-Panel').style.display = 'none';
+            document.querySelector('.Process-Tracker-Content').style.display = 'block';
+
+            fetch('load_process_tracker.php?policyID=' + policyID)
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector('.PTC-Trackers').innerHTML = html;
+                });
+        });
+    });
+});
+</script>
 <!-- <script>
  
     function showPolicyTracker() {

@@ -202,6 +202,8 @@
         </div>
         </div>
 
+      
+
 
 <!-- Department Manager -->
 <div class="Department-Manager-Panel" style="display: none;">
@@ -252,7 +254,7 @@
             // Query to fetch accounts from the database
             $query = "SELECT accID, fullName, email FROM accdatatbl";
             $result = mysqli_query($conn, $query);
-            if (mysqli_num_rows($result) > 0) {
+                if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
                     echo '<input type="checkbox" id="account-' . $row['accID'] . '" name="accounts[]" value="' . $row['accID'] . '">';

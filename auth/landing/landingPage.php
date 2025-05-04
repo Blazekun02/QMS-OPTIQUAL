@@ -18,7 +18,7 @@ require_once genMsg_dir . '/setMessage.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Management System</title>
-    <link rel="stylesheet" href="landingPAge.css">
+    <link rel="stylesheet" href="landingPage.css">
 </head>
 <body>
 <div class="landing-overlay">
