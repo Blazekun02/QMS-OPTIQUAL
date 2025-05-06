@@ -26,10 +26,10 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    width: 0.7in;
-    height: 0.7in;
+    width: 0.6in;
+    height: 0.6in;
     margin-top: 10px;
-    padding-left: 5px;
+    margin-left:0.7em;
     
 }
 
@@ -46,8 +46,8 @@ body {
 }
 
 .Logo {
-    max-height: 80%;
-    max-height: 80%;
+    max-height: 70%;
+    max-height: 70%;
     display: block;
 }
 
@@ -62,8 +62,6 @@ body {
     
 }
 
-
-
 .Sidebar-Menu li{
     list-style: none;
     display: flex;
@@ -77,18 +75,14 @@ body {
     color: orange;
 }
 
-.Sidebar-Menu img {
-    width: 0.4in;
-    height: 0.4in;
-    cursor: pointer;
-    
-}
 
 .Sidebar-Menu img {
-    width: 0.4in;
-    height: 0.4in;
+    width: 0.3in;
+    height: 0.3in;
     cursor: pointer;
+    margin-left: 0.1em;
 }
+
 
 .icon-label {
     color: white;
@@ -118,19 +112,20 @@ body {
 
 .yellow-line{  
     position: absolute;
-    top: 80px;
+    top: 50px;
     background-color: #fbaf41;
     width: 100%;
-    height: 10px;
-    z-index: -10;
+    height: 6px;
+    z-index: 0;
+
 }
 
 .hamburger-icon {
     position: absolute;
-    margin-top: 20px;
+    margin-top: 18px;
     left: 0.8in;
     transform: translateY(-50%);
-    width: 0.4in;
+    width: 0.3in;
     height: 0.3in;
     background-color: transparent;
     cursor: pointer;
@@ -157,8 +152,7 @@ body {
 
 .user-btn, .notif-btn {
     position: absolute;
-    margin-top: 20px;
-    top: 0.5%;
+    margin-top: 0.3em;
     background-color: transparent;
     border: none;
     color: black;
@@ -178,12 +172,10 @@ body {
 
 
 
-
-
 .signOut-overlay {
     position: absolute;
     top: 6vh;
-    right: 2vw;
+    right: 6.7vw;
     background-color: #343A40;
     border-radius: 20px;
     padding: 8px 15px;
@@ -661,7 +653,7 @@ body {
     position: absolute;
     background-color: white;
     top: 60px;
-    left: 0.8in;    
+    left: 0.8in;
     width: calc(100% - 0.9in);
     height: calc(100vh - 129px);
     /* border: 2px solid red; */
@@ -673,7 +665,7 @@ body {
 .DMP-Divider {
     position: absolute;
     top: 65px;
-    background-color:  gray;
+    background-color: gray;
     width: 100%;
     height: 2px;
 }
@@ -740,7 +732,7 @@ body {
 #assignNameContainer h2 {
     margin-top: 0;
     align-items: center;
-    text-align:center;
+    text-align: center;
 }
 
 #assignNameContainer input[type="text"] {
@@ -766,31 +758,31 @@ body {
     background-color: #D3D3D3;
     margin-right: 2em;
     border-radius: 0.8em;
-    color:black;
+    color: black;
     margin-left: 3em;
 
 }
 
 #assignNameContainer button:hover {
-    background-color: darkgoldenrod; 
-    color: white; 
-    transition: background-color 0.3s ease, color 0.3s ease; 
+    background-color: darkgoldenrod;
+    color: white;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #assignNameContainer button#cancelAssignName:hover {
-    background-color: #b0b0b0; 
-    color: black; 
-    transition: background-color 0.3s ease, color 0.3s ease;    
+    background-color: #b0b0b0;
+    color: black;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* list of department that will be created */
 #departmentListContainer {
     margin-top: 20px;
     padding: 10px;
-    max-height: calc(100vh - 250px); 
-    overflow-y: auto; 
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
     overflow-x: hidden;
-    background-color: white; 
+    background-color: white;
     box-sizing: border-box; /* Ensure padding doesn't increase the width */
     white-space: nowrap;
     border-radius: 0.9em;
@@ -799,65 +791,65 @@ body {
 
 #departmentListContainer div {
     width: 100%;
-    color:white;
-    background-color: #293A82; 
+    color: white;
+    background-color: #293A82;
     padding: 10px;
     margin-bottom: 5px;
-    
+
 }
 
 #departmentListContainer .department-item {
     display: flex;
-    justify-content: space-between; 
-    align-items: center; 
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    color: white; 
-    background-color: #293A82; 
+    color: white;
+    background-color: #293A82;
     padding: 5px 15px;
     margin-bottom: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
-    height: auto; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: auto;
     border-radius: 0.9em;
     overflow: hidden;
     box-sizing: border-box;
 }
 
 #departmentListContainer .department-item span {
-    color: white; 
-    flex-grow: 1; 
-    
+    color: white;
+    flex-grow: 1;
+
 }
 
 #departmentListContainer .department-icons {
     display: flex;
-    gap: 1em; 
-    justify-content: flex-end; 
-    align-items: center; 
+    gap: 1em;
+    justify-content: flex-end;
+    align-items: center;
     margin-right: 0;
     padding-right: 1.5em;
 }
 
 #departmentListContainer .department-icons i {
     font-size: 1.2em;
-    cursor: pointer; 
-    
+    cursor: pointer;
+
 }
 
 #departmentListContainer .department-icons i:hover {
     color: #fbaf41;
-    transition: color 0.2s ease-in-out; 
+    transition: color 0.2s ease-in-out;
 }
 
 /* Hover effect for assigned role icons */
 #departmentListContainer .assigned-role-item .assigned-role-icons i:hover {
     color: #293A82;
-    transition: color 0.2s ease-in-out; 
+    transition: color 0.2s ease-in-out;
 }
 
 /* 1st icon */
 /* Styles for Assign Role Pop-up */
 #assignRoleContainer {
-    display: none; /* Hidden by default */
+    display: none; 
     position: fixed;
     top: 50%;
     left: 50%;
@@ -867,8 +859,8 @@ body {
     border-radius: 1.3em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     z-index: 1002;
-    width: 420px; /* Adjust width as needed */
-    padding:0.7em;
+    width: 420px; 
+    padding: 0.7em;
     height: 480px;
 }
 
@@ -890,7 +882,7 @@ body {
     border-radius: 3px;
     color: black;
     box-sizing: border-box;
-    margin-bottom: 5px; /* Reduced margin for search input */
+    margin-bottom: 5px;
 }
 
 #assignRoleContainer .form-group {
@@ -898,13 +890,13 @@ body {
 }
 
 #assignRoleContainer .scrollable-account-list {
-    border: 1px solid #ccc; /* Keep the border */
+    border: 1px solid #ccc;
     border-radius: 3px;
     background-color: #f0f0f0;
-    height: 150px; /* Adjust the initial height as needed */
-    overflow-y: auto; /* Enable vertical scrolling */
+    height: 150px;
+    overflow-y: auto; 
     color: black;
-    padding: 5px 10px; /* Keep padding */
+    padding: 5px 10px; 
     box-sizing: border-box;
     margin-bottom: 20px;
 }
@@ -939,72 +931,72 @@ body {
 }
 
 .account-item {
-    display: flex; /* Use flexbox to align items in a row */
-    align-items: center; /* Vertically center the items */
-    justify-content: space-between; /* Add spacing between the checkbox and text */
-    padding: 5px 0; /* Adjust vertical padding */
-    border-bottom: 1px solid #ddd; /* Optional: Add a bottom border for separation */
-    font-size: 14px; /* Adjust font size as needed */
-    color: black; /* Text color */
+    display: flex; 
+    align-items: center;
+    justify-content: space-between; 
+    padding: 5px 0; 
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    color: black; 
 }
 
 .account-item:last-child {
-    border-bottom: none; /* Remove border from the last item */
+    border-bottom: none;
 }
 
 .account-item input[type="checkbox"] {
-    margin-right: 10px; /* Add spacing between the checkbox and the text */
+    margin-right: 10px;
 }
 
 .account-item label {
-    flex-grow: 1; /* Allow the label to take up remaining space */
-    white-space: nowrap; /* Prevent text from wrapping */
-    overflow: hidden; /* Hide overflowing text */
-    text-overflow: ellipsis; /* Add ellipsis for long text */
+    flex-grow: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
 }
 
 
 #departmentListContainer .assigned-role-item {
-    display: flex; /* Use flexbox to align items in a row */
-    justify-content: space-between; /* Space between text and icons */
-    align-items: center; /* Vertically align text and icons */
-    width: calc(100% - 20px); /* Adjust width for padding */
-    margin: 5px 10px; /* Add some margin for spacing */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    width: calc(100% - 20px); 
+    margin: 5px 10px;
     color: black;
-    background-color: #e0f7fa; /* Light blue background */
-    padding: 8px 15px;
+    background-color: #BAE0F3;
+    padding: 6px 15px;
     border-radius: 0.5em;
     box-sizing: border-box;
     font-size: 0.95em;
 }
 
 #departmentListContainer .assigned-role-item span {
-    flex-grow: 1; /* Allow the text to take up available space */
-    text-align: left; /* Align the text to the left */
+    flex-grow: 1; 
+    text-align: left; 
 }
 
 
 #departmentListContainer .assigned-role-icons {
-    display: flex; /* Use flexbox for the icons */
-    justify-content: flex-end; /* Push the icons to the right */
-    gap: 1em; /* Add spacing between icons */
-    margin-left: auto; /* Push the icons to the far right */
-    background-color: transparent; /* Ensure no background color */
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 1em; 
+    margin-left: auto; 
+    background-color: transparent; 
 }
 
 #departmentListContainer .assigned-role-icons i {
-    font-size: 1.2em; /* Adjust icon size */
-    cursor: pointer; /* Add pointer cursor for interactivity */
-    color: black; /* Icon color */
+    font-size: 1.2em;
+    cursor: pointer; 
+    color: black; 
 }
 
 #departmentListContainer .assigned-role-icons i:hover {
-    color: #fbaf41; /* Change color on hover */
-    transition: color 0.2s ease-in-out; /* Smooth transition for hover effect */
+    color: #fbaf41; 
+    transition: color 0.2s ease-in-out;
 }
 
 
-/* 2nd icon */
+/* 2nd icon in departmentlist*/
 #departmentStructureContainer {
     display: none;
     position: fixed;
@@ -1014,7 +1006,7 @@ body {
     background-color: #293A82;
     color: white;
     padding: 20px;
-    border-radius: 1em; 
+    border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     z-index: 1003;
     width: 24vw; /* Match assignNameContainer width */
@@ -1040,7 +1032,7 @@ body {
 
 #departmentStructureContainer .button-group {
     display: flex;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
     gap: 1em;
 }
@@ -1052,11 +1044,11 @@ body {
     padding: 10px 18px;
     border-radius: 0.8em;
     cursor: pointer;
-    
+
 }
 
 #departmentStructureContainer button#cancelStructure {
-    background-color: #D3D3D3; 
+    background-color: #D3D3D3;
     border-radius: 0.8em;
     color: black;
 
@@ -1076,8 +1068,6 @@ body {
 
 
 
-
-/* 3rd icon */
 /* Styles for Rename Department Pop-up (Matching Assign Name) */
 /* 3rd icon - Revised Rename Department Pop-up Styles */
 #renameDepartmentContainer {
@@ -1091,10 +1081,10 @@ body {
     padding: 10px;
     border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    z-index: 1004; /* Ensure it's above other popups */
-    width: 250px; /* Slightly more explicit width */
-    height: auto; /* Adjust height based on content */
-    text-align: center; /* Center the content */
+    z-index: 1004; 
+    width: 250px; 
+    height: auto; 
+    text-align: center; 
 }
 
 #renameDepartmentContainer h2 {
@@ -1150,7 +1140,7 @@ body {
 
 
 /* 4th icon */
-/* Styles for Delete Confirmation Pop-up */
+/* Styles for Delete Confirmation Pop-up (Matching Rename) */
 #deleteConfirmationContainer {
     display: none;
     position: fixed;
@@ -1162,77 +1152,80 @@ body {
     padding: 20px;
     border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    z-index: 1005; /* Ensure it's above other popups */
-    width: 20vw; /* Adjust as needed */
-    min-width: 250px; /* Ensure it's not too small */
-    height: auto; /* Adjust as needed */
+    z-index: 1005;
+    width: 250px;
     text-align: center;
 }
 
 #deleteConfirmationContainer h2 {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 #deleteConfirmationContainer .button-group {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
+    margin-top: 10px;
 }
 
 #deleteConfirmationContainer button {
-    background-color: #D3D3D3; 
-    color: black;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 0.8em;
-    cursor: pointer;
-}
-
-#deleteConfirmationContainer button#confirmDelete {
     background-color: #fbaf41;
     color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+#deleteConfirmationContainer button#cancelDelete {
+    background-color: #D3D3D3;
+    color: black;
 }
 
 #deleteConfirmationContainer button:hover {
-    opacity: 0.9;
+    background-color: darkgoldenrod;
 }
 
+#deleteConfirmationContainer button#cancelDelete:hover {
+    background-color: #b0b0b0;
+}
 
-/* subfolder when assign role is confirmed */
-/* rename of role */
+/* rename for the assignedrole created */
 .renameroleContainer {
+    display: none;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #293A82;
     color: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    z-index: 1004;
-    width: 300px;
+    z-index: 1006;
+    width: 250px;
     text-align: center;
 }
 
 .renameroleContainer h2 {
     margin-top: 0;
-    margin-bottom: 25px;
-    font-size: 1.4em;
+    margin-bottom: 15px;
 }
 
 .renameroleContainer .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .renameroleContainer input[type="text"] {
     width: calc(100% - 20px);
-    padding: 5px 20px;
+    padding: 5px;
     border: 1px solid #ccc;
     border-radius: 0.5em;
     color: black;
-    font-size: 0.9em;
+    font-size: 0.8em;
     box-sizing: border-box;
 }
 
@@ -1267,4 +1260,20 @@ body {
 
 .renameroleContainer button#confirmRenameRole:hover {
     background-color: darkgoldenrod;
+}
+
+
+
+
+
+/* Overlay Styles */
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 1000; /* Ensure it's above most content */
 }

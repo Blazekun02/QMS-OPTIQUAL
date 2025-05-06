@@ -56,8 +56,11 @@
                     <img src="../QAP Sidebar Images/Not Clicked/QD_Policy_Manage.png" alt="Icon 8">
                     <span class="icon-label">Policy Manager</span>
                 </li>
+                <li class="menu-icons">
+                <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                    <span class="icon-label">Reports</span>
+                </li>
                 <li>
-                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9" onclick="showInformation()">
+                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 10" onclick="showInformation()">
                     <span class="icon-label">Information</span>
                 </li>
                 
@@ -203,7 +206,7 @@
         </div>
 
 
-<!-- Department Manager -->
+<!-- Department Manager  -->
 <div class="Department-Manager-Panel" style="display: none;">
     <div class="Department-Manager-Header">
         <h1>Department Manager</h1>
@@ -234,7 +237,6 @@
     </div>
 </div>
 
-<!-- 1st icon -->
 <div id="assignRoleContainer" class="popup-container" style="display: none;">
     <h2>Assign Role</h2>
     <div class="form-group">
@@ -255,7 +257,7 @@
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
-                    echo '<input type="checkbox" id="account-' . $row['accID'] . '" name="accounts[]" value="' . $row['accID'] . '">';
+                    echo '<input type="radio" id="account-' . $row['accID'] . '" name="selectedAccount" value="' . $row['accID'] . '">';
                     echo '<label for="account-' . $row['accID'] . '">' . $row['fullName'] . ' (' . $row['email'] . ')</label>';
                     echo '</div>';
                 }
@@ -271,8 +273,7 @@
     </div>
 </div>
 
-<!-- 2nd icon -->
-<div id="departmentStructureContainer" class="popup-container" style="display: none;">
+<div id="departmentStructureContainer" style="display: none;">
     <h2>Assign Name</h2>
     <div class="form-group">
         <input type="text" id="structureNameInput" placeholder="Enter Name">
@@ -283,7 +284,6 @@
     </div>
 </div>
 
-<!-- 3rd icon -->
 <div id="renameDepartmentContainer" class="popup-container" style="display: none;">
     <h2>Rename Folder</h2>
     <div class="form-group">
@@ -296,7 +296,6 @@
 </div>
 
 
-<!-- 4th icon -->
 <div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
     <h2>Confirm Deletion?</h2>
     <div class="button-group">
@@ -305,8 +304,6 @@
     </div>
 </div>
 
-
-<!-- rename for the assignedrole created -->
 <div id="renameRoleContainer" class="renameroleContainer" style="display: none;">
     <h2>Rename Role</h2>
     <div class="form-group">
