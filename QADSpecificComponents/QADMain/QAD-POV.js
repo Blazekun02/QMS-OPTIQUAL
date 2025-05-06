@@ -605,13 +605,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
     if (departmentPanel) departmentPanel.style.display = 'block';
     if (policyManagerPanel) policyManagerPanel.style.display = 'none';
-   }
-  
-  
-   // Attach the function to the sidebar menu item
-   document.querySelector('.menu-icons:nth-child(1)');
-   document.querySelector('.menu-icons:nth-child(2)');
-   document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
-   document.querySelector('.menu-icons:nth-child(7)');
+}
 
 
+// Attach the function to the sidebar menu item
+document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
+document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
+document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
+document.querySelector('.menu-icons:nth-child(7)');
