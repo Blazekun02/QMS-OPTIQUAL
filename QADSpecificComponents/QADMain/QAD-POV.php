@@ -1,13 +1,16 @@
-<?php include '../../connect.php';
+<?php 
+    session_start(); // Start the session if not already started
+    include '../../connect.php';
     if ($conn->connect_error) {
         die("❌ Connection failed: " . $conn->connect_error);
     } else {
         echo "<script>alert('✅ Connected successfully');</script>";
     }
-    
+
 ?>
 
 <!DOCTYPE html>
+<?php include '../../generalComponents/Refresh/Policy_Repo_Refresh.php';?>
 <html>
     <head>
         <meta charset="UTF-8">
@@ -57,10 +60,9 @@
                     <span class="icon-label">Policy Manager</span>
                 </li>
                 <li>
-                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9" onclick="showInformation()">
+                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9">
                     <span class="icon-label">Information</span>
                 </li>
-                
             </ul>
                  </div>
             </div>           
@@ -132,31 +134,33 @@
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; // correct id
-                        
+                         
                                     if (mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
-                                            echo '<div class="PR-Policies">';
+                                          
+                                            echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
                                             echo '<p class="PR-Policies-Name">' . $rowPol['title'] . '</p>';
                                             echo '</div>';
                                         }
-                                    } else {
-                                        echo '<div class="PR-Policies">';
-                                        echo '<p class="PR-Policies-Name">No policies available</p>';
-                                        echo '</div>';
                                     }
-                        
                                     echo '</div>'; // close Policies-Folder
                                 }
                             }
-                        
                             echo '</div>'; // close child-folders
-                            echo '</div>'; // <--- CLOSE Parent-Block here!
+                            echo '</div>'; 
                         }
                     }
-                    
-
                     ?>
                 </div>
+
+                
+        </div>
+        <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none; width:100%; height:600px; margin-top:20px;">
+            <div class="pdfViewer-header">
+                <button class="btn" id="closePdfViewer"><i class="fa fa-times"></i></button>
+                
+            </div>
+                    <?php include '../../generalComponents/pdfViewer/pdfViewer.php';?>
         </div>
                     
         <!-- POLICY SUBMISSION -->
@@ -164,7 +168,9 @@
             <div class="policy-submission">
                 <h2>Policy Submission</h2>
                 <div class="policy-submission-buttons">
-                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> <span class=".policy-submission-buttons button:first-child">New Policy Template</span></button>
+                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> 
+                    <span class=".policy-submission-buttons button:first-child">New Policy Template</span>
+                    </button>
                     <button class="btn" id="submitButton">Submit</button>
         
                 </div>
@@ -202,8 +208,10 @@
         </div>
         </div>
 
-      
-
+<!-- Process Tracker -->
+        <div class="Process-Tracker-Panel2" style="display: none;">
+            <?php include '../../generalComponents/processTracker/processTracker.php';?>
+        </div>
 
 <!-- Department Manager -->
 <div class="Department-Manager-Panel" style="display: none;">

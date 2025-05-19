@@ -660,7 +660,7 @@ body {
 .Department-Manager-Panel {
     position: absolute;
     background-color: white;
-    top: 60px;
+    top: 100px;
     left: 0.8in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 129px);
@@ -668,6 +668,7 @@ body {
     z-index: 1;
     overflow: visible;
     white-space: normal;
+    border: 2px solid red;
 }
 
 .DMP-Divider {
@@ -1268,3 +1269,4 @@ body {
 .renameroleContainer button#confirmRenameRole:hover {
     background-color: darkgoldenrod;
 }
+

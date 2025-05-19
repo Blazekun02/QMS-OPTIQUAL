@@ -10,13 +10,14 @@
                 $accID  = $_SESSION['accID'];
 
                 // Foder to place the to be uploaded files
-                $targetDir = "../../uploads/";
+                $targetDir = "../files/";
                 if (!file_exists($targetDir)) {
                     mkdir($targetDir, 0777, true);
                 }
 
                 $fileName = basename($file["name"]);
                 $targetFilePath = $targetDir . $fileName;
+                $relativePath = "/qms_optiqual/files/" . $fileName;
                 $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
 
                 // Allowed file types
@@ -27,7 +28,7 @@
                     if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {
                         // Insert to Database
                         $stmt =  $conn->prepare("INSERT INTO policytbl (title, contentPath, policyAuthor) VALUES (?, ?, ?)");
-                        $stmt -> bind_param("ssi", $policyTitle, $targetFilePath, $accID);
+                        $stmt -> bind_param("ssi", $policyTitle, $relativePath, $accID);
                         if ($stmt -> execute()) {
                             header("Location: /qms_optiqual/QADSpecificComponents/QADMain/QAD-POV.php");
                             exit(); // Ensure no further code is executed after redirect
