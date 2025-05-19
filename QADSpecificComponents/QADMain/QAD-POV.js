@@ -231,6 +231,7 @@ childFolders.forEach(childFolder => {
     });
 });
 
+
 //department Manager
 document.addEventListener('DOMContentLoaded', () => {
     const addDepartmentButton = document.getElementById('addDepartmentButton');
@@ -241,9 +242,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const departmentNameInput = document.getElementById('departmentNameInput');
     const departmentListContainer = document.getElementById('departmentListContainer');
     const assignRoleContainer = document.getElementById('assignRoleContainer');
+    const positionInput = document.getElementById('positionInput');
+    const nameInput = document.getElementById('nameInput');
     const departmentStructureContainer = document.getElementById('departmentStructureContainer');
     const cancelStructureButton = document.getElementById('cancelStructure');
     const confirmStructureButton = document.getElementById('confirmStructure');
+    const structureNameInput = document.getElementById('structureNameInput'); // Get the structure name input
     const renameDepartmentContainer = document.getElementById('renameDepartmentContainer');
     const cancelRenameButton = document.getElementById('cancelRename');
     const confirmRenameButton = document.getElementById('confirmRenameButton');
@@ -255,350 +259,342 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelRenameRoleButton = document.getElementById('cancelRenameRole');
     const confirmRenameRoleButton = document.getElementById('confirmRenameRole');
     const renameRoleInput = document.getElementById('renameRoleInput');
-    let departmentToDelete = null; // To store the department to be deleted
-    let currentTargetDepartment = null; // To store the department being assigned a role
-    let currentlyEditingRoleTextSpan = null; // To store the span being edited
-    let roleToDelete = null; // To store the role to be deleted
-
-
+    let departmentToDelete = null;
+    let currentTargetDepartment = null;
+    let currentlyEditingRoleTextSpan = null;
+    let roleToDelete = null;
+    let currentlyEditingRole = null;
+    let activeDepartmentForStructure = null; // To track which department's structure icon was clicked
+  
+  
     addDepartmentButton.addEventListener('click', () => {
-        assignNameContainer.style.display = 'block';
-        overlay.style.display = 'block';
+     assignNameContainer.style.display = 'block';
+     overlay.style.display = 'block';
     });
-
+  
     cancelAssignNameButton.addEventListener('click', () => {
-        assignNameContainer.style.display = 'none';
-        overlay.style.display = 'none';
-        departmentNameInput.value = '';
+     assignNameContainer.style.display = 'none';
+     overlay.style.display = 'none';
+     departmentNameInput.value = '';
     });
-
+  
     confirmAssignNameButton.addEventListener('click', () => {
-        const departmentName = departmentNameInput.value.trim();
-
-        if (departmentName) {
-            displayNewDepartment(departmentName);
-            assignNameContainer.style.display = 'none';
-            overlay.style.display = 'none';
-            departmentNameInput.value = '';
-        } else {
-            alert('Please enter a department name.');
-        }
+     const departmentName = departmentNameInput.value.trim();
+  
+     if (departmentName) {
+      displayNewDepartment(departmentName);
+      assignNameContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      departmentNameInput.value = '';
+     } else {
+      alert('Please enter a department name.');
+     }
     });
-
+  
     function displayNewDepartment(name) {
-        const departmentDiv = document.createElement('div');
-        departmentDiv.classList.add('department-item');
-        departmentDiv.dataset.departmentName = name;
-
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = name;
-        nameSpan.id = `department-name-${Date.now()}`; // Assign the unique ID FIRST
-        departmentDiv.appendChild(nameSpan); // Then append
-
-        const iconsDiv = document.createElement('div');
-        iconsDiv.classList.add('department-icons');
-
-        const addUserIcon = document.createElement('i');
-        addUserIcon.classList.add('fas', 'fa-user-plus');
-        addUserIcon.addEventListener('click', () => {
-            assignRoleContainer.style.display = 'block';
-            overlay.style.display = 'block';
-            currentTargetDepartment = departmentDiv;
-            assignRoleContainer.dataset.targetDepartment = departmentDiv;
-        });
-        iconsDiv.appendChild(addUserIcon);
-
-        const structureIcon = document.createElement('i');
-        structureIcon.classList.add('fas', 'fa-sitemap');
-        structureIcon.addEventListener('click', () => {
-            departmentStructureContainer.style.display = 'block';
-            overlay.style.display = 'block';
-        });
-        iconsDiv.appendChild(structureIcon);
-
-        const editIcon = document.createElement('i');
-        editIcon.classList.add('fas', 'fa-pencil-alt');
-        editIcon.addEventListener('click', () => {
-            renameDepartmentContainer.style.display = 'block';
-            overlay.style.display = 'block';
-            renameDepartmentInput.value = nameSpan.textContent;
-            renameDepartmentContainer.dataset.targetDepartmentSpan = nameSpan.id;
-            console.log('Stored targetSpanId in renameDepartmentContainer:', renameDepartmentContainer.dataset.targetDepartmentSpan);
-        });
-        iconsDiv.appendChild(editIcon);
-
-        const deleteIcon = document.createElement('i');
-        deleteIcon.classList.add('fas', 'fa-trash-alt');
-        deleteIcon.addEventListener('click', () => {
-            deleteConfirmationContainer.style.display = 'block';
-            overlay.style.display = 'block';
-            departmentToDelete = departmentDiv;
-        });
-        iconsDiv.appendChild(deleteIcon);
-
-        departmentDiv.appendChild(iconsDiv);
-        departmentListContainer.appendChild(departmentDiv);
+     const departmentDiv = document.createElement('div');
+     departmentDiv.classList.add('department-item');
+     departmentDiv.dataset.departmentName = name;
+  
+     const nameSpan = document.createElement('span');
+     nameSpan.textContent = name;
+     nameSpan.id = `department-name-${Date.now()}`;
+     departmentDiv.appendChild(nameSpan);
+  
+     const iconsDiv = document.createElement('div');
+     iconsDiv.classList.add('department-icons');
+  
+     const addUserIcon = document.createElement('i');
+     addUserIcon.classList.add('fas', 'fa-user-plus');
+     addUserIcon.addEventListener('click', () => {
+      assignRoleContainer.style.display = 'block';
+      overlay.style.display = 'block';
+      currentTargetDepartment = departmentDiv;
+      assignRoleContainer.dataset.targetDepartment = departmentDiv;
+     });
+     iconsDiv.appendChild(addUserIcon);
+  
+     const structureIcon = document.createElement('i');
+     structureIcon.classList.add('fas', 'fa-sitemap');
+     structureIcon.addEventListener('click', () => {
+      departmentStructureContainer.style.display = 'block';
+      overlay.style.display = 'block';
+      activeDepartmentForStructure = departmentDiv; // Store the clicked department
+     });
+     iconsDiv.appendChild(structureIcon);
+  
+     const editIcon = document.createElement('i');
+     editIcon.classList.add('fas', 'fa-pencil-alt');
+     editIcon.addEventListener('click', () => {
+      renameDepartmentContainer.style.display = 'block';
+      overlay.style.display = 'block';
+      renameDepartmentInput.value = nameSpan.textContent;
+      renameDepartmentContainer.dataset.targetDepartmentSpan = nameSpan.id;
+      console.log('Stored targetSpanId in renameDepartmentContainer:', renameDepartmentContainer.dataset.targetDepartmentSpan);
+     });
+     iconsDiv.appendChild(editIcon);
+  
+     const deleteIcon = document.createElement('i');
+     deleteIcon.classList.add('fas', 'fa-trash-alt');
+     deleteIcon.addEventListener('click', () => {
+      deleteConfirmationContainer.style.display = 'block';
+      overlay.style.display = 'block';
+      departmentToDelete = departmentDiv;
+     });
+     iconsDiv.appendChild(deleteIcon);
+  
+     departmentDiv.appendChild(iconsDiv);
+     departmentListContainer.appendChild(departmentDiv);
     }
-
+  
     const cancelAssignRoleButton = document.getElementById('cancelAssignRole');
     const confirmAssignRoleButton = document.getElementById('confirmAssignRole');
-    let currentlyEditingRole = null;
-
+  
     if (cancelAssignRoleButton) {
-        cancelAssignRoleButton.addEventListener('click', () => {
-            assignRoleContainer.style.display = 'none';
-            overlay.style.display = 'none';
-            document.getElementById('positionInput').value = '';
-            document.getElementById('nameInput').value = '';
-            currentlyEditingRole = null; // Reset
-        });
-    }
-
-
-// Automatically populate the "Name" input field when a checkbox is checked
-const nameInput = document.getElementById('nameInput');
-const accountCheckboxes = document.querySelectorAll('.scrollable-account-list input[type="checkbox"]');
-
-accountCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-        const selectedCheckboxes = document.querySelectorAll('.scrollable-account-list input[type="checkbox"]:checked');
-
-        // Ensure only one checkbox is selected
-        if (selectedCheckboxes.length > 1) {
-            alert('You can only select one account.');
-            checkbox.checked = false; // Uncheck the current checkbox
-            return;
-        }
-
-        // Populate the "Name" input field with the selected account's name
-        if (checkbox.checked) {
-            const accountLabel = checkbox.nextElementSibling.textContent; // Get the label text
-            const [fullName] = accountLabel.split(' ('); // Extract the name before the email
-            nameInput.value = fullName.trim(); // Populate the name input field with the name only
-        } else {
-            nameInput.value = ''; // Clear the name input field if unchecked
-        }
-    });
-});
-
- // Confirm Assign Role Button Logic
-if (confirmAssignRoleButton) {
-    confirmAssignRoleButton.addEventListener('click', () => {
-        const positionInput = document.getElementById('positionInput');
-        const position = positionInput.value.trim();
-        const name = nameInput.value.trim();
-
-        // Get all checked checkboxes
-        const selectedAccounts = document.querySelectorAll('.scrollable-account-list input[type="checkbox"]:checked');
-
-        // Validation for inputs and checkboxes
-        if (!position) {
-            alert('Please fill in the Position field.');
-            return;
-        }
-
-        if (selectedAccounts.length === 0) {
-            alert('Please select at least one account.');
-            return;
-        }
-
-        if (selectedAccounts.length > 1) {
-            alert('You can only select one account.');
-            return;
-        }
-
-        // Proceed with assigning the role
-        const selectedAccountLabel = selectedAccounts[0].nextElementSibling.textContent; // Get the label text
-        const [fullName, email] = selectedAccountLabel.split(' ('); // Extract the name and email
-        const emailOnly = email.replace(')', '').trim(); // Remove the closing parenthesis and trim
-
-        const newRoleText = `${position} - ${fullName.trim()} (${emailOnly})`; // Use the name and email
-
-        if (currentlyEditingRole) {
-            // Update the existing role
-            const roleTextSpan = currentlyEditingRole.querySelector('span');
-            roleTextSpan.textContent = newRoleText;
-            currentlyEditingRole = null; // Reset editing state
-        } else {
-            // Create a new role
-            const assignedRoleDiv = document.createElement('div');
-            assignedRoleDiv.classList.add('assigned-role-item');
-            assignedRoleDiv.innerHTML = `
-                <span>${newRoleText}</span>
-                <div class="assigned-role-icons">
-                    <i class="fas fa-pencil-alt edit-role-icon" title="Rename Role"></i>
-                    <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
-                </div>
-            `;
-            const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
-            const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
-            const roleTextSpan = assignedRoleDiv.querySelector('span');
-
-            editRoleIcon.addEventListener('click', () => {
-                const currentRoleText = roleTextSpan.textContent;
-                const [currentPosition, currentName] = currentRoleText.split(' - ');
-                renameRoleInput.value = currentName;
-                currentlyEditingRoleTextSpan = roleTextSpan;
-                renameRoleContainer.style.display = 'block';
-                overlay.style.display = 'block';
-            });
-
-            deleteRoleIcon.addEventListener('click', () => {
-                deleteConfirmationContainer.style.display = 'block';
-                overlay.style.display = 'block';
-                roleToDelete = assignedRoleDiv;
-            });
-
-            currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
-        }
-         // Reset the form and close the modal
-         assignRoleContainer.style.display = 'none';
-         overlay.style.display = 'none';
-         positionInput.value = '';
-         nameInput.value = '';
-         selectedAccounts.forEach(account => account.checked = false); // Uncheck all checkboxes
-         currentTargetDepartment = null;
+     cancelAssignRoleButton.addEventListener('click', () => {
+      assignRoleContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      positionInput.value = '';
+      nameInput.value = '';
+      currentlyEditingRole = null;
+      document.querySelectorAll('.scrollable-account-list input[type="checkbox"]:checked').forEach(checkbox => checkbox.checked = false);
      });
- }
-
+    }
+  
+    if (confirmAssignRoleButton) {
+     confirmAssignRoleButton.addEventListener('click', () => {
+      const position = positionInput.value.trim();
+      const name = nameInput.value.trim();
+      const selectedAccount = document.querySelector('.scrollable-account-list input[type="radio"]:checked');
+  
+      if (!position) {
+       alert('Please fill in the Position field.');
+       return;
+      }
+  
+      if (!selectedAccount) {
+       alert('Please select an account.');
+       return;
+      }
+  
+      const selectedAccountLabel = selectedAccount.nextElementSibling.textContent;
+      const [fullName, email] = selectedAccountLabel.split(' (');
+      const emailOnly = email.replace(')', '').trim();
+      const newRoleText = `${position} - ${fullName.trim()} (${emailOnly})`;
+  
+      if (currentlyEditingRole) {
+       const roleTextSpan = currentlyEditingRole.querySelector('span');
+       roleTextSpan.textContent = newRoleText;
+       currentlyEditingRole = null;
+      } else {
+       const assignedRoleDiv = document.createElement('div');
+       assignedRoleDiv.classList.add('assigned-role-item');
+       assignedRoleDiv.innerHTML = `
+        <span>${newRoleText}</span>
+        <div class="assigned-role-icons">
+         <i class="fas fa-pencil-alt edit-role-icon" title="Edit Role"></i>
+         <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
+        </div>
+       `;
+       const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
+       const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
+       const roleTextSpan = assignedRoleDiv.querySelector('span');
+  
+       editRoleIcon.addEventListener('click', () => {
+        const currentRoleText = roleTextSpan.textContent;
+        const [currentPosition, currentFullNameWithEmail] = currentRoleText.split(' - ');
+        const [currentFullName] = currentFullNameWithEmail.split(' (');
+  
+        positionInput.value = currentPosition;
+        nameInput.value = currentFullName.trim();
+  
+        document.querySelectorAll('.scrollable-account-list .account-item').forEach(item => {
+         const label = item.querySelector('label').textContent;
+         if (label.startsWith(currentFullName.trim())) {
+          item.querySelector('input[type="radio"]').checked = true;
+         } else {
+          item.querySelector('input[type="radio"]').checked = false;
+         }
+        });
+  
+        currentlyEditingRole = assignedRoleDiv;
+        assignRoleContainer.style.display = 'block';
+        overlay.style.display = 'block';
+       });
+  
+       deleteRoleIcon.addEventListener('click', () => {
+        deleteConfirmationContainer.style.display = 'block';
+        overlay.style.display = 'block';
+        roleToDelete = assignedRoleDiv;
+       });
+  
+       currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
+      }
+  
+      assignRoleContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      positionInput.value = '';
+      nameInput.value = '';
+      selectedAccount.checked = false;
+      currentTargetDepartment = null;
+     });
+    }
+  
+    const accountRadios = document.querySelectorAll('.scrollable-account-list input[type="radio"]');
+  
+    accountRadios.forEach(radio => {
+     radio.addEventListener('change', () => {
+      if (radio.checked) {
+       const accountLabel = radio.nextElementSibling.textContent;
+       const [fullName] = accountLabel.split(' (');
+       nameInput.value = fullName.trim();
+      }
+     });
+    });
+  
     if (cancelStructureButton) {
-        cancelStructureButton.addEventListener('click', () => {
-            departmentStructureContainer.style.display = 'none';
-            overlay.style.display = 'none';
-            document.getElementById('structureNameInput').value = ''; // Clear the input
-        });
+     cancelStructureButton.addEventListener('click', () => {
+      departmentStructureContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      structureNameInput.value = '';
+      activeDepartmentForStructure = null; // Clear the active department
+     });
     }
-
+  
     if (confirmStructureButton) {
-        confirmStructureButton.addEventListener('click', () => {
-            const structureName = document.getElementById('structureNameInput').value.trim();
-
-            if (structureName) {
-                console.log('Structure Name:', structureName);
-                departmentStructureContainer.style.display = 'none';
-                overlay.style.display = 'none';
-                document.getElementById('structureNameInput').value = ''; // Clear the input
-            } else {
-                alert('Please enter a structure name.');
-            }
-        });
+     confirmStructureButton.addEventListener('click', () => {
+      const structureName = structureNameInput.value.trim();
+  
+      if (structureName && activeDepartmentForStructure) {
+       const structureDiv = document.createElement('div');
+       structureDiv.classList.add('department-structure-item'); // Add a class for styling
+       structureDiv.textContent = `- ${structureName}`; // Display with a hyphen for indentation
+  
+       // Insert the new structure div after the active department
+       activeDepartmentForStructure.parentNode.insertBefore(structureDiv, activeDepartmentForStructure.nextSibling);
+  
+       departmentStructureContainer.style.display = 'none';
+       overlay.style.display = 'none';
+       structureNameInput.value = '';
+       activeDepartmentForStructure = null; // Clear the active department
+      } else if (!structureName) {
+       alert('Please enter a structure name.');
+      } else if (!activeDepartmentForStructure) {
+       alert('Error: No department selected for structure.');
+       departmentStructureContainer.style.display = 'none';
+       overlay.style.display = 'none';
+       structureNameInput.value = '';
+      }
+     });
     }
-
+  
     if (cancelRenameButton) {
-        cancelRenameButton.addEventListener('click', () => {
-            renameDepartmentContainer.style.display = 'none';
-            overlay.style.display = 'none';
-            renameDepartmentInput.value = '';
-            renameDepartmentContainer.dataset.targetDepartmentSpan = '';
-        });
+     cancelRenameButton.addEventListener('click', () => {
+      renameDepartmentContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      renameDepartmentInput.value = '';
+      renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+     });
     }
-
+  
     if (confirmRenameButton) {
-        confirmRenameButton.addEventListener('click', () => {
-            console.log('--- Confirm Rename Clicked ---'); // Added
-            const newDepartmentName = renameDepartmentInput.value.trim();
-            const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
-            console.log('New department name:', newDepartmentName); // CHECKPOINT C (Relabeled)
-            console.log('Retrieved targetSpanId:', targetSpanId); // CHECKPOINT B (Relabeled)
-
-            console.log('Retrieved targetSpanId on confirm:', targetSpanId); 
-            if (newDepartmentName && targetSpanId) {
-                console.log('Both newDepartmentName and targetSpanId are truthy.'); // Added
-                const targetNameSpan = document.getElementById(targetSpanId);
-                console.log('Attempting to get element with ID:', targetSpanId); // Added
-                console.log('Found targetNameSpan element:', targetNameSpan); // CHECKPOINT D (Relabeled)
-                console.log('Found targetNameSpan element:', targetNameSpan);
-                if (targetNameSpan) {
-                    console.log('targetNameSpan element exists. Updating textContent.'); // Added
-                    targetNameSpan.textContent = newDepartmentName;
-                    renameDepartmentContainer.style.display = 'none';
-                    overlay.style.display = 'none';
-                    renameDepartmentInput.value = '';
-                    renameDepartmentContainer.dataset.targetDepartmentSpan = '';
-                    console.log('Department name updated successfully!'); // CHECKPOINT E (Relabeled)
-                } else {
-                    console.error('Target department name span NOT found!'); // CHECKPOINT F (Relabeled)
-                    alert('Error updating department name.');
-                }
-            } else {
-                console.log('Either newDepartmentName or targetSpanId is falsy.'); // Added
-                if (!newDepartmentName) {
-                    alert('Please enter a new department name.'); // CHECKPOINT G (Relabeled)
-                } else {
-                    console.log('targetSpanId is falsy:', targetSpanId); // Added
-                    alert('Error: Target department information missing.'); // More informative alert
-                }
-            }
-            console.log('--- Confirm Rename Click End ---'); // Added
-        });
+     confirmRenameButton.addEventListener('click', () => {
+      console.log('--- Confirm Rename Clicked ---');
+      const newDepartmentName = renameDepartmentInput.value.trim();
+      const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
+      console.log('New department name:', newDepartmentName);
+      console.log('Retrieved targetSpanId:', targetSpanId);
+  
+      if (newDepartmentName && targetSpanId) {
+       console.log('Both newDepartmentName and targetSpanId are truthy.');
+       const targetNameSpan = document.getElementById(targetSpanId);
+       console.log('Attempting to get element with ID:', targetSpanId);
+       console.log('Found targetNameSpan element:', targetNameSpan);
+       if (targetNameSpan) {
+        console.log('targetNameSpan element exists. Updating textContent.');
+        targetNameSpan.textContent = newDepartmentName;
+        renameDepartmentContainer.style.display = 'none';
+        overlay.style.display = 'none';
+        renameDepartmentInput.value = '';
+        renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+        console.log('Department name updated successfully!');
+       } else {
+        console.error('Target department name span NOT found!');
+        alert('Error updating department name.');
+       }
+      } else {
+       console.log('Either newDepartmentName or targetSpanId is falsy.');
+       if (!newDepartmentName) {
+        alert('Please enter a new department name.');
+       } else {
+        console.log('targetSpanId is falsy:', targetSpanId);
+        alert('Error: Target department information missing.');
+       }
+      }
+      console.log('--- Confirm Rename Click End ---');
+     });
     }
-
+  
     if (cancelDeleteButton) {
-        cancelDeleteButton.addEventListener('click', () => {
-            deleteConfirmationContainer.style.display = 'none';
-            overlay.style.display = 'none';
-            departmentToDelete = null;
-            roleToDelete = null;
-        });
+     cancelDeleteButton.addEventListener('click', () => {
+      deleteConfirmationContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      departmentToDelete = null;
+      roleToDelete = null;
+     });
     }
-
+  
     if (confirmDeleteButton) {
-        confirmDeleteButton.addEventListener('click', () => {
-            if (departmentToDelete) {
-                console.log("Deleting department:", departmentToDelete);
-    
-                // Remove all assigned roles within the department
-                const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
-                assignedRoles.forEach(role => {
-                    console.log("Removing assigned role:", role);
-                    role.remove(); // Remove each assigned role
-                });
-    
-                // Remove the department itself
-                departmentToDelete.remove();
-                departmentToDelete = null;
-    
-                console.log("Department and all assigned roles deleted successfully.");
-            } else if (roleToDelete) {
-                console.log("Deleting role:", roleToDelete);
-                roleToDelete.remove();
-                roleToDelete = null;
-
-                console.log("Role deleted successfully.");
-            }
-    
-            // Close the delete confirmation modal
-            deleteConfirmationContainer.style.display = 'none';
-            overlay.style.display = 'none';
-        });
+     confirmDeleteButton.addEventListener('click', () => {
+      if (departmentToDelete) {
+       console.log("Deleting department:", departmentToDelete);
+       const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
+       assignedRoles.forEach(role => {
+        console.log("Removing assigned role:", role);
+        role.remove();
+       });
+       departmentToDelete.remove();
+       departmentToDelete = null;
+       console.log("Department and all assigned roles deleted successfully.");
+      } else if (roleToDelete) {
+       console.log("Deleting role:", roleToDelete);
+       roleToDelete.remove();
+       roleToDelete = null;
+       console.log("Role deleted successfully.");
+      }
+      deleteConfirmationContainer.style.display = 'none';
+      overlay.style.display = 'none';
+     });
     }
-    
-    
+  
     if (cancelRenameRoleButton) {
-        cancelRenameRoleButton.addEventListener('click', () => {
-            renameRoleContainer.style.display = 'none';
-            overlay.style.display = 'none';
-            renameRoleInput.value = '';
-            currentlyEditingRoleTextSpan = null;
-        });
+     cancelRenameRoleButton.addEventListener('click', () => {
+      renameRoleContainer.style.display = 'none';
+      overlay.style.display = 'none';
+      renameRoleInput.value = '';
+      currentlyEditingRoleTextSpan = null;
+     });
     }
-
+  
     if (confirmRenameRoleButton) {
-        confirmRenameRoleButton.addEventListener('click', () => {
-            const newRoleName = renameRoleInput.value.trim();
-            if (newRoleName && currentlyEditingRoleTextSpan) {
-                const currentRoleTextParts = currentlyEditingRoleTextSpan.textContent.split(' - ');
-                const currentPosition = currentRoleTextParts[0];
-                currentlyEditingRoleTextSpan.textContent = `${currentPosition} - ${newRoleName}`;
-                renameRoleContainer.style.display = 'none';
-                overlay.style.display = 'none';
-                renameRoleInput.value = '';
-                currentlyEditingRoleTextSpan = null;
-            } else {
-                alert('Please enter a new role name.');
-            }
-        });
+     confirmRenameRoleButton.addEventListener('click', () => {
+      const newRoleName = renameRoleInput.value.trim();
+      if (newRoleName && currentlyEditingRoleTextSpan) {
+       const currentRoleTextParts = currentlyEditingRoleTextSpan.textContent.split(' - ');
+       const currentPosition = currentRoleTextParts[0];
+       currentlyEditingRoleTextSpan.textContent = `${currentPosition} - ${newRoleName}`;
+       renameRoleContainer.style.display = 'none';
+       overlay.style.display = 'none';
+       renameRoleInput.value = '';
+       currentlyEditingRoleTextSpan = null;
+      } else {
+       alert('Please enter a new role name.');
+      }
+     });
     }
+   });
+  
+   function showDepartmentManager() {
 });
 
 function showProcessTracker() {
@@ -614,9 +610,7 @@ function showDepartmentManager() {
     const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
     const departmentPanel = document.querySelector('.Department-Manager-Panel');
     const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
-    const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2');
-
-    if (processTrackerPanel) processTrackerPanel.style.display = 'none';
+  
     if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
     if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
     if (departmentPanel) departmentPanel.style.display = 'block';
