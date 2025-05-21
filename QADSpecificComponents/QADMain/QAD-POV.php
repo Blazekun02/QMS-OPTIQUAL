@@ -16,7 +16,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="your-integrity-hash" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    
         <link rel="stylesheet" href="QAD-POV.css">
     </head>
 
@@ -46,7 +46,7 @@
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Role_Manage.png" alt="Icon 6">
-                    <span class="icon-label">Manage Roles</span>
+                    <span class="icon-label">Role Manager</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/QD-Dept_Manage.png" alt="Icon 7" >
@@ -57,7 +57,8 @@
                     <span class="icon-label">Policy Manager</span>
                 </li>
                 <li class="menu-icons">
-                <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                    <span class="icon-label">Reports</span>
+                <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                   
+                <span class="icon-label">Reports</span>
                 </li>
                 <li>
                     <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 10" onclick="showInformation()">
@@ -205,18 +206,63 @@
         </div>
         </div>
 
-      
 
+<div class="Role-Manager-Panel" style="display: none;">
+    <div class="Role-Manager-Header">
+        <h1>Role Manager</h1>
+        <div style="display: flex; align-items: center;">
+            <i class='fas fa-user-plus user-plus-icon' style='font-size:22px;'></i>
+            <div class="RM-Search-Container">
+                <label>
+                    <input type="text" placeholder="Find Employee" id="searchRoleInput">
+                </label>
+                <button id="searchRoleButton"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="RMP-Divider"></div>
+</div>
+
+<div id="overlay" class="RMoverlay" style="display: none;"></div>
+
+<div id="addToTeamPopup" class="popup" style="display: none;">
+    <h2>Add To Team</h2>
+    <div class="search-container">
+        <input type="text" id="searchName" placeholder="Search here...">
+        <div class="search-options">
+            <div class="select-wrapper">
+                <select id="searchBy">
+                    <option value="name">By Name</option>
+                    <option value="email">By Email</option>
+                </select>
+            </div>
+        </div>
+        <div id="suggestions" class="suggestions"></div>
+    </div>
+    <div class="popup-buttons">
+        <button type="button" id="cancelAdd">Cancel</button>
+        <button type="button" id="addSelected">Add</button>
+    </div>
+</div>
+
+<div id="confirmAddPopup" class="popup" style="display: none;">
+    <h2>Confirm adding members?</h2>
+    <div class="popup-buttons">
+        <button type="button" id="confirmCancel" style="background-color: #f2f2f2; color: #1a1a1a;">Cancel</button>
+        <button type="button" id="confirmAdd" style="background-color: #fbaf41; color: white;">Confirm</button>
+    </div>
+</div>
 
 <!-- Department Manager  -->
 <div class="Department-Manager-Panel" style="display: none;">
+
     <div class="Department-Manager-Header">
         <h1>Department Manager</h1>
         <div class="DM-Search-Container">
-            <label>
-                <input type="text" placeholder="Search" id="searchInput">
-            </label>
-            <button id="searchButton"><i class="fas fa-search"></i></button>
+        <label>
+            <input type="text" placeholder="Search" id="searchInput">
+        </label>
+            <button id="searchButton"><i class="fas fa-search"></i></butto>
         </div>
     </div>
     <div class="DMP-Divider"></div>
@@ -228,8 +274,7 @@
     </div>
 </div>
 
-<div id="overlay"></div>
-
+<div class="overlay" id="oVerlay" style="display: none;">
 <div id="assignNameContainer">
     <h2>Assign Name</h2>
     <input type="text" id="departmentNameInput" placeholder="Enter Department Name">
@@ -237,6 +282,7 @@
         <button id="cancelAssignName">Cancel</button>
         <button id="confirmAssignName">Confirm</button>
     </div>
+</div>
 </div>
 
 <div id="assignRoleContainer" class="popup-container" style="display: none;">
@@ -246,17 +292,20 @@
         <input type="text" id="positionInput" placeholder="Enter Position Here">
     </div>
     <div class="form-group">
-        <label for="nameInput">Name</label>
-        <input type="text" id="nameInput" placeholder="Name will display here" readonly>
+        Name:<span id="nameDisplay" style="font-weight: normal;"></span>
     </div>
     <div class="form-group">
-        <label for="accountInput">Assign role to account</label>
+        <label for="accountSearch">Assign role to account:</label>
+        <input type="text" id="accountSearch" placeholder="Search name or email">
+    </div>
+    <div class="form-group">
+        <label for="accountInput"></label>
         <div class="scrollable-account-list">
             <?php
             // Query to fetch accounts from the database
             $query = "SELECT accID, fullName, email FROM accdatatbl";
             $result = mysqli_query($conn, $query);
-                if (mysqli_num_rows($result) > 0) {
+            if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
                     echo '<input type="radio" id="account-' . $row['accID'] . '" name="selectedAccount" value="' . $row['accID'] . '">';
@@ -297,49 +346,157 @@
     </div>
 </div>
 
-
 <div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
     <h2>Confirm Deletion?</h2>
     <div class="button-group">
         <button id="cancelDelete">Cancel</button>
-        <button id="confirmDelete">Confirm</button>
+        <button id="confirmDeleteButton">Confirm</button>
     </div>
 </div>
-
-<div id="renameRoleContainer" class="renameroleContainer" style="display: none;">
-    <h2>Rename Role</h2>
-    <div class="form-group">
-        <input type="text" id="renameRoleInput" placeholder="Enter New Role Name">
-    </div>
-    <div class="button-group">
-        <button id="cancelRenameRole">Cancel</button>
-        <button id="confirmRenameRole">Confirm</button>
-    </div>
-</div>
-
-
 
 
 
 <!-- Policy Manager -->
-          <div class="Policy-Manager-Panel" style="display:none;">
-            <div class="Policy-Manager-Header">
-                <h1>Policy Manager</h1>
+<div class="Policy-Manager-Panel" style="display: none;">
 
-                <div class="PM-Search-Container">
-                    <label>
-                        <input type="text" placeholder="Search" id="searchInput">
-                    </label>
-                    <button id="searchButton"><i class="fas fa-search"></i></button>
-                </div>
-                 
-          </div>
-          <div class="PMP-Divider"></div>
- 
-        <div class="add-policy-button">
-            <button class="add-policy-button">+</button>
+<div class="Policy-Manager-Header">
+    <h1>Policies Manager</h1>
+    <div class="PM-Search-Container">
+    <label>
+        <input type="text" placeholder="Search" id="searchPolicyInput">
+    </label>
+        <button id="searchPolicyButton"><i class="fas fa-search"></i></butto>
+    </div>
+</div>
+<div class="PMP-Divider"></div>
+
+<div class="add-policy-button">
+    <button id="addPolicyButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em; margin-top: 0.9em;">+ Add </button>
+</div>
+<div id="policyItemsContainer">
+    </div>
+</div>
+
+<div class="modalOverlay" id="modalOverlay" style="display: none;">
+<div id="newPolicyModal">
+    <h2>Assign Name</h2>
+    <input type="text" id="policyNameInput" placeholder="Enter Policy Name">
+    <div class="modalButtons">
+        <button id="cancelNewPolicy">Cancel</button>
+        <button id="confirmNewPolicy">Confirm</button>
+    </div>
+</div>
+</div>
+
+<div id="uploadPolicyModal" class="modalContainer" style="display: none;">
+    <h2>Upload Policy</h2>
+    <div class="formGroup">
+        <label for="policyTitle">Policy Title</label>
+        <input type="text" id="policyTitle" placeholder="Enter Policy Title">
+    </div>
+    <div class="formGroup">
+        <label for="myFile"><label>
+        <form action="/action_page.php">
+            <input type="file" id="myFile" name="filename">
+        </form>
+    </div>
+    <div class="buttonGroup">
+        <button id="cancelUploadPolicy">Cancel</button>
+        <button id="confirmUploadPolicy">Confirm</button>
+    </div>
+</div>
+
+<div id="policyStructureModal" style="display: none;">
+    <h2>Policy Subfolder Name</h2>
+    <div class="formGroup">
+        <input type="text" id="policyStructureNameInput" placeholder="Enter Name">
+    </div>
+    <div class="buttonGroup">
+        <button id="cancelStructureView">Cancel</button>
+        <button id="confirmStructureView">Confirm</button>
+    </div>
+</div>
+
+<div id="renamePolicyModal" class="modalContainer" style="display: none;">
+    <h2>Rename Policy</h2>
+    <div class="formGroup">
+        <input type="text" id="renamePolicyInput" placeholder="Enter New Name">
+    </div>
+    <div class="buttonGroup">
+        <button id="cancelRenamePolicy">Cancel</button>
+        <button id="confirmRenamePolicy">Confirm</button>
+    </div>
+</div>
+
+<div id="deletePolicyModal" class="modalContainer" style="display: none;">
+    <h2>Confirm Deletion?</h2>
+    <div class="buttonGroup">
+        <button id="cancelDeletePolicy">Cancel</button>
+        <button id="confirmDeletePolicy">Confirm</button>
+    </div>
+</div>
+
+
+<!-- reports -->
+<div class="reports-Panel" style="display: none;">
+
+<div class="reports-Header">
+    <h1>Reports</h1>
+</div>
+<div class="reports-Divider"></div>
+
+<div class="reports-list-container">
+    <div class="report-item">
+        <div class="report-header">
+            <i class="arrow-icon fas fa-caret-right"></i>
+            <span>Number of Active Policies</span>
         </div>
-</div>   
+        <div class="report-content">
+                <p>Details for Number of Active Policies will go here.</p>
+            </div>
+    </div>
+
+    <div class="report-item">
+        <div class="report-header">
+            <i class="arrow-icon fas fa-caret-right"></i>
+            <span>Rejected Policies</span>
+        </div>
+        <div class="report-content">
+            <p>Details for Number of Rejected Policies will go here.</p>
+            </div>
+    </div>
+
+    <div class="report-item">
+        <div class="report-header">
+            <i class="arrow-icon fas fa-caret-right"></i>
+            <span>Number of Reviewed Verified and Approved Policy</span>
+        </div>
+        <div class="report-content">
+            <p>Details for Number of Reviewed Verified and Approved Policies will go here.</p>
+            </div>
+    </div>
+
+    <div class="report-item">
+        <div class="report-header">
+            <i class="arrow-icon fas fa-caret-right"></i>
+            <span>Feedback Received and Actions Taken</span>
+        </div>
+        <div class="report-content">
+                <p>Details for Feedback Received and Actions taken will go here.</p>
+            </div>
+    </div>
+
+    <div class="report-item">
+        <div class="report-header">
+            <i class="arrow-icon fas fa-caret-right"></i>
+            <span>Percentage of People per Department that Provides Feedback</span>
+        </div>
+        <div class="report-content">
+              <p>Percentage of People per Department that Provides Feedback will go here.</p>
+            </div>
+    </div>
+</div>
+
 
 <script src="QAD-POV.js"></script>
 
