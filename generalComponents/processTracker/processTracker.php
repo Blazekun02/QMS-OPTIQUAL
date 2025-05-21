@@ -1,16 +1,8 @@
-<?php
-include("../../connect.php");  
-
-?>
 
 <style>
 /* Process Tracker */
-
-
-
 .Process-Tracker-Panel {
     position: absolute;
-    display: block;
     background-color: #293A82;
     border-radius: 20px;
     top: 100px;
@@ -70,6 +62,11 @@ tr.folder-row td:last-child {
     border-bottom-right-radius: 10px;
 }
 
+tr.folder-row td:nth-child(4) {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
 thead th:first-child {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
@@ -118,72 +115,106 @@ thead th:last-child {
         </thead>
         <tbody>
             <?php 
-                $processTrack = "SELECT p.*, s.policyStatusName 
-                                FROM policytbl p 
-                                LEFT JOIN policystatus s 
-                                ON p.policyStatusID = s.policyStatusID 
-                                ORDER BY dateSubmitted DESC";
+                
 
-                $my_sqli = mysqli_query($conn, $processTrack);  
+                include("../../connect.php");
+                
+                // Validate and assign $currentAccID
+                if (isset($_SESSION['accID'])) {
+                    $currentAccID = (int) $_SESSION['accID']; // Cast to integer for safety
+                } else {
+                    die("User not logged in or session expired."); // Handle missing session
+                }
+                
+                // SQL query
+                $processTrack = "SELECT p.*, s.policyStatusName 
+                 FROM policytbl p 
+                 LEFT JOIN policystatus s ON p.policyStatusID = s.policyStatusID 
+                 WHERE p.policyAuthor = $currentAccID 
+                 ORDER BY dateSubmitted DESC";
+                
+                $my_sqli = mysqli_query($conn, $processTrack);
+                
+                if (!$my_sqli) {
+                    die("Error in SQL query: " . mysqli_error($conn)); // Debugging SQL errors
+                }
 
                 while ($row = mysqli_fetch_assoc($my_sqli)) { 
             ?>
-                <tr class="folder-row" data-id="<?= $row['policyID'] ?>">
+                <form method="POST" style="margin: 0;">
+                <tr class="folder-row" data-id="<?= $row['policyID'] ?>" data-title="<?= htmlspecialchars($row['title']) ?>">
                     <td><?= htmlspecialchars($row['title']) ?></td>
                     <td><?= htmlspecialchars($row['dateSubmitted']) ?></td>
                     <td><?= htmlspecialchars($row['versionNo'] ?? 'New') ?></td>
                     <td><?= htmlspecialchars($row['policyStatusName'] ?? 'Pending') ?></td>
+                    <td style= "display: none"><?= htmlspecialchars($row['policyID'] ?? '0') ?></td>
                 </tr>
+                </form>
             <?php } ?>
         </tbody>
     </table>
-
 </div>
 
 <style>
-    .Process-Tracker-Content {
-        position: absolute;
-        display: none;
-        background-color: #293A82;
-        border-radius: 20px;
-        top: 100px;
-        left: 0.9in;    
-        width: calc(100% - 1.3in);
-        height: calc(100vh - 169px);
-        border: 2px solid red;
-        z-index: 1;
-        padding-left: 10px;
-       padding-right: 10px;
-    }
+.Process-Tracker-Content {
+    position: absolute;
+    background-color: #293A82;
+    border-radius: 20px;
+    top: 100px;
+    left: 0.9in;    
+    width: calc(100% - 1.3in);
+    height: calc(100vh - 169px);
+    border: 2px solid red;
+    z-index: 1;
+    padding-left: 10px;
+    padding-right: 10px;
+}
 
-    .Process-Tracker-Content-Header {
-        display: flex;
-        position: relative;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
+.Process-Tracker-Content-Header {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
 
-    .PTC-Divider {
-        position: absolute;
-        top: 60px;
-        background-color:  black;
-        width: 100%;
-        height: 2px;
-    }
+}
 
-    .PTC-Trackers {
-        display: flex;
-        justify-content: space-around; /* or space-between / gap */
-        align-items: center;
-        height: 75px;
-       
-        
-    }
+.PTC-Divider {
+    position: absolute;
+    top: 60px;
+    background-color:  black;
+    width: 100%;
+    height: 2px;
+}
 
-   
+.PTC-Trackers {
+    display: flex;
+    justify-content: space-around; /* or space-between / gap */
+    align-items: center;
+    height: 75px;
+}
 
-    .circle_container {
+.PTC-Header-Buttons {
+    margin-left: auto; /* Push the button to the right */
+
+}
+
+.PTCtoggleButton {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 10px;
+    transition: color 0.3s ease;
+}
+
+.PTCtoggleButton:hover {
+    background-color:rgb(9, 10, 85); /* Change to your desired hover color */
+}
+
+.circle_container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -205,124 +236,113 @@ thead th:last-child {
     line-height: 1.2;
 }
 
-    .circle {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        }
+.circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .status-green {
-        background-color: green;
-    }
+.status-green {
+    background-color: green;
+}
 
-    .status-red {
-        background-color: red;
-    }
+.status-red {
+    background-color: red;
+}
 
-    .status-gray {
-        background-color: gray;
-    }
-    
+.status-gray {
+    background-color: gray;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 10px;
+    transition: color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color:rgb(9, 10, 85); /* Change to your desired hover color */
+}
 
 </style>
 
-<div class="Process-Tracker-Content">
+<div class="Process-Tracker-Content" style = "display: none;">
     
     <div class="Process-Tracker-Content-Header">
-        <h1>Process Tracker</h1>
+    <button id="backButton" class="back-button">←</button>
+        <h1 id="PTC-Header-Title">Process Tracker</h1>
         <div class="PTC-Header-Buttons">
-            <button id="PTCtoggleButton">VIEW FEEDDBACKS</button>
+            <button class="PTCtoggleButton"id="PTCtoggleButton">VIEW FEEDDBACKS</button>
         </div>
         <div class="PTC-Divider"></div>
     </div>
     <div class="PTC-Trackers">
-        <!-- Process Tracker Circles will be loaded here via AJAX -->
-    </div>
 
     <?php
-include("../../connect.php");
-
-$policyID = $_GET['policyID'];
-
-$query = "
-    SELECT p.*, 
-           r.lName AS reviewerName, 
-           v.lName AS verifierName, 
-           a.lName AS approverName
-    FROM policytbl p
-    LEFT JOIN accdatatbl r ON p.policyReviewer = r.accID
-    LEFT JOIN accdatatbl v ON p.policyVerifier = v.accID
-    LEFT JOIN accdatatbl a ON p.policyApprover = a.accID
-    WHERE p.policyID = $policyID
-    LIMIT 1
-";
-
-$result = mysqli_query($conn, $query);
-$policy = mysqli_fetch_assoc($result);
-
-$statusID = (int) ($policy['policyStatusID'] ?? 0);
-
-function getCircleClass($step, $statusID) {
-    if ($step < $statusID) return 'status-green';
-    if ($step == $statusID) return 'status-green';
-    if ($step == $statusID + 1) return 'status-red';
-    return 'status-gray';
-}
-?>
-
-<div class="circle_container">
-    <p><em>Submitted</em></p>
-    <div class="circle <?= getCircleClass(1, $statusID) ?>"></div>
-    <span><?= htmlspecialchars($policy['dateSubmitted']) ?></span>
-</div>
-<div class="circle_container">
-    <p><em>Reviewed</em></p>
-    <div class="circle <?= getCircleClass(2, $statusID) ?>"></div>
-    <span><?= htmlspecialchars($policy['dateReviewed'] ?? '-') ?></span>
-    <span><?= htmlspecialchars($policy['reviewerName'] ?? 'No Reviewer') ?></span>
-</div>
-<div class="circle_container">
-    <p><em>Verified</em></p>
-    <div class="circle <?= getCircleClass(3, $statusID) ?>"></div>
-    <span><?= htmlspecialchars($policy['dateVerified'] ?? '-') ?></span>
-    <span><?= htmlspecialchars($policy['verifierName'] ?? 'No Verifier') ?></span>
-</div>
-<div class="circle_container">
-    <p><em>Approved</em></p>
-    <div class="circle <?= getCircleClass(4, $statusID) ?>"></div>
-    <span><?= htmlspecialchars($policy['dateApproved'] ?? '-') ?></span>
-    <span><?= htmlspecialchars($policy['approverName'] ?? 'No Approver') ?></span>
-</div>
-<div class="circle_container">
-    <p><em>Uploaded</em></p>
-    <div class="circle <?= getCircleClass(5, $statusID) ?>"></div>
-    <span><?= htmlspecialchars($policy['dateUploaded'] ?? '-') ?></span>
-</div>
+        include ("processTracker_PolicyDetails.php");
+        
+        
+        ?>
+    
+  
 
 
-</div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.folder-row').forEach(row => {
         row.addEventListener('click', function() {
-            const policyID = this.getAttribute('data-id');
-            console.log("Clicked policy ID:", policyID); // Debug log
-
-            document.querySelector('.Process-Tracker-Panel').style.display = 'none';
+            const title = row.getAttribute('data-title');
             document.querySelector('.Process-Tracker-Content').style.display = 'block';
+            document.querySelector('.Process-Tracker-Panel').style.display = 'none';
+            document.getElementById('PTC-Header-Title').textContent = title;
+        });
+    });
 
-            fetch('load_process_tracker.php?policyID=' + policyID)
-                .then(response => response.text())
-                .then(html => {
-                    document.querySelector('.PTC-Trackers').innerHTML = html;
-                });
+    document.getElementById('backButton').addEventListener('click', function() {
+        document.querySelector('.Process-Tracker-Content').style.display = 'none';
+        document.querySelector('.Process-Tracker-Panel').style.display = 'block';
+    });
+
+
+    document.querySelectorAll('.folder-row').forEach(row => {
+    row.addEventListener('click', function () {
+        const policyID = row.getAttribute('data-id');
+        const title = row.getAttribute('data-title');
+
+        // Hide panel, show content
+        document.querySelector('.Process-Tracker-Panel').style.display = 'none';
+        document.querySelector('.Process-Tracker-Content').style.display = 'block';
+        document.getElementById('PTC-Header-Title').textContent = title;
+
+        // Fetch data from PHP using AJAX
+        fetch('../../generalComponents/processTracker/processTracker_PolicyDetails.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'policyID=' + encodeURIComponent(policyID)
+        })
+        .then(response => response.text())  // Expecting HTML
+        .then(html => {
+            document.querySelector('.PTC-Trackers').innerHTML = html;  // Insert the HTML
         });
     });
 });
+
+
+
+
+
+    
+
+
 </script>
 <!-- <script>
  

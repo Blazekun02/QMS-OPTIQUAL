@@ -51,6 +51,7 @@ function showPolicyRepository() {
     console.log("Policy Repository Triggered");
     policyRepositoryPanel.style.display = 'block';
     policySubmissionPanel.style.display = 'none';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none'; 
     roleManagerPanel.style.display='none';
     policyManagerPanel.style.display='none';
@@ -64,6 +65,7 @@ function showPolicySubmission() {
 
     policyRepositoryPanel.style.display = 'none';
     policySubmissionPanel.style.display = 'flex';
+    processTrackerPanel.style.display = 'none';
     departmentPanel.style.display = 'none';
     roleManagerPanel.style.display='none';
     policyManagerPanel.style.display='none';
@@ -824,6 +826,20 @@ if (departmentToDelete) {
 });
 
 function showDepartmentManager() {
+   });
+  
+   function showDepartmentManager() {
+});
+
+function showProcessTracker() {
+    policyRepositoryPanel.style.display = 'none';
+    policySubmissionPanel.style.display = 'none';
+    processTrackerPanel.style.display = 'block';
+    departmentPanel.style.display = 'none'; 
+}
+    
+
+function showDepartmentManager() {
     const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
     const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
     const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
@@ -1398,7 +1414,8 @@ function showPolicyManager() {
 function showRoleManager() {
     const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
     const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
-    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const roleManagerPanel = document.querySelector('.menu-icons:nth-child(3)').addEventListener('click', showProcessTracker);
+document.querySelector('.Role-Manager-Panel');
     const departmentPanel = document.querySelector('.Department-Manager-Panel');
     const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
     const reportPanel = document.querySelector('.reports-Panel');
@@ -1452,3 +1469,49 @@ function showReports() {
             });
         });
     });
+
+// Refresh the page every 5 seconds if there are updates
+let lastUpdate = null;
+
+function checkForUpdates() {
+    fetch('../../generalComponents/Refresh/Policy_Repo_Refresh.php')
+        .then(response => response.text())
+        .then(timestamp => {
+            if (lastUpdate === null) {
+                lastUpdate = timestamp;
+            } else if (lastUpdate !== timestamp) {
+                location.reload(); // Page refresh
+            }
+        });
+}
+
+// Check every 5 seconds
+setInterval(checkForUpdates, 5000);
+
+document.querySelectorAll('.PR-Policies').forEach(policy => {
+    policy.addEventListener('click', function () {
+        const filePath = policy.getAttribute('data-file'); // Get the file path from the data-file attribute
+        console.log('File path:', filePath); // Debugging
+
+        const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+        pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
+
+        if (typeof loadPDF === 'function') {
+            loadPDF(filePath); // Dynamically load the PDF
+        } else {
+            console.error("loadPDF function not found.");
+        }
+
+        policyRepositoryPanel.style.display = 'none';
+    });
+    
+});
+
+// const PRpdfUrl = filePath;
+//         pdfjsLib.getDocument(url).promise.then(pdfDoc => {
+//             window.pdfDoc = pdfDoc_;
+//             console.log('PDF loaded:', pdfDoc); // Debugging
+//             renderPage(1);
+//         })
+
+// url

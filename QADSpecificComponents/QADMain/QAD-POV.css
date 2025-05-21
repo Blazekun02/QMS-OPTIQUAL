@@ -874,6 +874,7 @@ body {
     z-index: 1;
     overflow: visible;
     white-space: normal;
+    border: 2px solid red;
 }
 
 .DMP-Divider {
