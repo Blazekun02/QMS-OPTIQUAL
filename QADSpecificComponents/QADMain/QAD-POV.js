@@ -826,10 +826,600 @@ if (departmentToDelete) {
 });
 
 function showDepartmentManager() {
-   });
-  
-   function showDepartmentManager() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'block';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+}
+
+
+function showPolicyRepository() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showPolicySubmission() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'block';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showPolicyManager() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'block';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showRoleManager() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='block';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showReports() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'block';
+
+}
+
+
+
+
+// POLICY MANAGER
+document.addEventListener('DOMContentLoaded', () => {
+
+      function generateUniqueId() {
+        return 'policy-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+    }
+    const addPolicyButton = document.getElementById('addPolicyButton');
+    const newPolicyModal = document.getElementById('newPolicyModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const cancelNewPolicyButton = document.getElementById('cancelNewPolicy');
+    const confirmNewPolicyButton = document.getElementById('confirmNewPolicy');
+    const policyNameInput = document.getElementById('policyNameInput');
+    const policyItemsContainer = document.getElementById('policyItemsContainer');
+    const uploadPolicyModal = document.getElementById('uploadPolicyModal');
+    const cancelUploadPolicyButton = document.getElementById('cancelUploadPolicy');
+    const confirmUploadPolicyButton = document.getElementById('confirmUploadPolicy');
+    const policyTitleInput = document.getElementById('policyTitle');
+    const policyStructureModal = document.getElementById('policyStructureModal');
+    const cancelStructureViewButton = document.getElementById('cancelStructureView');
+    const confirmStructureViewButton = document.getElementById('confirmStructureView');
+    const policyStructureNameInput = document.getElementById('policyStructureNameInput');
+    const renamePolicyModal = document.getElementById('renamePolicyModal');
+    const cancelRenamePolicyButton = document.getElementById('cancelRenamePolicy');
+    const confirmRenamePolicyButton = document.getElementById('confirmRenamePolicy');
+    const renamePolicyInput = document.getElementById('renamePolicyInput');
+    const deletePolicyModal = document.getElementById('deletePolicyModal');
+    const cancelDeletePolicyButton = document.getElementById('cancelDeletePolicy');
+    const confirmDeletePolicyButton = document.getElementById('confirmDeletePolicy');
+    let policyToDelete = null;
+    let currentTargetPolicy = null;
+    let activePolicyForStructure = null;
+    let currentlyEditingStructureSpan = null;
+    let itemToDelete = null;
+
+    addPolicyButton.addEventListener('click', () => {
+        modalOverlay.style.display = 'flex';
+        newPolicyModal.style.display = 'block';
+    });
+
+    cancelNewPolicyButton.addEventListener('click', () => {
+        newPolicyModal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+        policyNameInput.value = '';
+    });
+
+    confirmNewPolicyButton.addEventListener('click', () => {
+        const policyName = policyNameInput.value.trim();
+        if (policyName) {
+            displayNewPolicy(policyName);
+            newPolicyModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            policyNameInput.value = '';
+        } else {
+            alert('Please enter a policy name.');
+        }
+    });
+
+    function displayNewPolicy(name) {
+        const policyDiv = document.createElement('div');
+        policyDiv.classList.add('policyRecord');    
+        const policyId = generateUniqueId();
+        policyDiv.dataset.policyId = policyId;
+        policyDiv.dataset.policyName = name;
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        nameSpan.id = `policy-name-${Date.now()}`;
+        policyDiv.appendChild(nameSpan);
+
+        const iconsDiv = document.createElement('div');
+        iconsDiv.classList.add('recordActions');
+
+        const uploadIcon = document.createElement('i');
+        uploadIcon.classList.add('fas', 'fa-file-alt', 'upload-policy-icon');
+        uploadIcon.title = 'Upload Policy';
+        uploadIcon.addEventListener('click', () => {
+            uploadPolicyModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+            currentTargetPolicy = policyDiv;
+        });
+        iconsDiv.appendChild(uploadIcon);
+
+        const structureIcon = document.createElement('i');
+        structureIcon.classList.add('fas', 'fa-folder', 'view-structure-icon');
+        structureIcon.title = 'View Structure';
+        structureIcon.addEventListener('click', () => {
+            policyStructureModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+            activePolicyForStructure = policyDiv;
+        });
+        iconsDiv.appendChild(structureIcon);
+
+        const editIcon = document.createElement('i');
+        editIcon.classList.add('fas', 'fa-pencil-alt', 'rename-icon');
+        editIcon.title = 'Rename Policy';
+        editIcon.addEventListener('click', () => {
+            renamePolicyModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+            renamePolicyInput.value = nameSpan.textContent;
+            renamePolicyModal.dataset.targetPolicySpan = nameSpan.id;
+        });
+        iconsDiv.appendChild(editIcon);
+
+        const deleteIcon = document.createElement('i');
+        deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-icon');
+        deleteIcon.title = 'Delete Policy';
+        deleteIcon.addEventListener('click', () => {
+            console.log('Delete button clicked for:', policyDiv);
+            deletePolicyModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+            policyToDelete = policyDiv;
+        });
+        iconsDiv.appendChild(deleteIcon);
+
+        policyDiv.appendChild(iconsDiv);
+    policyItemsContainer.prepend(policyDiv);
+         const uploadedFilesContainer = document.createElement('div');
+        uploadedFilesContainer.classList.add('uploaded-files-container');
+        policyDiv.appendChild(uploadedFilesContainer);
+    }
+
+
+    if (cancelUploadPolicyButton) {
+        cancelUploadPolicyButton.addEventListener('click', () => {
+            uploadPolicyModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            policyTitleInput.value = '';
+            document.querySelector('#uploadPolicyModal input[type="file"]').value = '';
+        });
+    }
+
+  if (confirmUploadPolicyButton) {
+    confirmUploadPolicyButton.addEventListener('click', () => {
+        const uploadPolicyModal = document.getElementById('uploadPolicyModal');
+        const policyTitleInput = uploadPolicyModal.querySelector('input[name="policyTitle"], #policyTitle');
+        const fileInput = uploadPolicyModal.querySelector('input[type="file"]');
+        const policyTitle = policyTitleInput ? policyTitleInput.value.trim() : '';
+        const fileSelected = fileInput && fileInput.files && fileInput.files.length > 0;
+
+        if (!policyTitle) {
+            alert('Please input a policy title.');
+            return;
+        }
+        if (!fileSelected) {
+            alert('Please select a policy file.');
+            return;
+        }
+
+        if (currentTargetPolicy) {
+            const file = fileInput.files[0];
+          const fileDiv = document.createElement('div');
+        fileDiv.classList.add('uploaded-policy-item');
+        fileDiv.dataset.parentId = currentTargetPolicy.dataset.policyId; // <-- This line is crucial!
+        fileDiv.innerHTML = `<span>${policyTitle}: ${file.name}</span>`;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.classList.add('upload-actions');
+
+            const editIcon = document.createElement('i');
+            editIcon.classList.add('fas', 'fa-pencil-alt', 'edit-upload-icon');
+            editIcon.title = 'Edit Uploaded Policy';
+            // Add event listener for edit if needed
+
+            const deleteIcon = document.createElement('i');
+            deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-upload-icon');
+            deleteIcon.title = 'Delete Uploaded Policy';
+            // Add event listener for delete if needed
+
+            actionsDiv.appendChild(editIcon);
+            actionsDiv.appendChild(deleteIcon);
+
+            fileDiv.appendChild(actionsDiv);
+
+            currentTargetPolicy.parentNode.insertBefore(fileDiv, currentTargetPolicy.nextSibling);
+        }
+
+        uploadPolicyModal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+        policyTitleInput.value = '';
+        fileInput.value = '';
+        currentTargetPolicy = null;
+    });
+}
+
+    if (cancelStructureViewButton) {
+        cancelStructureViewButton.addEventListener('click', () => {
+            policyStructureModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            policyStructureNameInput.value = '';
+            activePolicyForStructure = null;
+            currentlyEditingStructureSpan = null;
+        });
+    }
+
+    if (confirmStructureViewButton) {
+    confirmStructureViewButton.addEventListener('click', () => {
+        const structureName = policyStructureNameInput.value.trim();
+
+        if (structureName && activePolicyForStructure) {
+            const policyId = activePolicyForStructure.dataset.policyId;
+
+            if (currentlyEditingStructureSpan) {
+                currentlyEditingStructureSpan.textContent = structureName;
+                policyStructureModal.style.display = 'none';
+                modalOverlay.style.display = 'none';
+                policyStructureNameInput.value = '';
+                currentlyEditingStructureSpan = null;
+                activePolicyForStructure = null;
+                return;
+            }
+
+        const structureDiv = document.createElement('div');
+        structureDiv.classList.add('policyStructureItem');
+        const structureId = generateUniqueId();
+        structureDiv.dataset.policyId = structureId;
+        structureDiv.dataset.parentId = activePolicyForStructure.dataset.policyId;
+
+           structureDiv.innerHTML = `
+            <span>${structureName}</span>
+            <div class="structureIcons">
+                <i class="fas fa-file-alt upload-policy-icon" title="Upload Policy"></i>
+                <i class="fas fa-pencil-alt edit-structure-icon" title="Edit Structure"></i>
+                <i class="fas fa-trash-alt delete-structure-icon" title="Delete Structure"></i>
+            </div>
+        `;
+
+            const editStructureIcon = structureDiv.querySelector('.edit-structure-icon');
+            const deleteStructureIcon = structureDiv.querySelector('.delete-structure-icon');
+            const structureNameSpan = structureDiv.querySelector('span');
+            const uploadIcon = structureDiv.querySelector('.upload-policy-icon');
+
+            uploadIcon.addEventListener('click', () => {
+                uploadPolicyModal.style.display = 'block';
+                modalOverlay.style.display = 'block';
+                currentTargetPolicy = structureDiv;
+            });
+
+            editStructureIcon.addEventListener('click', () => {
+                const currentStructureName = structureNameSpan.textContent;
+                policyStructureNameInput.value = currentStructureName;
+                policyStructureModal.style.display = 'block';
+                modalOverlay.style.display = 'block';
+                currentlyEditingStructureSpan = structureNameSpan;
+                activePolicyForStructure = structureDiv.parentNode;
+            });
+
+            deleteStructureIcon.addEventListener('click', () => {
+                console.log('Deleting structure item initiated for:', structureDiv);
+                deletePolicyModal.style.display = 'block';
+                modalOverlay.style.display = 'block';
+                itemToDelete = structureDiv;
+            });
+
+            // Find the first uploaded policy item that is a direct sibling
+            let insertionPoint = activePolicyForStructure.nextSibling;
+            while (insertionPoint && !insertionPoint.classList.contains('uploaded-policy-item')) {
+                insertionPoint = insertionPoint.nextSibling;
+            }
+
+            // Insert the new subfolder before the first uploaded policy item (or after the main folder if none exist)
+            activePolicyForStructure.parentNode.insertBefore(structureDiv, insertionPoint);
+
+            policyStructureModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            policyStructureNameInput.value = '';
+            activePolicyForStructure = null;
+        } else if (!structureName && currentlyEditingStructureSpan) {
+            alert('Please enter a new structure name.');
+        } else if (!structureName) {
+            alert('Please enter a structure name.');
+        } else if (!activePolicyForStructure) {
+            alert('Error: No policy selected for structure.');
+            policyStructureModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            policyStructureNameInput.value = '';
+        }
+    });
+}
+
+    if (cancelRenamePolicyButton) {
+        cancelRenamePolicyButton.addEventListener('click', () => {
+            renamePolicyModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            renamePolicyInput.value = '';
+            renamePolicyModal.dataset.targetPolicySpan = '';
+        });
+    }
+
+    if (confirmRenamePolicyButton) {
+        confirmRenamePolicyButton.addEventListener('click', () => {
+            const newPolicyName = renamePolicyInput.value.trim();
+            const targetSpanId = renamePolicyModal.dataset.targetPolicySpan;
+
+            if (newPolicyName && targetSpanId) {
+                const targetNameSpan = document.getElementById(targetSpanId);
+                if (targetNameSpan) {
+                    targetNameSpan.textContent = newPolicyName;
+                    renamePolicyModal.style.display = 'none';
+                    modalOverlay.style.display = 'none';
+                    renamePolicyInput.value = '';
+                    renamePolicyModal.dataset.targetPolicySpan = '';
+                } else {
+                    alert('Error updating policy name.');
+                }
+            } else {
+                if (!newPolicyName) {
+                    alert('Please enter a new policy name.');
+                } else {
+                    alert('Error: Target policy information missing.');
+                }
+            }
+        });
+    }
+
+    if (cancelDeletePolicyButton) {
+        cancelDeletePolicyButton.addEventListener('click', () => {
+            deletePolicyModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            policyToDelete = null;
+            itemToDelete = null;
+        });
+    }
+
+    if (confirmDeletePolicyButton) {
+        confirmDeletePolicyButton.addEventListener('click', () => {
+            if (policyToDelete) {
+                recursivelyDeletePolicyItem(policyToDelete);
+                policyToDelete = null;
+            } else if (itemToDelete) {
+                recursivelyDeleteStructureItem(itemToDelete);
+                itemToDelete = null;
+            }
+            deletePolicyModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+        });
+    }
+
+    function recursivelyDeletePolicyItem(itemToDelete) {
+    const policyIdToDelete = itemToDelete.dataset.policyId;
+
+    // Delete all subfolders (policyStructureItem) with this as parent
+    const childStructures = document.querySelectorAll(`.policyStructureItem[data-parent-id="${policyIdToDelete}"]`);
+    childStructures.forEach(child => recursivelyDeletePolicyItem(child));
+
+    // Delete all uploaded files under this folder
+    const uploadedFiles = document.querySelectorAll(`.uploaded-policy-item[data-parent-id="${policyIdToDelete}"]`);
+    uploadedFiles.forEach(file => file.remove());
+
+    // Remove the current item
+    itemToDelete.remove();
+}
+
+// When confirming delete:
+if (confirmDeletePolicyButton) {
+    confirmDeletePolicyButton.addEventListener('click', () => {
+        if (policyToDelete) {
+            recursivelyDeletePolicyItem(policyToDelete);
+            policyToDelete = null;
+        } else if (itemToDelete) {
+            recursivelyDeletePolicyItem(itemToDelete);
+            itemToDelete = null;
+        }
+        deletePolicyModal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+    });
+}
+
+ const reportItems = document.querySelectorAll('.report-item');
+
+        reportItems.forEach(item => {
+            const header = item.querySelector('.report-header');
+            const content = item.querySelector('.report-content');
+            const arrowIcon = item.querySelector('.arrow-icon');
+
+            // Initially hide all content areas
+            content.style.display = 'none';
+
+            header.addEventListener('click', () => {
+                // Toggle the display of the content area
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+
+                // Toggle the arrow icon direction
+                arrowIcon.classList.toggle('fa-caret-right');
+                arrowIcon.classList.toggle('fa-caret-down');
+            });
+        });
+
 });
+
+function showDepartmentManager() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'block';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+}
+
+
+function showPolicyRepository() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showPolicySubmission() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'block';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showPolicyManager() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'block';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showRoleManager() {
+      const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='block';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'none';
+
+}
+
+function showReports() {
+    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+    const reportPanel = document.querySelector('.reports-Panel');
+
+    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display='none';
+    if (departmentPanel) departmentPanel.style.display = 'none';
+    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
+    if (reportPanel) reportPanel.style.display= 'block';
+
+}
+
 
 function showProcessTracker() {
     policyRepositoryPanel.style.display = 'none';
@@ -940,7 +1530,7 @@ function showPolicyManager() {
 }
 
 function showRoleManager() {
-    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
+     const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
     const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
     const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
     const departmentPanel = document.querySelector('.Department-Manager-Panel');
@@ -1414,8 +2004,7 @@ function showPolicyManager() {
 function showRoleManager() {
     const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
     const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
-    const roleManagerPanel = document.querySelector('.menu-icons:nth-child(3)').addEventListener('click', showProcessTracker);
-document.querySelector('.Role-Manager-Panel');
+    const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
     const departmentPanel = document.querySelector('.Department-Manager-Panel');
     const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
     const reportPanel = document.querySelector('.reports-Panel');
@@ -1445,30 +2034,6 @@ function showReports() {
     if (reportPanel) reportPanel.style.display= 'block';
 
 }
-
-
-// reports
-  document.addEventListener('DOMContentLoaded', () => {
-        const reportItems = document.querySelectorAll('.report-item');
-
-        reportItems.forEach(item => {
-            const header = item.querySelector('.report-header');
-            const content = item.querySelector('.report-content');
-            const arrowIcon = item.querySelector('.arrow-icon');
-
-            // Initially hide all content areas
-            content.style.display = 'none';
-
-            header.addEventListener('click', () => {
-                // Toggle the display of the content area
-                content.style.display = content.style.display === 'none' ? 'block' : 'none';
-
-                // Toggle the arrow icon direction
-                arrowIcon.classList.toggle('fa-caret-right');
-                arrowIcon.classList.toggle('fa-caret-down');
-            });
-        });
-    });
 
 // Refresh the page every 5 seconds if there are updates
 let lastUpdate = null;
