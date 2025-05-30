@@ -23,6 +23,7 @@
                 background-repeat: no-repeat;
                 width: 100vw;
                 height: auto;
+                overflow-x: hidden;
             }
     
     

@@ -135,7 +135,8 @@ a {
 p {
     font-size: 2vh;
     text-align: left;
-    margin: 2vh 0;
+    margin: 2vh 11vw;
+    white-space: nowrap;
 }
 
 b{

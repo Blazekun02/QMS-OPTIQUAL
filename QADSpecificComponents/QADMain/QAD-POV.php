@@ -1,13 +1,16 @@
-<?php include '../../connect.php';
+<?php 
+    session_start(); // Start the session if not already started
+    include '../../connect.php';
     if ($conn->connect_error) {
         die("❌ Connection failed: " . $conn->connect_error);
     } else {
         echo "<script>alert('✅ Connected successfully');</script>";
     }
-    
+
 ?>
 
 <!DOCTYPE html>
+<?php include '../../generalComponents/Refresh/Policy_Repo_Refresh.php';?>
 <html>
     <head>
         <meta charset="UTF-8">
@@ -56,11 +59,14 @@
                     <img src="../QAP Sidebar Images/Not Clicked/QD_Policy_Manage.png" alt="Icon 8">
                     <span class="icon-label">Policy Manager</span>
                 </li>
+                <li class="menu-icons">
+                    <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                    
+                    <span class="icon-label">Reports</span>
+                </li>
                 <li>
-                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 9" onclick="showInformation()">
+                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 10" onclick="showInformation()">
                     <span class="icon-label">Information</span>
                 </li>
-                
             </ul>
                  </div>
             </div>           
@@ -72,7 +78,7 @@
         <div>
             <button type="button" class="button user-btn" id="userButton">
                 <i class="fa fa-user-circle" style="font-size:24px"></i>
-                Name of the user
+                <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'User'; ?>
             </button>
             <button type="button" class="button notif-btn" id="notifButton">
                 <i class="fa fa-bell" style="font-size:24px"></i>
@@ -132,31 +138,33 @@
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; // correct id
-                        
+                         
                                     if (mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
-                                            echo '<div class="PR-Policies">';
+                                          
+                                            echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
                                             echo '<p class="PR-Policies-Name">' . $rowPol['title'] . '</p>';
                                             echo '</div>';
                                         }
-                                    } else {
-                                        echo '<div class="PR-Policies">';
-                                        echo '<p class="PR-Policies-Name">No policies available</p>';
-                                        echo '</div>';
                                     }
-                        
                                     echo '</div>'; // close Policies-Folder
                                 }
                             }
-                        
                             echo '</div>'; // close child-folders
-                            echo '</div>'; // <--- CLOSE Parent-Block here!
+                            echo '</div>'; 
                         }
                     }
-                    
-
                     ?>
                 </div>
+
+                
+        </div>
+        <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none; width:100%; height:600px; margin-top:20px;">
+            <div class="pdfViewer-header">
+                <button class="btn" id="closePdfViewer"><i class="fa fa-times"></i></button>
+                
+            </div>
+                    <?php include '../../generalComponents/pdfViewer/pdfViewer.php';?>
         </div>
                     
         <!-- POLICY SUBMISSION -->
@@ -164,7 +172,9 @@
             <div class="policy-submission">
                 <h2>Policy Submission</h2>
                 <div class="policy-submission-buttons">
-                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> <span class=".policy-submission-buttons button:first-child">New Policy Template</span></button>
+                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> 
+                    <span class=".policy-submission-buttons button:first-child">New Policy Template</span>
+                    </button>
                     <button class="btn" id="submitButton">Submit</button>
         
                 </div>
@@ -202,11 +212,12 @@
         </div>
         </div>
 
-      
+
+       
 
 
-<!-- Department Manager -->
-<div class="Department-Manager-Panel" style="display: none;">
+<!-- Department Manager  -->
+<div class="Department-Manager-Panel" >
     <div class="Department-Manager-Header">
         <h1>Department Manager</h1>
         <div class="DM-Search-Container">
@@ -223,7 +234,7 @@
     </div>
     <div id="departmentListContainer">
     </div>
-</div>
+
 
 <div id="overlay"></div>
 
@@ -236,7 +247,6 @@
     </div>
 </div>
 
-<!-- 1st icon -->
 <div id="assignRoleContainer" class="popup-container" style="display: none;">
     <h2>Assign Role</h2>
     <div class="form-group">
@@ -257,7 +267,7 @@
                 if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
-                    echo '<input type="checkbox" id="account-' . $row['accID'] . '" name="accounts[]" value="' . $row['accID'] . '">';
+                    echo '<input type="radio" id="account-' . $row['accID'] . '" name="selectedAccount" value="' . $row['accID'] . '">';
                     echo '<label for="account-' . $row['accID'] . '">' . $row['fullName'] . ' (' . $row['email'] . ')</label>';
                     echo '</div>';
                 }
@@ -273,8 +283,7 @@
     </div>
 </div>
 
-<!-- 2nd icon -->
-<div id="departmentStructureContainer" class="popup-container" style="display: none;">
+<div id="departmentStructureContainer" style="display: none;">
     <h2>Assign Name</h2>
     <div class="form-group">
         <input type="text" id="structureNameInput" placeholder="Enter Name">
@@ -285,7 +294,6 @@
     </div>
 </div>
 
-<!-- 3rd icon -->
 <div id="renameDepartmentContainer" class="popup-container" style="display: none;">
     <h2>Rename Folder</h2>
     <div class="form-group">
@@ -298,7 +306,6 @@
 </div>
 
 
-<!-- 4th icon -->
 <div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
     <h2>Confirm Deletion?</h2>
     <div class="button-group">
@@ -307,8 +314,6 @@
     </div>
 </div>
 
-
-<!-- rename for the assignedrole created -->
 <div id="renameRoleContainer" class="renameroleContainer" style="display: none;">
     <h2>Rename Role</h2>
     <div class="form-group">
@@ -319,6 +324,16 @@
         <button id="confirmRenameRole">Confirm</button>
     </div>
 </div>
+</div>
+
+    <div class="Process-Tracker-Panel2" style ="display: none;">
+        <?php include '../../generalComponents/processTracker/processTracker.php';?>
+    </div>
+
+    <div class="Task-Manager-Panel" style="display: block;">
+        <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
+    </div>
+
 
 
 

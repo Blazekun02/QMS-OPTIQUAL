@@ -11,6 +11,7 @@ require_once __DIR__ . '/../../filepaths.php';
 require_once genMsg_dir . '/setMessage.php';
 ?>
 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <style>
     .pdfViewerContainer {
@@ -94,9 +95,29 @@ require_once genMsg_dir . '/setMessage.php';
     </div>
 </div>    
 
+    <?php
+        $URL = $_POST['URL'] ?? '';
+        
+    ?>
+
 
 <script>
-    const url = ''; // Replace with the path to your PDF file
+
+    const url = ''; // URL of the PDF file
+    function loadPDF(url) {
+    pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+        pdfDoc = pdfDoc_;
+        document.getElementById('pageCount').textContent = pdfDoc.numPages;
+        renderPage(pageNum);
+        console.log('PDF URL:', url); // Debugging
+    });
+}
+
+// Expose loadPDF globally
+window.loadPDF = loadPDF;
+   
+
+
 
     let pdfDoc = null,
         pageNum = 1,
@@ -107,11 +128,14 @@ require_once genMsg_dir . '/setMessage.php';
         ctx = canvas.getContext('2d');
 
     // Load the PDF
+    function loadPDF(url) {
     pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
         pdfDoc = pdfDoc_;
         document.getElementById('pageCount').textContent = pdfDoc.numPages;
         renderPage(pageNum);
     });
+}
+    
 
     // Render the page
     function renderPage(num) {

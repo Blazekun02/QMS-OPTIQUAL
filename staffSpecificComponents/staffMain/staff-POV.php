@@ -1312,14 +1312,8 @@ require_once genMsg_dir . '/message_box.php';
                 <p style="padding-left: 2.5vw; padding-top:4vh; color: black; font-size: 18px; font-weight: normal;">It contains all the policies of Asia Pacific College</p>
             </div>
         </div>
-
     </div>
-
-
 </div>
-
-
-
 </body>
 <script>
 
