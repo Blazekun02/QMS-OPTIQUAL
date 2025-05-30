@@ -1,10 +1,16 @@
 <?php
 
+//Localhost Database Connection
 $host = "localhost";
-$port = "3306";
 $dbUsername = "root";
 $dbPassword = "";
 $dbname = "qms";
+
+//Airhub Database Connection
+// $host = "airhub-soe.apc.edu.ph";
+// $dbUsername = "jdrizal";
+// $dbPassword = "SOETiny1!";
+// $dbname = "qms";
 
 $conn = new mysqli($host,  $dbUsername, $dbPassword, $dbname);
 
