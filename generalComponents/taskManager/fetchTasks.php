@@ -43,7 +43,7 @@ try {
         LEFT JOIN tasktypetbl tt ON t.taskTypeID = tt.tasktypeID -- Join with tasktypes table
         LEFT JOIN accdatatbl a ON t.assignedTo = a.accID -- Join with accdata table
         WHERE t.assignedTo = ?
-        ORDER BY t.dateCreated DESC
+        ORDER BY t.dateCreated
     ");
     
     // Execute the query with the accID parameter
