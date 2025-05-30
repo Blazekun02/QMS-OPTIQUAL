@@ -578,6 +578,7 @@ introductionSection.style.display = 'none'; // Ensure introduction is hidden ini
 document.querySelector('.information').style.display = 'none';
 }
 
+
 function showIntroduction(policyTitle, policyContent) {
 const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
 const taskManagerTable = document.querySelector('.task-manager-table');
