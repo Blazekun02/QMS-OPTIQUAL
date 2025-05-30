@@ -1,0 +1,572 @@
+body {
+    margin: 0;
+    overflow-x: hidden;
+    font-family: 'Istok Web', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.Sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0.7in;
+    height: 100vh;
+    background-color: #343A40;
+    transition: width 0.5s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+}
+
+.Sidebar.extended {
+    width: 2.4in;
+}
+
+.Sidebar-Logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 0.6in;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    margin-left: 0;
+    flex-shrink: 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.extended-text {
+    color: #fbaf41;
+    font-size: 16px;
+    font-family: "Bebas Neue";
+    margin-left: 10px;
+    display: none;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.Sidebar.extended .extended-text {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.Sidebar.extended .Logo {
+    height: 80%;
+    width: auto;
+}
+
+.Sidebar:not(.extended) .Sidebar-Logo {
+    justify-content: center;
+}
+
+.Logo {
+    height: 80%;
+    width: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.Sidebar-Menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-left: 0;
+    gap: 10px;
+    flex-grow: 1;
+    margin-top: 10em;
+}
+
+.Sidebar-Menu li {
+    list-style: none;
+    display: flex;
+    color: white;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 15%;
+    padding: 5px 0;
+}
+
+.Sidebar-Menu li:hover .icon-label {
+    color: orange;
+}
+
+.Sidebar-Menu img {
+    width: 0.3in;
+    height: 0.3in;
+    cursor: pointer;
+    margin-left: 15px;
+    margin-right: 0.1em;
+}
+
+.icon-label {
+    color: white;
+    margin-left: 0.2in;
+    font-size: 0.8em;
+    display: none;
+    transition: filter 0.3s ease;
+}
+
+.Sidebar.extended .icon-label {
+    display: block;
+}
+
+.blue-line {
+    position: fixed;
+    bottom: 0;
+    left: 0.7in;
+    width: calc(100% - 0.7in);
+    text-align: left;
+    padding: 10px 20px;
+    color: white;
+    background-color: #293A82;
+    font-size: 14px;
+    z-index: 100;
+    transition: left 0.5s ease, width 0.5s ease;
+}
+
+.yellow-line {
+    position: fixed;
+    top: 50px;
+    background-color: #fbaf41;
+    width: 100%;
+    height: 6px;
+    z-index: 998;
+}
+
+.hamburger-icon {
+    position: fixed;
+    top: 25px;
+    left: 0.8in;
+    transform: translateY(-50%);
+    width: 0.3in;
+    height: 0.3in;
+    cursor: pointer;
+    z-index: 1000;
+    transition: left 0.5s ease;
+}
+
+.hamburger-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.Sidebar.extended + .hamburger-icon {
+    left: calc(2.4in + 15px);
+}
+
+.signOut-overlay {
+    position: absolute;
+    top: 6vh;
+    right: 6.7vw;
+    background-color: #343A40;
+    border-radius: 20px;
+    padding: 8px 15px;
+    display: none;
+    z-index: 1001;
+    color: white;
+    font-size: 12px;
+}
+
+.signOut-overlay::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 20%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #343A40 transparent;
+}
+
+.signOut-content {
+    cursor: pointer;
+    transition: color 0.3s;
+    text-align: center;
+    width: 70px;
+}
+
+.signOut-content:hover {
+    color: red;
+}
+
+.main-content {
+    margin-left: 0.7in;
+    padding: 20px;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 80px;
+    padding-bottom: 70px;
+    width: calc(100% - 0.7in);
+    position: relative;
+    flex-grow: 1;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    z-index: 10;
+}
+
+
+/*POPUP OVERLAY STYLES for dpa --- */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); 
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2000; 
+    overflow-y: auto; 
+    overflow-x: hidden;
+}
+
+.dpa-container {
+    background-color: #293A82;
+    border-radius: 10px;
+    padding: 30px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 420px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.dpa-heading {
+    color: white;
+    font-size: 2em;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+    margin-top: -0.1em;
+}
+
+.dpa-description {
+    color: white;
+    font-size: 1em;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-align: justify;
+    max-width: 90%;
+}
+
+.dpa-content-area {
+    background-color: white;
+    border-radius: 5px;
+    padding: 20px;
+    width: 100%;
+    min-height: 100px;
+    height: auto;
+    margin-bottom: 30px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.update-button {
+    background-color: #fbaf41;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 40px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.update-button:hover {
+    background-color: #e09f3c;
+    transform: translateY(-2px);
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0.7in;
+    right: 0;
+    height: 50px;
+    background-color: white;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 999;
+    transition: left 0.5s ease;
+}
+
+.Sidebar.extended + .header {
+    left: 2.4in;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.5px;
+}
+
+.header-icon {
+    font-size: 1.4em;
+    color: black;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    padding: 1px 1px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.header-icon:hover {
+    background-color: #f0f0f0;
+}
+
+.header-icon i {
+    margin-right: 8px;
+}
+
+.header-icon.notification-badge::after {
+    content: '1';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 0.7em;
+    line-height: 1;
+}
+
+.header-username {
+    font-weight: bold;
+    color: black;
+    font-size: 0.8em;
+    white-space: nowrap;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #293A82;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85em;
+    z-index: 100;
+}
+
+/* --- NEW/UPDATED POPUP CONTAINER & CONTENT STYLES --- */
+
+.popup-container {
+    background-color: #293A82; 
+    border-radius: 10px;
+    padding: 2em; 
+    width: clamp(250px, 90%, 500px); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+    box-sizing: border-box;
+}
+
+.popup-heading {
+    color: white;
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+    text-align: center;
+}
+
+.dpa-edit-textarea {
+    width: 100%;
+    height: 10em; 
+    padding: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: 'Istok Web', sans-serif;
+    font-size: 1em;
+    resize: vertical; 
+    box-sizing: border-box;
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: center; /* Center buttons */
+    gap: 1em; /* Space between buttons */
+    width: 100%;
+}
+
+.popup-button {
+    border: none;
+    border-radius: 5px;
+    padding: 0.8em 1.5em;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    text-transform: uppercase;
+}
+
+.cancel-button {
+    background-color: lightgray;
+    color: black;
+}
+
+.cancel-button:hover {
+    background-color: #c0c0c0;
+    transform: translateY(-1px);
+}
+
+.submit-button {
+    background-color: #fbaf41; /* Yellow */
+    color: black; /* Black text */
+}
+
+.submit-button:hover {
+    background-color: #e09f3c;
+    transform: translateY(-1px);
+}
+
+/* --- Confirmation Popup Specific Styles (from image_4bae4d.png) --- */
+.confirmation-popup {
+    background-color: #293A82; /* Blue container */
+    border-radius: 10px;
+    padding: 1.5em; /* Smaller padding for a smaller popup */
+    width: 20em; /* Fixed width for the small popup */
+    /* Height will adjust to content */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em; /* Space between text and buttons */
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.confirmation-text {
+    color: white;
+    font-size: 1.2em;
+    margin: 0; /* Remove default paragraph margin */
+}
+
+.confirmation-popup .popup-buttons {
+    margin-top: 0.5em; /* Add some space above buttons */
+}
+
+
+
+/* role manager */
+/* role manager */
+.main-content.role-manager {
+    display: flex; /* Make it visible when active */
+    flex-direction: column;
+    align-items: center;
+    margin-top: -10px; /* Adjust as needed to accommodate header */
+    padding-bottom: 70px; /* Adjust as needed for footer */
+    width: calc(100% - 0.7in); /* Initial width, adjusted by sidebar */
+    margin-left: 0.7in; /* Initial margin, adjusted by sidebar */
+    position: fixed;
+    flex-grow: 1;
+    overflow-y: hidden; /* Allow scrolling if content overflows */
+    overflow-x: hidden;
+    z-index: 10;
+    /* display: none; */ /* Keep this commented out for active viewing */
+}
+
+.role-manager-container {
+    background-color: #293A82; /* Blue container */
+    border-radius: 10px;
+    padding: 20px;
+    width: 99%;
+    max-width: 1350px; /* Adjust max-width as per your design */
+    height: 520px; /* Set a fixed height based on image_4b9b44.png for now */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Space between header, search, and table */
+    box-sizing: border-box;
+    overflow-x : auto; /* Hide overflow if content exceeds the fixed height */
+}
+
+.header-and-search {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Pushes children to opposite ends */
+    align-items: center; /* Vertically centers items */
+    margin-bottom: 5px; /* Space below this container */
+}
+
+.role-manager-header {
+    color: white;
+    font-size: 1.6em;
+    text-align: left;
+    margin-top: -0.1em;
+    font-weight: normal;
+}
+
+.white-line-separator {
+    width: 100%;
+    height: 1px;
+    background-color: white;
+    margin-top: -1.5em;
+    
+}
+
+.search-bar-container {
+    display: flex;
+    justify-content: flex-end; /* Align search bar content to the right within its own space */
+    align-items: center;
+    gap: 10px; /* Space between icon and input */
+    box-sizing: border-box;
+    margin-top: 0.2em;
+}
+
+.search-bar-container i {
+    color: white;
+    font-size: 1.2em;
+}
+
+.search-input {
+    width: 200px; /* Adjust width as needed */
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px; /* Rounded search bar */
+    background-color: white;
+    color: #333;
+    font-size: 1em;
+    outline: none;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.search-input::placeholder {
+    color: #888;
+}
+
+.role-manager-container {
+    overflow-y: hidden; /* Ensure the container itself doesn't scroll unnecessarily */
+}
