@@ -162,10 +162,11 @@
         <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none; width:100%; height:600px; margin-top:20px;">
             <div class="pdfViewer-header">
                 <button class="btn" id="closePdfViewer"><i class="fa fa-times"></i></button>
+                <div class="header-pdf_divider"></div>
+                <?php include '../../generalComponents/pdfViewer/pdfViewer.php';?>
+            </div>
                 
             </div>
-                    <?php include '../../generalComponents/pdfViewer/pdfViewer.php';?>
-        </div>
                     
         <!-- POLICY SUBMISSION -->
         <div class="policy-submission-content" id="policy-submission-content" >

@@ -154,6 +154,17 @@ document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', sho
 document.querySelector('.menu-icons:nth-child(7)');
 
 //Show Modules End
+document.addEventListener('DOMContentLoaded', () => {
+    const closePdfViewerButton = document.getElementById('closePdfViewer');
+    const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+    const policyRepositoryPanel = document.getElementById('policy-repo-content');
+
+    // Add event listener to close the PDF Viewer
+    closePdfViewerButton.addEventListener('click', () => {
+        pdfViewerContainer.style.display = 'none'; // Hide the PDF Viewer
+        policyRepositoryPanel.style.display = 'block'; // Show the Policy Repository
+    });
+});
 
 const sidebar = document.querySelector('.Sidebar');
 const hamburgerIcon = document.getElementById('hamburger-icon');
