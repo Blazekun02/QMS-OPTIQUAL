@@ -1,3 +1,61 @@
+//Show Modules
+    const policyRepositoryPanel = document.getElementById('policy-repo-content');
+    const policySubmissionPanel = document.getElementById('policy-submission-content');
+    const departmentPanel = document.querySelector('.Department-Manager-Panel');
+    const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2'); // Ensure this matches the class in your HTML
+    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
+
+        // Department Manager
+    function showDepartmentManager() {    
+        policyRepositoryPanel.style.display = 'none';
+        policySubmissionPanel.style.display = 'none';
+        departmentPanel.style.display = 'block';
+        policyManagerPanel.style.display = 'none';
+        processTrackerPanel.style.display = 'none';
+ 
+    }
+
+    // Policy Repository
+    function showPolicyRepository() {
+        console.log("Policy Repository Triggered");
+        policyRepositoryPanel.style.display = 'block';
+        policySubmissionPanel.style.display = 'none';
+        processTrackerPanel.style.display = 'none';
+        departmentPanel.style.display = 'none'; 
+        policyManagerPanel.style.display = 'none';
+    }
+
+    // Policy Submission
+    function showPolicySubmission() {
+        console.log("Policy Submission Triggered");
+        policyRepositoryPanel.style.display = 'none';
+        policySubmissionPanel.style.display = 'flex';
+        processTrackerPanel.style.display = 'none';
+        departmentPanel.style.display = 'none';
+        policyManagerPanel.style.display = 'none';
+    }
+
+    // Process Tracker
+    function showProcessTracker() {
+        policyRepositoryPanel.style.display = 'none';
+        policySubmissionPanel.style.display = 'none';
+        processTrackerPanel.style.display = 'block';
+        departmentPanel.style.display = 'none'; 
+        policyManagerPanel.style.display = 'none';
+        
+    }
+
+    
+
+
+document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
+document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
+document.querySelector('.menu-icons:nth-child(3)').addEventListener('click', showProcessTracker);
+document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
+document.querySelector('.menu-icons:nth-child(7)');
+
+//Show Modules End
+
 const sidebar = document.querySelector('.Sidebar');
 const hamburgerIcon = document.getElementById('hamburger-icon');
 
@@ -27,7 +85,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
     });
    
 
-    
+//Sign Out Overlay
     const signOutOverlay = document.getElementById('signOutOverlay');
     const userButton = document.getElementById('userButton');
     userButton.addEventListener('click', () => {
@@ -38,33 +96,7 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
         window.location.href = "landingPage.html";
     });
 
-    const policyRepositoryPanel = document.getElementById('policy-repo-content');
-    const policySubmissionPanel = document.getElementById('policy-submission-content');
-    const departmentPanel = document.querySelector('.Department-Manager-Panel');
-    const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2');
-    
-
-// Policy Repository
-function showPolicyRepository() {
-    console.log("Policy Repository Triggered");
-    policyRepositoryPanel.style.display = 'block';
-    policySubmissionPanel.style.display = 'none';
-    processTrackerPanel.style.display = 'none';
-    departmentPanel.style.display = 'none'; 
-}
-
-// Policy Submission
-function showPolicySubmission() {
-    console.log("Policy Submission Triggered");
-
-    // Safely get the department panel inside this function
-    
-    policyRepositoryPanel.style.display = 'none';
-    policySubmissionPanel.style.display = 'flex';
-    processTrackerPanel.style.display = 'none';
-    departmentPanel.style.display = 'none';
-}
-
+//Confirm Download Overlay
 const cfOverlay = document.getElementById('confirm-dl');
 const dlBtn = document.querySelector('.policy-submission-buttons button:first-child');
 
@@ -84,6 +116,7 @@ document.getElementById("last-child").addEventListener("click", function () {
     alert("Downloading template");
 });
 
+//Submit Overlay
 const submitOverlay = document.getElementById('submitOverlay');
 const submitBtn = document.getElementById('submitBtn');
 const cancelBtn = document.getElementById('cancelBtn');
@@ -131,11 +164,11 @@ parentFolders.forEach(folder => {
     });
 });
 
-//Policy Repository
+
+// Policy Search function
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 
-// Search function
 function searchPolicies() {
     const searchTerm = searchInput.value.toLowerCase();
 
@@ -144,7 +177,7 @@ function searchPolicies() {
     const childFolders = document.querySelectorAll('.PR-Child-Folders');
     const policies = document.querySelectorAll('.PR-Policies');
 
-    // First, hide everything
+    // Hide All Folders
     parentFolders.forEach(parent => parent.style.display = 'none');
     document.querySelectorAll('.child-folders').forEach(childFolder => childFolder.style.display = 'none');
     childFolders.forEach(child => child.style.display = 'none');
@@ -266,6 +299,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentlyEditingRole = null;
     let activeDepartmentForStructure = null; // To track which department's structure icon was clicked
   
+
+
+// Fetch and display all departments from DB on page load
+    fetch('../../generalComponents/dpManagerPHP/getDepartments.php')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && Array.isArray(data.departments)) {
+            data.departments.forEach(dep => {
+                displayNewDepartment(dep.dptName, dep.dptID);
+            });
+        }
+    });
   
     addDepartmentButton.addEventListener('click', () => {
      assignNameContainer.style.display = 'block';
@@ -278,28 +323,59 @@ document.addEventListener('DOMContentLoaded', () => {
      departmentNameInput.value = '';
     });
   
-    confirmAssignNameButton.addEventListener('click', () => {
-     const departmentName = departmentNameInput.value.trim();
+    // confirmAssignNameButton.addEventListener('click', () => {
+    //  const departmentName = departmentNameInput.value.trim();
   
-     if (departmentName) {
-      displayNewDepartment(departmentName);
-      assignNameContainer.style.display = 'none';
-      overlay.style.display = 'none';
-      departmentNameInput.value = '';
-     } else {
-      alert('Please enter a department name.');
-     }
+    //  if (departmentName) {
+    //   displayNewDepartment(departmentName);
+    //   assignNameContainer.style.display = 'none';
+    //   overlay.style.display = 'none';
+    //   departmentNameInput.value = '';
+    //  } else {
+    //   alert('Please enter a department name.');
+    //  }
+    // });
+
+    confirmAssignNameButton.addEventListener('click', () => {
+    const departmentName = departmentNameInput.value.trim();
+
+    if (departmentName) {
+        fetch('../../generalComponents/dpManagerPHP/addDepartment.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ departmentName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayNewDepartment(departmentName, data.departmentId); // Only display if saved successfully
+                assignNameContainer.style.display = 'none';
+                overlay.style.display = 'none';
+                departmentNameInput.value = '';
+            } else {
+                alert('Failed to add department: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error adding department: ' + error);
+        });
+    } else {
+        alert('Please enter a department name.');
+    }
     });
   
-    function displayNewDepartment(name) {
-     const departmentDiv = document.createElement('div');
-     departmentDiv.classList.add('department-item');
-     departmentDiv.dataset.departmentName = name;
-  
-     const nameSpan = document.createElement('span');
-     nameSpan.textContent = name;
-     nameSpan.id = `department-name-${Date.now()}`;
-     departmentDiv.appendChild(nameSpan);
+    function displayNewDepartment(name, id = null) {
+    const departmentDiv = document.createElement('div');
+    departmentDiv.classList.add('department-item');
+    departmentDiv.dataset.departmentName = name;
+    if (id) departmentDiv.dataset.departmentId = id; // <-- Always set departmentId if available
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = name;
+    nameSpan.id = `department-name-${id ? id : Date.now()}`; // Use id if available, else fallback
+    departmentDiv.appendChild(nameSpan)
   
      const iconsDiv = document.createElement('div');
      iconsDiv.classList.add('department-icons');
@@ -497,43 +573,85 @@ document.addEventListener('DOMContentLoaded', () => {
      });
     }
   
-    if (confirmRenameButton) {
-     confirmRenameButton.addEventListener('click', () => {
-      console.log('--- Confirm Rename Clicked ---');
-      const newDepartmentName = renameDepartmentInput.value.trim();
-      const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
-      console.log('New department name:', newDepartmentName);
-      console.log('Retrieved targetSpanId:', targetSpanId);
+    // if (confirmRenameButton) {
+    //  confirmRenameButton.addEventListener('click', () => {
+    //   console.log('--- Confirm Rename Clicked ---');
+    //   const newDepartmentName = renameDepartmentInput.value.trim();
+    //   const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
+    //   console.log('New department name:', newDepartmentName);
+    //   console.log('Retrieved targetSpanId:', targetSpanId);
   
-      if (newDepartmentName && targetSpanId) {
-       console.log('Both newDepartmentName and targetSpanId are truthy.');
-       const targetNameSpan = document.getElementById(targetSpanId);
-       console.log('Attempting to get element with ID:', targetSpanId);
-       console.log('Found targetNameSpan element:', targetNameSpan);
-       if (targetNameSpan) {
-        console.log('targetNameSpan element exists. Updating textContent.');
-        targetNameSpan.textContent = newDepartmentName;
-        renameDepartmentContainer.style.display = 'none';
-        overlay.style.display = 'none';
-        renameDepartmentInput.value = '';
-        renameDepartmentContainer.dataset.targetDepartmentSpan = '';
-        console.log('Department name updated successfully!');
-       } else {
-        console.error('Target department name span NOT found!');
-        alert('Error updating department name.');
-       }
-      } else {
-       console.log('Either newDepartmentName or targetSpanId is falsy.');
-       if (!newDepartmentName) {
-        alert('Please enter a new department name.');
-       } else {
-        console.log('targetSpanId is falsy:', targetSpanId);
-        alert('Error: Target department information missing.');
-       }
-      }
-      console.log('--- Confirm Rename Click End ---');
-     });
-    }
+    //   if (newDepartmentName && targetSpanId) {
+    //    console.log('Both newDepartmentName and targetSpanId are truthy.');
+    //    const targetNameSpan = document.getElementById(targetSpanId);
+    //    console.log('Attempting to get element with ID:', targetSpanId);
+    //    console.log('Found targetNameSpan element:', targetNameSpan);
+    //    if (targetNameSpan) {
+    //     console.log('targetNameSpan element exists. Updating textContent.');
+    //     targetNameSpan.textContent = newDepartmentName;
+    //     renameDepartmentContainer.style.display = 'none';
+    //     overlay.style.display = 'none';
+    //     renameDepartmentInput.value = '';
+    //     renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+    //     console.log('Department name updated successfully!');
+    //    } else {
+    //     console.error('Target department name span NOT found!');
+    //     alert('Error updating department name.');
+    //    }
+    //   } else {
+    //    console.log('Either newDepartmentName or targetSpanId is falsy.');
+    //    if (!newDepartmentName) {
+    //     alert('Please enter a new department name.');
+    //    } else {
+    //     console.log('targetSpanId is falsy:', targetSpanId);
+    //     alert('Error: Target department information missing.');
+    //    }
+    //   }
+    //   console.log('--- Confirm Rename Click End ---');
+    //  });
+    // }
+
+    if (confirmRenameButton) {
+    confirmRenameButton.addEventListener('click', () => {
+        const newDepartmentName = renameDepartmentInput.value.trim();
+        const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
+        if (newDepartmentName && targetSpanId) {
+            // Find the department div to get its ID
+            const targetNameSpan = document.getElementById(targetSpanId);
+            const departmentDiv = targetNameSpan.closest('.department-item');
+            const departmentId = departmentDiv ? departmentDiv.dataset.departmentId : null;
+
+            if (!departmentId) {
+                alert('Error: Department ID not found.');
+                return;
+            }
+
+            // Send AJAX request to update department name in DB
+            fetch('../../generalComponents/dpManagerPHP/renameDepartment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ departmentId, newDepartmentName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    targetNameSpan.textContent = newDepartmentName;
+                    renameDepartmentContainer.style.display = 'none';
+                    overlay.style.display = 'none';
+                    renameDepartmentInput.value = '';
+                    renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+                } else {
+                    alert('Failed to rename department: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Error renaming department: ' + error);
+            });
+        } else {
+            alert('Please enter a new department name.');
+        }
+    });
+}
   
     if (cancelDeleteButton) {
      cancelDeleteButton.addEventListener('click', () => {
@@ -544,29 +662,78 @@ document.addEventListener('DOMContentLoaded', () => {
      });
     }
   
-    if (confirmDeleteButton) {
-     confirmDeleteButton.addEventListener('click', () => {
-      if (departmentToDelete) {
-       console.log("Deleting department:", departmentToDelete);
-       const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
-       assignedRoles.forEach(role => {
-        console.log("Removing assigned role:", role);
-        role.remove();
-       });
-       departmentToDelete.remove();
-       departmentToDelete = null;
-       console.log("Department and all assigned roles deleted successfully.");
-      } else if (roleToDelete) {
-       console.log("Deleting role:", roleToDelete);
-       roleToDelete.remove();
-       roleToDelete = null;
-       console.log("Role deleted successfully.");
-      }
-      deleteConfirmationContainer.style.display = 'none';
-      overlay.style.display = 'none';
-     });
-    }
+    // if (confirmDeleteButton) {
+    //  confirmDeleteButton.addEventListener('click', () => {
+    //   if (departmentToDelete) {
+    //    console.log("Deleting department:", departmentToDelete);
+    //    const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
+    //    assignedRoles.forEach(role => {
+    //     console.log("Removing assigned role:", role);
+    //     role.remove();
+    //    });
+    //    departmentToDelete.remove();
+    //    departmentToDelete = null;
+    //    console.log("Department and all assigned roles deleted successfully.");
+    //   } else if (roleToDelete) {
+    //    console.log("Deleting role:", roleToDelete);
+    //    roleToDelete.remove();
+    //    roleToDelete = null;
+    //    console.log("Role deleted successfully.");
+    //   }
+    //   deleteConfirmationContainer.style.display = 'none';
+    //   overlay.style.display = 'none';
+    //  });
+    // }
   
+    if (confirmDeleteButton) {
+    confirmDeleteButton.addEventListener('click', () => {
+        if (departmentToDelete) {
+            // Get the department ID from the dataset
+            const departmentId = departmentToDelete.dataset.departmentId;
+            if (!departmentId) {
+                alert('Department ID not found. Cannot delete.');
+                return;
+            }
+            fetch('../../generalComponents/dpManagerPHP/deleteDepartment.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ departmentId }) // Send dptID, not name
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove assigned roles
+                    const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
+                    assignedRoles.forEach(role => role.remove());
+                    // Remove department from DOM
+                    departmentToDelete.remove();
+                    departmentToDelete = null;
+                    console.log("Department and all assigned roles deleted successfully.");
+                } else {
+                    alert('Failed to delete department: ' + (data.message || 'Unknown error'));
+                }
+                deleteConfirmationContainer.style.display = 'none';
+                overlay.style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error deleting department: ' + error);
+                deleteConfirmationContainer.style.display = 'none';
+                overlay.style.display = 'none';
+            });
+        } else if (roleToDelete) {
+            // ...existing code for deleting a role...
+            roleToDelete.remove();
+            roleToDelete = null;
+            console.log("Role deleted successfully.");
+            deleteConfirmationContainer.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+        
+    });
+}
+
     if (cancelRenameRoleButton) {
      cancelRenameRoleButton.addEventListener('click', () => {
       renameRoleContainer.style.display = 'none';
@@ -594,36 +761,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
    });
   
-   function showDepartmentManager() {
-});
-
-function showProcessTracker() {
-    policyRepositoryPanel.style.display = 'none';
-    policySubmissionPanel.style.display = 'none';
-    processTrackerPanel.style.display = 'block';
-    departmentPanel.style.display = 'none'; 
-}
-    
-
-function showDepartmentManager() {
-    const policyRepositoryPanel = document.querySelector('.Policy-Repository-Panel');
-    const policySubmissionPanel = document.querySelector('.Policy-Submission-Panel');
-    const departmentPanel = document.querySelector('.Department-Manager-Panel');
-    const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
-  
-    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
-    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
-    if (departmentPanel) departmentPanel.style.display = 'block';
-    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
-}
 
 
-// Attach the function to the sidebar menu item
-document.querySelector('.menu-icons:nth-child(1)').addEventListener('click', showPolicyRepository);
-document.querySelector('.menu-icons:nth-child(2)').addEventListener('click', showPolicySubmission);
-document.querySelector('.menu-icons:nth-child(3)').addEventListener('click', showProcessTracker);
-document.querySelector('.menu-icons:nth-child(6)').addEventListener('click', showDepartmentManager);
-document.querySelector('.menu-icons:nth-child(7)');
+
+
+
+
+
 
 // Refresh the page every 5 seconds if there are updates
 let lastUpdate = null;

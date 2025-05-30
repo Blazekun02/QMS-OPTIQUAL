@@ -651,13 +651,12 @@ body {
 /*Department Manager Panel Styles*/
 .Department-Manager-Panel {
     position: absolute;
+    display: none;
     background-color: white;
     top: 60px;
     left: 0.8in;
     width: calc(100% - 0.9in);
     height: calc(100vh - 129px);
-    /* border: 2px solid red; */
-    z-index: 1;
     overflow: visible;
     white-space: normal;
     border: 2px solid red;
@@ -1278,3 +1277,4 @@ body {
     background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
     z-index: 1000; /* Ensure it's above most content */
 }
+

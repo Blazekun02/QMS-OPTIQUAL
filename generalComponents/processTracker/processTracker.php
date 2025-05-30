@@ -188,13 +188,13 @@ thead th:last-child {
 
 .PTC-Trackers {
     display: flex;
-    justify-content: space-around; /* or space-between / gap */
+    justify-content: space-around;
     align-items: center;
     height: 75px;
 }
 
 .PTC-Header-Buttons {
-    margin-left: auto; /* Push the button to the right */
+    margin-left: auto; 
 
 }
 
@@ -211,7 +211,7 @@ thead th:last-child {
 }
 
 .PTCtoggleButton:hover {
-    background-color:rgb(9, 10, 85); /* Change to your desired hover color */
+    background-color:rgb(9, 10, 85); 
 }
 
 .circle_container {
@@ -221,7 +221,7 @@ thead th:last-child {
     color: white;
     font-size: 14px;
     text-align: center;
-    gap: 4px; /* consistent spacing */
+    gap: 4px; 
     padding: 5px 0;
 }
 
@@ -270,7 +270,7 @@ thead th:last-child {
 }
 
 .back-button:hover {
-    background-color:rgb(9, 10, 85); /* Change to your desired hover color */
+    background-color:rgb(9, 10, 85);
 }
 
 </style>

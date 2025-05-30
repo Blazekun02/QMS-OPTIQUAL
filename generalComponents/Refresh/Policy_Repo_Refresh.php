@@ -16,7 +16,7 @@ $result = mysqli_query($conn, $sql);
 
 if ($result) {
     $row = mysqli_fetch_assoc($result);
-    echo json_encode(['last_update' => $row['last_update']]);
+    // echo json_encode(['last_update' => $row['last_update']]);
 } else {
     echo json_encode(['error' => 'Failed to fetch updates']);
 }

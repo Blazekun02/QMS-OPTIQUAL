@@ -60,7 +60,8 @@
                     <span class="icon-label">Policy Manager</span>
                 </li>
                 <li class="menu-icons">
-                <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                    <span class="icon-label">Reports</span>
+                    <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                    
+                    <span class="icon-label">Reports</span>
                 </li>
                 <li>
                     <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 10" onclick="showInformation()">
@@ -77,7 +78,7 @@
         <div>
             <button type="button" class="button user-btn" id="userButton">
                 <i class="fa fa-user-circle" style="font-size:24px"></i>
-                Name of the user
+                <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'User'; ?>
             </button>
             <button type="button" class="button notif-btn" id="notifButton">
                 <i class="fa fa-bell" style="font-size:24px"></i>
@@ -211,11 +212,15 @@
         </div>
         </div>
 
-      
+    <div class="Process-Tracker-Panel2" style ="display: none;">
+        <?php include '../../generalComponents/processTracker/processTracker.php';?>
+    </div>
+
+       
 
 
 <!-- Department Manager  -->
-<div class="Department-Manager-Panel" style="display: none;">
+<div class="Department-Manager-Panel" >
     <div class="Department-Manager-Header">
         <h1>Department Manager</h1>
         <div class="DM-Search-Container">
@@ -232,9 +237,9 @@
     </div>
     <div id="departmentListContainer">
     </div>
-</div>
 
-<div id="overlay"></div>
+
+<!-- <div id="overlay"></div> -->
 
 <div id="assignNameContainer">
     <h2>Assign Name</h2>
@@ -321,6 +326,7 @@
         <button id="cancelRenameRole">Cancel</button>
         <button id="confirmRenameRole">Confirm</button>
     </div>
+</div>
 </div>
 
 
