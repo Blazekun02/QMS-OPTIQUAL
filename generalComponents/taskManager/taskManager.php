@@ -1,9 +1,15 @@
 <?php 
+//start session
+if(!session_id()){
+    session_start();
+}
+
 //include filepaths
 require_once __DIR__ . '/../../filepaths.php';
 
 //include set message
 require_once genMsg_dir . '/setMessage.php';
+
 ?>
 
 <style>
@@ -228,6 +234,16 @@ require_once genMsg_dir . '/setMessage.php';
             background-color: #db8804;
         }
 
+/* Staff POV For Revision dropdown options */
+        .ForRevision {
+            display: block;
+        }
+
+        .Rejected {
+            display: none;
+        }
+
+
 /* reply button overlay */
         .overlay {
             position: fixed;
@@ -321,6 +337,16 @@ require_once genMsg_dir . '/setMessage.php';
         .reply-content .submit-reply-button:hover {
             background-color: #db8804;
         }
+/* For character count in reply message */
+        .character-counter {
+            font-size: 0.9em;
+            color: black;
+            margin-top: 5px;
+        }
+        .character-counter span {
+            font-weight: bold;
+        }
+
 
 /* this is for the overlay of the submit button in reply*/
         .confirm-reply-modal {
@@ -656,26 +682,31 @@ require_once genMsg_dir . '/setMessage.php';
             </div>
 
             <!-- For Staff -->
-            <div class="menu-dropdown">
-                <button class="dropdown-button">Reply</button>
-                <button class="dropdown-button" onclick="showRevisionModal()">Request for Revision</button>
-                <button class="dropdown-button">Download Change Request Form</button>
-                <button class="dropdown-button">Submit Revision</button>
-                <button class="dropdown-button">Download Editable File</button>
-            </div>
-
+            <?php if ($_SESSION['accID'] == 4): ?>
+                <div class="menu-dropdown">
+                    <button class="dropdown-button ForRevision">Reply</button>
+                    <button class="dropdown-button ForRevision" onclick="showRevisionModal()">Request for Revision</button>
+                    <button class="dropdown-button ForRevision">Download Change Request Form</button>
+                    <button class="dropdown-button Rejected">Submit Another Request</button>
+                    <button class="dropdown-button Rejected">Cancel Request</button>
+                </div>
+            <?php endif; ?>    
+            
             <!-- QAP policy management buttons-->
-            <div class="QAP_management_btns">
-                <button class="QAP_general_btns">Reject</button>
-                <button class="QAP_general_btns">Assign</button>
-                <button class="QAP_general_btns">Upload</button>
-                <button class="QAP_revisionRequest_btns">Reject</button>
-                <button class="QAP_revisionRequest_btns">Send</button>
-            </div>
+            <?php if ($_SESSION['accID'] == 3 || $_SESSION['accID'] == 2): ?>      
+                <div class="QAP_management_btns">
+                    <button class="QAP_general_btns">Reject</button>
+                    <button class="QAP_general_btns">Assign</button>
+                    <button class="QAP_general_btns">Upload</button>
+                    <button class="QAP_revisionRequest_btns">Reject</button>
+                    <button class="QAP_revisionRequest_btns">Send</button>
+                </div>
+            <?php endif; ?>
 
             <div class = "taskWhite-line" style="margin-top: 1vh; display: flex"></div>
         </div>
 
+        <!-- Signing Document buttons -->
         <div class="signDocuBtns">
             <form action="signDocument.php" method="POST">
                 <button type="button" id="rejectDocuBtn" name = "reject">Reject Document</button>  
@@ -701,10 +732,16 @@ require_once genMsg_dir . '/setMessage.php';
                 <button class="close-button" onclick="closeReplyModal()">&times;</button>
             </div>
             <div class="reply-content">
-                <label>
-                    <textarea placeholder="Enter your reply here..."></textarea>
-                </label>
-                <button class="submit-reply-button">Submit</button>
+                <form id="replyForm" action="/qms_optiqual/generalComponents/taskManager/TMReplyBE.php" method="POST">
+                    <label>
+                        <textarea name="replyMessage" id="replyMessage" placeholder="Enter your reply here..."></textarea>
+                    </label>
+                    <input type="hidden" name="submitReplybtn" value="1">
+                    <div class="character-counter">
+                        <span id="charCount">0</span>/255
+                    </div>
+                <button type="button" class="submit-reply-button" name="submitReplybtn">Submit</button>
+            </form>
             </div>
         </div>
     </div>
@@ -771,7 +808,6 @@ require_once genMsg_dir . '/setMessage.php';
             <th>Policy Title</th>
             <th> Author</th>
             <th>Date Submitted</th>
-            <th>Version no.</th>
             <th>Status</th>
         </tr>
         </thead>
@@ -783,7 +819,10 @@ require_once genMsg_dir . '/setMessage.php';
 
 
 <script>
-    //this is for the js of task manager
+    //Get the user role
+    var userRole = "<?php echo $_SESSION['accID']; ?>"; 
+
+//this is for the js of task manager
 function showTaskManager() {
     document.getElementById('policies-repository-content').style.display = 'none';
     document.getElementById('policy-submission-content').style.display = 'none';
@@ -800,8 +839,33 @@ function showTaskManager() {
     introductionSection.style.display = 'none'; // Ensure introduction is hidden initially
 }
 
+function populateTaskTable(tasks) {
+    const tableBody = document.getElementById('taskTableBody');
+    tableBody.innerHTML = ''; // Clear any existing rows
+
+    console.log(tasks); // Log the tasks to check the data
+    tasks.forEach(task => {
+        const row = tableBody.insertRow();
+        row.onclick = function() {
+            showIntroduction(task.policyTitle, task.description, task.pdfPath, task.status);
+        };
+
+        const titleCell = row.insertCell();
+        titleCell.textContent = task.policyTitle;
+
+        const authorCell = row.insertCell();
+        authorCell.textContent = task.author;
+
+        const dateCell = row.insertCell();
+        dateCell.textContent = task.dateSubmitted;
+
+        const statusCell = row.insertCell();
+        statusCell.textContent = task.status;
+    });
+}
+
 //show selected policy content when clicked
-function showIntroduction(policyTitle, policyContent, pdfPath) {
+function showIntroduction(policyTitle, policyContent, pdfPath, policyStatus) {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
@@ -817,66 +881,78 @@ function showIntroduction(policyTitle, policyContent, pdfPath) {
 
     taskManagerHeaderContainer.style.display = 'none'; // Hide header and line
     taskManagerTable.style.display = 'none';
-    pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
-    introductionSection.style.display = 'block';
-    policyFeedbackContent.style.display = 'block'; // Show the placeholder  
-    introductionContent.style.display = 'block';
-    viewPolicyButton.textContent = 'View Policy';
+
+    //show features based on task type
+    showFeaturesforTaskType(policyStatus);
+
+    // pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
+    // introductionSection.style.display = 'block';
+    // policyFeedbackContent.style.display = 'block'; // Show the placeholder  
+    // introductionContent.style.display = 'block';
+    // viewPolicyButton.textContent = 'View Policy';
 
     // Add event listener to dynamically load the PDF when "View Policy" is clicked
-    let isPolicyVisible = false;
-    viewPolicyButton.addEventListener('click', function () {
-        if (!isPolicyVisible) {
-            introductionContent.style.display = 'none';
-            pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
-            policyFeedbackContent.style.display = 'none';
-            viewPolicyButton.textContent = 'View Feedback Report';
-            isPolicyVisible = true;
+    // let isPolicyVisible = false;
+    // viewPolicyButton.addEventListener('click', function () {
+    //     if (!isPolicyVisible) {
+    //         introductionContent.style.display = 'none';
+    //         pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
+    //         policyFeedbackContent.style.display = 'none';
+    //         viewPolicyButton.textContent = 'View Feedback Report';
+    //         isPolicyVisible = true;
 
-            // Dynamically load the PDF into the viewer
-            const pdfUrl = `${pdfPath}`; // Adjust the path as needed
-            pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
-                pdfDoc = pdfDoc_;
-                document.getElementById('pageCount').textContent = pdfDoc.numPages;
-                renderPage(1); // Render the first page
-            });
-        } else {
-            introductionContent.style.display = 'block';
-            pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer
-            policyFeedbackContent.style.display = 'block';
-            viewPolicyButton.textContent = 'View Policy';
-            isPolicyVisible = false;
-        }
-    });
+    //         // Dynamically load the PDF into the viewer
+    //         const pdfUrl = `${pdfPath}`; // Adjust the path as needed
+    //         pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
+    //             pdfDoc = pdfDoc_;
+    //             document.getElementById('pageCount').textContent = pdfDoc.numPages;
+    //             renderPage(1); // Render the first page
+    //         });
+
+    //     } else {
+    //         introductionContent.style.display = 'block';
+    //         pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer
+    //         policyFeedbackContent.style.display = 'block';
+    //         viewPolicyButton.textContent = 'View Policy';
+    //         isPolicyVisible = false;
+    //     }
+    // });
 }   
 
-function populateTaskTable(tasks) {
-    const tableBody = document.getElementById('taskTableBody');
-    tableBody.innerHTML = ''; // Clear any existing rows
-
-    console.log(tasks); // Log the tasks to check the data
-    tasks.forEach(task => {
-        const row = tableBody.insertRow();
-        row.onclick = function() {
-            showIntroduction(task.policyTitle, task.description, task.pdfPath);
-        };
-
-        const titleCell = row.insertCell();
-        titleCell.textContent = task.policyTitle;
-
-        const authorCell = row.insertCell();
-        authorCell.textContent = task.author;
-
-        const dateCell = row.insertCell();
-        dateCell.textContent = task.dateSubmitted;
-
-        const versionCell = row.insertCell();
-        versionCell.textContent = task.version;
-
-        const statusCell = row.insertCell();
-        statusCell.textContent = task.status;
+function showFeaturesforTaskType(taskType){
+    //Hide all features initially
+    document.querySelectorAll('.header-actions, .QAP_management_btns, .menu-dropdown, signDocuBtns').forEach(el => {
+        el.style.display = 'none';
     });
+
+    //Show features based on task type
+
+    
+    if (taskType === 'For Review' || taskType === 'For Upload') {
+        const reviewFeatures = document.querySelector('.QAP_general_btns');
+
+        // Show review features
+        if (reviewFeatures) reviewFeatures.style.display = 'block'; 
+    } else if (taskType === 'For Verification' || taskType === 'For Approval') {
+        const verificationFeatures = document.querySelector('.signDocuBtns');
+
+        //Show Verification/Approval features
+        if (verificationFeatures) verificationFeatures.style.display = 'block';
+    } else if (taskType === 'Request for Revision') {
+        const requestForRevisionFeatures = document.querySelector('.QAP_revisionRequest_btns')
+
+        //Show Revision Request features
+        if (requestForRevisionFeatures) requestForRevisionFeatures.style.display = 'block';
+    } else if (taskType === 'For Revision') {
+        const forRevisionFeatures = document.querySelector('.header-actions');
+
+        // Show For Revision features
+        if (forRevisionFeatures) forRevisionFeatures.style.display = 'flex';
+    }
+
 }
+
+
 
 // Show the task manager table and hide the introduction section
 function showTable() {
@@ -907,8 +983,15 @@ function closeReplyModal() {
     }
 }
 
-// Close the confirmation modal when the close button is clicked
+//show the confirmation modal when the submit button is clicked
 function showConfirmReply() {
+    // Check if the reply message is empty before showing the confirmation modal
+    const replyMessage = document.getElementById('replyMessage').value.trim();
+        if (!replyMessage) {
+            alert('Reply message cannot be empty.');
+            return;
+        }
+
     const confirmReplyOverlay = document.getElementById('confirmReplyOverlay');
     if (confirmReplyOverlay) {
         confirmReplyOverlay.style.display = 'flex';
@@ -925,9 +1008,10 @@ function closeConfirmReply() {
 
 // Handle the confirmation of the reply submission
 function handleReplyConfirmation() {
-    alert("Reply Confirmed!");
-    closeConfirmReply();
-    closeReplyModal();
+    // Optionally, you can do validation here again
+    document.getElementById('confirmReplyOverlay').style.display = 'none';
+    document.getElementById('replyOverlay').style.display = 'none';
+    document.getElementById('replyForm').submit();
 }
 
 // Show the revision modal when the revision button is clicked
@@ -945,8 +1029,6 @@ function closeRevisionModal() {
         revisionOverlay.style.display = 'none';
     }
 }
-
-
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1054,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fetch task data from the server
-    fetch('/qms_optiqual/generalComponents/taskManager/taskManagerBE.php')
+    fetch('/qms_optiqual/generalComponents/taskManager/fetchTasks.php')
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -1064,10 +1146,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => console.error('Error:', error));
+
+    //function to handle the character count for the reply message
+    const replyMessage = document.getElementById('replyMessage');
+    const charCount = document.getElementById('charCount');
+    const maxChars = 255; // Set the maximum character limit
+
+    // Update the character count as the user types
+    replyMessage.addEventListener('input', function () {
+        const currentLength = replyMessage.value.length;
+        charCount.textContent = currentLength;
+
+        // Optional: Provide feedback if the limit is exceeded
+        if (currentLength > maxChars) {
+            charCount.style.color = 'red'; // Change color to red if limit is exceeded
+        } else {
+            charCount.style.color = 'black'; // Reset color if within limit
+        }
+    });
+
 });
 
-//overlay for the submission confirmation in request for revision button
 
+//Document Object Model JavaScript event listener that ensures the code inside 
+// the function runs only after the HTML document has been fully loaded and parsed 
+// by the browser.
 document.addEventListener('DOMContentLoaded', function () {
     const submitRevisionConfirmationOverlay = document.getElementById('submitRevisionConfirmationOverlay');
     const revisionConfirmNoButton = document.getElementById('revisionConfirmNo');

@@ -18,7 +18,7 @@ require_once genMsg_dir . '/setMessage.php';
         display: flex; /* Use flexbox for better alignment of child elements */
         flex-direction: column; /* Arrange child elements vertically */
         width: 100%; /* Take up the full width of the parent container */
-        height: 100%; /* Take up the full height of the parent container */
+        height: 95%; /* Take up the full height of the parent container */
         box-sizing: border-box; /* Include padding and border in width/height calculations */
         overflow: hidden; /* Prevent content overflow */
     }
