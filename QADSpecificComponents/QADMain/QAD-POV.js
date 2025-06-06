@@ -721,12 +721,14 @@ document.addEventListener('DOMContentLoaded', () => {
     //  });
     // }
 
+
     if (confirmRenameButton) {
     confirmRenameButton.addEventListener('click', () => {
+        console.log('--- Confirm Rename Clicked ---');
         const newDepartmentName = renameDepartmentInput.value.trim();
         const targetSpanId = renameDepartmentContainer.dataset.targetDepartmentSpan;
+
         if (newDepartmentName && targetSpanId) {
-            // Find the department div to get its ID
             const targetNameSpan = document.getElementById(targetSpanId);
             const departmentDiv = targetNameSpan.closest('.department-item');
             const departmentId = departmentDiv ? departmentDiv.dataset.departmentId : null;
@@ -736,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Send AJAX request to update department name in DB
+            // Send AJAX request to update department name in the database
             fetch('../../generalComponents/dpManagerPHP/renameDepartment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -745,11 +747,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Update the department name in the UI
                     targetNameSpan.textContent = newDepartmentName;
                     renameDepartmentContainer.style.display = 'none';
                     overlay.style.display = 'none';
                     renameDepartmentInput.value = '';
                     renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+                    console.log('Department name updated successfully!');
                 } else {
                     alert('Failed to rename department: ' + (data.message || 'Unknown error'));
                 }
@@ -762,7 +766,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 }
-  
+
+
     if (cancelDeleteButton) {
      cancelDeleteButton.addEventListener('click', () => {
       deleteConfirmationContainer.style.display = 'none';
