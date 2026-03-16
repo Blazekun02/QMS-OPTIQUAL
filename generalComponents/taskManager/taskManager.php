@@ -722,7 +722,7 @@ require_once genMsg_dir . '/setMessage.php';
         </div>
         <?php 
         //include pdfViewer
-        require_once pdfViewer_dir . '/pdfViewer.php'; ?>
+        require_once pdfManager_dir . '/pdfViewer.php'; ?>
     </div>
 
     <div id="replyOverlay" class="overlay" style="display: none;">
@@ -868,66 +868,77 @@ function populateTaskTable(tasks) {
 function showIntroduction(policyTitle, policyContent, pdfPath, policyStatus) {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
-    const introductionSection = document.querySelector('.introduction-section');
-    const introductionTitleElement = introductionSection.querySelector('.introduction-title');
-    const introductionContentElement = introductionSection.querySelector('.introduction-content');
-    const policyFeedbackContent = document.getElementById('policyFeedbackContent'); // Get the placeholder
-    const pdfViewerContainer = document.querySelector('.pdfViewerContainer'); // Get the PDF viewer container
-    const viewPolicyButton = document.getElementById('viewPolicyButton'); // Get the View Policy button
-    const introductionContent = document.querySelector('.introduction-content'); // Get the initial content
 
-    introductionTitleElement.textContent = policyTitle;
-    introductionContentElement.textContent = policyContent;
+    const introductionSection = document.querySelector('.introduction-section'); // Get the introduction section
+    
+    const introductionHeader = introductionSection.querySelector('.introduction-header'); // Get the header 
 
-    taskManagerHeaderContainer.style.display = 'none'; // Hide header and line
-    taskManagerTable.style.display = 'none';
+    const introductionTitle = introductionHeader.querySelector('.introduction-title'); // Get the title element
 
     //show features based on task type
     showFeaturesforTaskType(policyStatus);
 
+    // const policyFeedbackContent = document.getElementById('policyFeedbackContent'); // Get the placeholder
+    // const pdfViewerContainer = document.querySelector('.pdfViewerContainer'); // Get the PDF viewer container
+    // const viewPolicyButton = document.getElementById('viewPolicyButton'); // Get the View Policy button
+
+    
+
+    //Hide task manager header and table
+    taskManagerHeaderContainer.style.display = 'none'; 
+    taskManagerTable.style.display = 'none';
+
+    //set the policy title and content in the introduction section
+    introductionTitle.textContent = policyTitle;
+
+    //Show introduction section
+    introductionSection.style.display = 'block';
+    introductionHeader.style.display = 'block';
+
+
+    
     // pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
     // introductionSection.style.display = 'block';
     // policyFeedbackContent.style.display = 'block'; // Show the placeholder  
     // introductionContent.style.display = 'block';
     // viewPolicyButton.textContent = 'View Policy';
 
-    // Add event listener to dynamically load the PDF when "View Policy" is clicked
-    // let isPolicyVisible = false;
-    // viewPolicyButton.addEventListener('click', function () {
-    //     if (!isPolicyVisible) {
-    //         introductionContent.style.display = 'none';
-    //         pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
-    //         policyFeedbackContent.style.display = 'none';
-    //         viewPolicyButton.textContent = 'View Feedback Report';
-    //         isPolicyVisible = true;
+    //Add event listener to dynamically load the PDF when "View Policy" is clicked
+    let isPolicyVisible = false;
+    viewPolicyButton.addEventListener('click', function () {
+        if (!isPolicyVisible) {
+            introductionContent.style.display = 'none';
+            pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
+            policyFeedbackContent.style.display = 'none';
+            viewPolicyButton.textContent = 'View Feedback Report';
+            isPolicyVisible = true;
 
-    //         // Dynamically load the PDF into the viewer
-    //         const pdfUrl = `${pdfPath}`; // Adjust the path as needed
-    //         pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
-    //             pdfDoc = pdfDoc_;
-    //             document.getElementById('pageCount').textContent = pdfDoc.numPages;
-    //             renderPage(1); // Render the first page
-    //         });
+            // Dynamically load the PDF into the viewer
+            const pdfUrl = `${pdfPath}`; // Adjust the path as needed
+            pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                document.getElementById('pageCount').textContent = pdfDoc.numPages;
+                renderPage(1); // Render the first page
+            });
 
-    //     } else {
-    //         introductionContent.style.display = 'block';
-    //         pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer
-    //         policyFeedbackContent.style.display = 'block';
-    //         viewPolicyButton.textContent = 'View Policy';
-    //         isPolicyVisible = false;
-    //     }
-    // });
+        } else {
+            introductionContent.style.display = 'block';
+            pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer
+            policyFeedbackContent.style.display = 'block';
+            viewPolicyButton.textContent = 'View Policy';
+            isPolicyVisible = false;
+        }
+    });
 }   
 
 function showFeaturesforTaskType(taskType){
     //Hide all features initially
-    document.querySelectorAll('.header-actions, .QAP_management_btns, .menu-dropdown, signDocuBtns').forEach(el => {
+    document.querySelectorAll('.header-actions, .QAP_management_btns, .menu-dropdown, signDocuBtns, .introduction-content').forEach(el => {
         el.style.display = 'none';
     });
 
     //Show features based on task type
 
-    
     if (taskType === 'For Review' || taskType === 'For Upload') {
         const reviewFeatures = document.querySelector('.QAP_general_btns');
 
