@@ -112,21 +112,33 @@
                 <div class="PS-Divider"></div>
                 <div class="PR-Folders">
                     <?php
-                    $queryPF = "SELECT * FROM categorytbl WHERE parentCategoryID IS NULL" ;
+                    $queryPF = "SELECT * FROM categorytbl WHERE parentCategoryID IS NULL";
                     $resultPF = mysqli_query($conn, $queryPF);
-                    $PRSubfolders = [];
+                    
                     if (mysqli_num_rows($resultPF) > 0) {
                         while ($row = mysqli_fetch_assoc($resultPF)) {
-                            echo '<div class="Parent-Block">'; // <--- ADD THIS WRAPPER!
+                            echo '<div class="Parent-Block">'; 
                         
                             echo '<div class="PR-Parent-Folders" data-id="' . $row['categoryID'] . '">';
                             echo '<p class="PR-Parent-Folder-Name">' . $row['categoryName'] . '</p>';
                             echo '</div>';
                         
+                            echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
+                            
+                            // ✨ FIX: Check for policies attached DIRECTLY to this Parent Folder!
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 5";
+                            $resultParentPols = mysqli_query($conn, $queryParentPols);
+                            if (mysqli_num_rows($resultParentPols) > 0) {
+                                while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
+                                    echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
+                                    echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
+                                    echo '</div>';
+                                }
+                            }
+
+                            // Now check for Child Folders
                             $queryCF = "SELECT * FROM categorytbl WHERE parentCategoryID = " . $row['categoryID'];
                             $resultCF = mysqli_query($conn, $queryCF);
-                        
-                            echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; // hide initially
                         
                             if (mysqli_num_rows($resultCF) > 0) {
                                 while ($rowCF = mysqli_fetch_assoc($resultCF)) {
@@ -134,16 +146,15 @@
                                     echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'];
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 5";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
-                                    echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; // correct id
-                         
+                                    echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
+                            
                                     if (mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
-                                          
                                             echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
-                                            echo '<p class="PR-Policies-Name">' . $rowPol['title'] . '</p>';
+                                            echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                             echo '</div>';
                                         }
                                     }
@@ -151,7 +162,7 @@
                                 }
                             }
                             echo '</div>'; // close child-folders
-                            echo '</div>'; 
+                            echo '</div>'; // close Parent-Block
                         }
                     }
                     ?>
@@ -219,113 +230,114 @@
 
 <!-- Department Manager  -->
 <div class="Department-Manager-Panel" >
-    <div class="Department-Manager-Header">
-        <h1>Department Manager</h1>
-        <div class="DM-Search-Container">
-            <label>
-                <input type="text" placeholder="Search" id="searchInput">
-            </label>
-            <button id="searchButton"><i class="fas fa-search"></i></button>
+        <div class="Department-Manager-Header">
+            <h1>Department Manager</h1>
+            <div class="DM-Search-Container">
+                <label>
+                    <input type="text" placeholder="Search" id="searchInput">
+                </label>
+                <button id="searchButton"><i class="fas fa-search"></i></button>
+            </div>
         </div>
-    </div>
-    <div class="DMP-Divider"></div>
+        <div class="DMP-Divider"></div>
 
-    <div class="add-department-button">
-        <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em; margin-top: 0.9em;">+ Add </button>
-    </div>
-    <div id="departmentListContainer">
-    </div>
+        <div class="add-department-button">
+            <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em; margin-top: 0.9em;">+ Add </button>
+        </div>
+        <div id="departmentListContainer">
+        </div>
 
 
-<div id="overlay"></div>
+        <div id="overlay"></div>
 
-<div id="assignNameContainer">
-    <h2>Assign Name</h2>
-    <input type="text" id="departmentNameInput" placeholder="Enter Department Name">
-    <div class="assign-name-buttons">
-        <button id="cancelAssignName">Cancel</button>
-        <button id="confirmAssignName">Confirm</button>
-    </div>
-</div>
+        <div id="assignNameContainer">
+        <h2>Assign Name</h2>
+        <input type="text" id="departmentNameInput" placeholder="Enter Department Name">
+        <div class="assign-name-buttons">
+            <button id="cancelAssignName">Cancel</button>
+            <button id="confirmAssignName">Confirm</button>
+        </div>
+        </div>
 
-<div id="assignRoleContainer" class="popup-container" style="display: none;">
-    <h2>Assign Role</h2>
-    <div class="form-group">
-        <label for="positionInput">Position</label>
-        <input type="text" id="positionInput" placeholder="Enter Position Here">
-    </div>
-    <div class="form-group">
-        <label for="nameInput">Name</label>
-        <input type="text" id="nameInput" placeholder="Name will display here" readonly>
-    </div>
-    <div class="form-group">
-        <label for="accountInput">Assign role to account</label>
-        <div class="scrollable-account-list">
-            <?php
-            // Query to fetch accounts from the database
-            $query = "SELECT accID, fullName, email FROM accdatatbl";
-            $result = mysqli_query($conn, $query);
-                if (mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
-                    echo '<input type="radio" id="account-' . $row['accID'] . '" name="selectedAccount" value="' . $row['accID'] . '">';
-                    echo '<label for="account-' . $row['accID'] . '">' . $row['fullName'] . ' (' . $row['email'] . ')</label>';
-                    echo '</div>';
+        <div id="assignRoleContainer" class="popup-container" style="display: none;">
+        <h2>Assign Role</h2>
+        <div class="form-group">
+            <label for="positionInput">Position</label>
+            <input type="text" id="positionInput" placeholder="Enter Position Here">
+        </div>
+        <div class="form-group">
+            <label for="nameInput">Name</label>
+            <input type="text" id="nameInput" placeholder="Name will display here" readonly>
+        </div>
+        <div class="form-group">
+            <label for="accountInput">Assign role to account</label>
+            <div class="scrollable-account-list">
+                <?php
+                // Query to fetch accounts from the database
+                $query = "SELECT accID, fullName, email FROM accdatatbl";
+                $result = mysqli_query($conn, $query);
+                    if (mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        echo '<div class="account-item" data-account-id="' . $row['accID'] . '">';
+                        echo '<input type="radio" id="account-' . $row['accID'] . '" name="selectedAccount" value="' . $row['accID'] . '">';
+                        echo '<label for="account-' . $row['accID'] . '">' . $row['fullName'] . ' (' . $row['email'] . ')</label>';
+                        echo '</div>';
+                    }
+                } else {
+                    echo '<p>No accounts available</p>';
                 }
-            } else {
-                echo '<p>No accounts available</p>';
-            }
-            ?>
+                ?>
+            </div>
         </div>
-    </div>
-    <div class="button-group">
-        <button id="cancelAssignRole">Cancel</button>
-        <button id="confirmAssignRole">Confirm</button>
-    </div>
+        <div class="button-group">
+            <button id="cancelAssignRole">Cancel</button>
+            <button id="confirmAssignRole">Confirm</button>
+        </div>
+        </div>
+
+        <div id="departmentStructureContainer" style="display: none;">
+        <h2>Assign Name</h2>
+        <div class="form-group">
+            <input type="text" id="structureNameInput" placeholder="Enter Name">
+        </div>
+        <div class="button-group">
+            <button id="cancelStructure">Cancel</button>
+            <button id="confirmStructure">Confirm</button>
+        </div>
+        </div>
+
+        <div id="renameDepartmentContainer" class="popup-container" style="display: none;">
+        <h2>Rename Folder</h2>
+        <div class="form-group">
+            <input type="text" id="renameDepartmentInput" placeholder="Enter New Name">
+        </div>
+        <div class="button-group">
+            <button id="cancelRename">Cancel</button>
+            <button id="confirmRenameButton">Confirm</button>
+        </div>
+        </div>
+
+
+        <div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
+        <h2>Confirm Deletion?</h2>
+        <div class="button-group">
+            <button id="cancelDelete">Cancel</button>
+            <button id="confirmDelete">Confirm</button>
+        </div>
+        </div>
+
+        <div id="renameRoleContainer" class="renameroleContainer" style="display: none;">
+        <h2>Rename Role</h2>
+        <div class="form-group">
+            <input type="text" id="renameRoleInput" placeholder="Enter New Role Name">
+        </div>
+        <div class="button-group">
+            <button id="cancelRenameRole">Cancel</button>
+            <button id="confirmRenameRole">Confirm</button>
+        </div>
+        </div>  
 </div>
 
-<div id="departmentStructureContainer" style="display: none;">
-    <h2>Assign Name</h2>
-    <div class="form-group">
-        <input type="text" id="structureNameInput" placeholder="Enter Name">
-    </div>
-    <div class="button-group">
-        <button id="cancelStructure">Cancel</button>
-        <button id="confirmStructure">Confirm</button>
-    </div>
-</div>
-
-<div id="renameDepartmentContainer" class="popup-container" style="display: none;">
-    <h2>Rename Folder</h2>
-    <div class="form-group">
-        <input type="text" id="renameDepartmentInput" placeholder="Enter New Name">
-    </div>
-    <div class="button-group">
-        <button id="cancelRename">Cancel</button>
-        <button id="confirmRenameButton">Confirm</button>
-    </div>
-</div>
-
-
-<div id="deleteConfirmationContainer" class="popup-container" style="display: none;">
-    <h2>Confirm Deletion?</h2>
-    <div class="button-group">
-        <button id="cancelDelete">Cancel</button>
-        <button id="confirmDelete">Confirm</button>
-    </div>
-</div>
-
-<div id="renameRoleContainer" class="renameroleContainer" style="display: none;">
-    <h2>Rename Role</h2>
-    <div class="form-group">
-        <input type="text" id="renameRoleInput" placeholder="Enter New Role Name">
-    </div>
-    <div class="button-group">
-        <button id="cancelRenameRole">Cancel</button>
-        <button id="confirmRenameRole">Confirm</button>
-    </div>
-</div>
-</div>
 
     <div class="Process-Tracker-Panel2" style ="display: none;">
         <?php include '../../generalComponents/processTracker/processTracker.php';?>
@@ -334,31 +346,82 @@
     <div class="Task-Manager-Panel" style="display: block;">
         <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
     </div>
-
-
-
-
-
-
+    
 <!-- Policy Manager -->
-          <div class="Policy-Manager-Panel" style="display:none;">
-            <div class="Policy-Manager-Header">
-                <h1>Policy Manager</h1>
 
-                <div class="PM-Search-Container">
-                    <label>
-                        <input type="text" placeholder="Search" id="searchInput">
-                    </label>
-                    <button id="searchButton"><i class="fas fa-search"></i></button>
+   <div class="Policy-Manager-Panel" style="display:none;">
+        <div class="pm-outer-wrapper">
+            <div class="pm-inner-card">
+                
+                <div class="Policy-Manager-Header">
+                    <h1 class="PM-Title">Policies Manager</h1>
+                    <div class="PM-Search-Container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" placeholder="search" id="pmSearchInput">
+                    </div>
                 </div>
-                 
-          </div>
-          <div class="PMP-Divider"></div>
- 
-        <div class="add-policy-button">
-            <button class="add-policy-button">+</button>
+                
+                <div class="PMP-Divider"></div>
+                
+                <div id="pmFoldersContainer"></div>
+                
+                <button class="pm-big-add-btn" id="pmAddPolicyBtn">
+                    <i class="fas fa-plus"></i>
+                </button>
+
+            </div>
         </div>
-</div>   
+    </div>   
+
+    <div id="pmCreateFolderModal" class="pm-modal-container" style="display: none;">
+        <h2>Assign Name</h2>
+        <input type="text" id="pmFolderNameInput" placeholder="Folder Name">
+        <div class="pm-modal-buttons">
+            <button id="pmCancelCreateFolder" class="cancel-btn">Cancel</button>
+            <button id="pmConfirmCreateFolder" class="confirm-btn">Confirm</button>
+        </div>
+    </div>
+
+    <div id="pmRenameFolderModal" class="pm-modal-container" style="display: none;">
+        <h2>Rename Folder</h2>
+        <input type="text" id="pmRenameInput" placeholder="New Folder Name">
+        <div class="pm-modal-buttons">
+            <button id="pmCancelRename" class="cancel-btn">Cancel</button>
+            <button id="pmConfirmRename" class="confirm-btn">Confirm</button>
+        </div>
+    </div>
+
+    <div id="pmDeleteFolderModal" class="pm-modal-container" style="display: none;">
+        <h2>Delete Folder?</h2>
+        <p style="margin-bottom: 20px;">Are you sure? This cannot be undone.</p>
+        <div class="pm-modal-buttons">
+            <button id="pmCancelDelete" class="cancel-btn">Cancel</button>
+            <button id="pmConfirmDelete" class="confirm-btn" style="background-color: #f44336; color: white;">Delete</button>
+        </div>
+    </div>
+
+    <div id="pmAddFileModal" class="pm-modal-container" style="display: none;">
+        <h2>Add Policy</h2>
+        <p style="margin-bottom: 15px; font-size: 14px; color: #d3d3d3;">Only policies with status 'Approved' are available.</p>
+        
+        <select id="pmPolicySelect" style="width: 100%; padding: 12px; border-radius: 10px; margin-bottom: 25px; font-size: 16px; color: black;">
+            <option value="">Loading policies...</option>
+        </select>
+        
+        <div class="pm-modal-buttons">
+            <button id="pmCancelAddFile" class="cancel-btn">Cancel</button>
+            <button id="pmConfirmAddFile" class="confirm-btn">Add</button>
+        </div>
+    </div>
+
+    <div id="pmRemovePolicyModal" class="pm-modal-container" style="display: none;">
+        <h2>Remove Policy?</h2>
+        <p style="margin-bottom: 20px;">This will remove the policy from the folder and return it to the 'Approved' list.</p>
+        <div class="pm-modal-buttons">
+            <button id="pmCancelRemovePolicy" class="cancel-btn">Cancel</button>
+            <button id="pmConfirmRemovePolicy" class="confirm-btn" style="background-color: #f44336; color: white;">Remove</button>
+        </div>
+    </div>
 
 <script src="QAD-POV.js"></script>
 

@@ -1,8 +1,49 @@
+/* ======================================================= */
+/* 0. GLOBAL & BASE STYLES                                 */
+/* ======================================================= */
 body {
     overflow-x: hidden;
     font-family: 'Istok Web', sans-serif;
 }
 
+.blue-line {
+    position: absolute; 
+    bottom: 0;
+    left: 4.3em; 
+    width: 100%;
+    text-align: left; 
+    padding: 10px 20px;
+    color: white; 
+    background-color: #293A82; 
+    font-size: 14px; 
+    z-index: 1; 
+}
+
+.yellow-line{  
+    position: absolute;
+    top: 50px;
+    background-color: #fbaf41;
+    width: 100%;
+    height: 6px;
+    z-index: 0;
+}
+
+/* Global Dark Overlay */
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 1000; /* Ensure it's above most content */
+}
+
+
+/* ======================================================= */
+/* SIDEBAR & TOP BAR NAVIGATION                            */
+/* ======================================================= */
 .Sidebar {
     position: absolute;
     top: 0;
@@ -15,7 +56,6 @@ body {
     flex-direction: column;
     align-items: flex-start;
     z-index: 1000;
-    
 }
 
 .Sidebar.extended {
@@ -30,7 +70,11 @@ body {
     height: 0.6in;
     margin-top: 10px;
     margin-left:0.7em;
-    
+}
+
+.Logo {
+    max-height: 70%;
+    display: block;
 }
 
 .extended-text {
@@ -41,15 +85,9 @@ body {
     display: none;
 }
 
-.Sidebar.Sidebar.extended .extended-text {
+.Sidebar.extended .extended-text {
     display: inline;
 }
-
-.Logo {
-    max-height: 70%;
-    display: block;
-}
-
 
 .Sidebar-Menu {
     display: flex;
@@ -58,7 +96,6 @@ body {
     width: 100%;
     height: 100%;
     padding-left: 15px;
-    
 }
 
 .Sidebar-Menu li{
@@ -74,7 +111,6 @@ body {
     color: orange;
 }
 
-
 .Sidebar-Menu img {
     width: 0.3in;
     height: 0.3in;
@@ -82,41 +118,23 @@ body {
     margin-left: 0.1em;
 }
 
-
 .icon-label {
     color: white;
     margin-left: 0.2in;
     font-size: 0.8em;
-    display: none;
-    transition: filter 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 0.3in);
 }
 
-
-.Sidebar.extended .icon-label {
-    display: block;
-}
-
-.blue-line {
-    position: absolute; 
-    bottom: 0;
-    left: 4.3em; 
-    width: 100%;
-    text-align: left; 
-    padding: 10px 20px; /* Add horizontal padding (left and right) */
-    color: white; 
-    background-color: #293A82; 
-    font-size: 14px; 
-    z-index: 1; 
-}
-
-.yellow-line{  
-    position: absolute;
-    top: 50px;
-    background-color: #fbaf41;
-    width: 100%;
-    height: 6px;
-    z-index: 0;
-
+.Sidebar.extended .icon-label,
+.Sidebar:hover .icon-label {
+    opacity: 1;
+    visibility: visible;
 }
 
 .hamburger-icon {
@@ -148,7 +166,6 @@ body {
     bottom: 0;
 }
 
-
 .user-btn, .notif-btn {
     position: absolute;
     margin-top: -0.9em;
@@ -160,6 +177,7 @@ body {
     cursor: pointer;
     z-index: 10;
 }
+
 .user-btn {
     left: 86%;
 }
@@ -167,9 +185,6 @@ body {
 .notif-btn {
     left: 83.5%;
 }
-
-
-
 
 .signOut-overlay {
     position: absolute;
@@ -206,7 +221,10 @@ body {
     color: red;
 }
 
-/* Policy Repository */
+
+/* ======================================================= */
+/* MODULE 1: POLICIES REPOSITORY                           */
+/* ======================================================= */
 .policy-repo-content {
     position: absolute;
     display: none;
@@ -215,10 +233,8 @@ body {
     left: 0.9in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 149px);
-    /* border: 2px solid red; */
     z-index: 1;
     overflow-y: scroll;
-
 }
 
 .PS-Divider {
@@ -280,9 +296,7 @@ body {
     z-index: 2;
     border-radius: 10px;
     background-color: #4963D4;
-    
 }
-
 
 .PR-Parent-Folders:hover {
     background-color: #293A82;
@@ -306,7 +320,6 @@ body {
     z-index: 2;
     border-radius: 10px;
     background-color: #5a76e9;
-    
 }
 
 .PR-Child-Folder-Name {
@@ -324,7 +337,6 @@ body {
 
 .PR-Policies {
     display: flex;
-
     justify-content: space-between;
     z-index: 2;
     border-radius: 10px;
@@ -336,13 +348,53 @@ body {
     padding-left: 10px;
 }
 
- 
+/* Policy Repository: PDF Viewer */
+.Policy_Repo_pdfViewer {
+    position: relative; 
+    background-color: #293A82;
+    border-radius: 20px;
+    top: 100px; 
+    left: 0.9in;
+    width: 94%!important;
+    height: 80%!important; 
+    border: 2px solid red;
+    z-index: 1;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 60px; 
+}
 
-    
+canvas {
+    display: block;
+    height: 100%; 
+    width: auto;  
+    margin: auto;
+}
 
-/*Policy Submissions Styles*/
-/*POLICY SUBMISSION CONTAINER*/
- 
+.header-pdf_divider{
+    position: relative; 
+    top: 0; 
+    background-color: gray;
+    width: 100%;
+    height: 2px;
+    margin-bottom: 10px; 
+}
+
+#closePdfViewer{
+    background-color: #3b53c0;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    height: 30px;
+    width: 50px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+
+/* ======================================================= */
+/* MODULE 2: POLICY SUBMISSION                             */
+/* ======================================================= */
 .policy-submission-content {
     position: absolute;
     background-color: white;
@@ -350,10 +402,9 @@ body {
     left: 0.9in;    
     width: calc(100% - 0.9in);
     height: calc(100vh - 149px);
-    /* border: 2px solid red; */
     z-index: 1;
     display: none;
-    align-items: center;  /* vertical centering */
+    align-items: center;  
     justify-content: center;
 }
 
@@ -374,17 +425,14 @@ body {
     font-size: 24px;
 }
 
-
 .policy-submission-buttons button {
     width: 100%;
     padding: 1vh 1vw;
     border: none;
     border-radius: 5px;
     font-size: 18px;
-    
 }
 
-/*DOWNLOAD TEMPLATE BUTTON*/
 .policy-submission-buttons button:first-child  {
     background-color: white;
     border-radius: 15px;
@@ -392,7 +440,6 @@ body {
     margin-bottom: 20vh;
     color: #343A40;
     text-align: left;
-
 }
 
 .policy-submission-buttons button:first-child:hover {
@@ -400,7 +447,6 @@ body {
     color:white;
 }
 
-/*SUBMIT BUTTON*/
 .policy-submission-buttons button:last-child {
     background-color: #fbaf41;
     color: white;
@@ -411,8 +457,8 @@ body {
     color:black;
 }
 
-/*SUBMIT BUTTON ONCE CLICKED/ SUBMIT CONTENT*/
-.submit-overlay{
+/* Policy Submission Modals */
+.submit-overlay {
     display: none;
     position: absolute;
     width: 100%;
@@ -423,7 +469,7 @@ body {
     align-items: center;
 }
 
-.submit-popUp{
+.submit-popUp {
     background-color: #293A82;
     color: white;
     padding: 1vw;
@@ -462,7 +508,7 @@ body {
     margin-top: 1.5vh;
 }
 
-.submit-buttons button:hover{
+.submit-buttons button:hover {
     background-color: #db8804;
     color:black;
 }
@@ -471,11 +517,9 @@ body {
     border-radius: 9em;
     align-items: left;
     margin-top: -1.3vh;
-
 }
 
-/* CONFIRMATION ONCE DOWNLOAD TEMPLATE IS CLICKED*/
-.confirm-dl{
+.confirm-dl {
     display: none;
     position: absolute;
     width: 100%;
@@ -486,7 +530,7 @@ body {
     align-items: center;
 }
 
-.confirm-popUp{
+.confirm-popUp {
     background-color: #293A82;
     color: white;
     padding: 1vw;
@@ -520,12 +564,12 @@ body {
     margin-right: 1vw;
 }
 
-.cf-buttons button:hover{
+.cf-buttons button:hover {
     background-color: #db8804;
     color:black;
 }
 
-.confirmSubmit-dl{
+.confirmSubmit-dl {
     display: none;
     position: absolute;
     width: 100%;
@@ -536,7 +580,7 @@ body {
     align-items: center;
 }
 
-.confirmSubmit-popUp{
+.confirmSubmit-popUp {
     background-color: #293A82;
     color: white;
     padding: 1vw;
@@ -570,85 +614,33 @@ body {
     margin-right: 1vw;
 }
 
-.cfSubmit-buttons button:hover{
+.cfSubmit-buttons button:hover {
     background-color: #db8804;
     color:black;
 }
 
 
+/* ======================================================= */
+/* MODULE 3: PROCESS TRACKER                               */
+/* ======================================================= */
+/* Seperate Styles */
 
 
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-
-/* Policy submission container */
-.policy-submission {
-    width: 90%; 
-    height: auto; 
-    padding: 2vw; 
-    margin: 2vh auto; 
-}
-
-/* Policy submission header text */
-.policy-submission h2 {
-    font-size: 18px; 
-    margin-bottom: 1.5vw; 
-    margin-top: 1vw;
-}
-
- /* Policy submission buttons */
-.policy-submission-buttons button {
-    width: 100%;
-    padding: 1.5vh 1vw; 
-    font-size: 16px; 
-    margin-bottom: 1vh; 
-}
-
-/* Download template button */
-.policy-submission-buttons button:first-child {
-    margin-top: 1vh; 
-    margin-bottom: 2vh; 
-}
-
- /* Submit button */
-.policy-submission-buttons button:last-child {
-    margin-top: 12vh; 
-}
-
- /* Confirmation download modal */
-.confirm-popUp {
-    width: 45%; 
-    height: auto; 
-    margin: 42vh auto; 
-    padding: 2vw; 
-    font-size: 1.6em; 
-}
-
-.cf-buttons button {
-    padding: 1vh 5vw;
-    font-size: 2emm;
-    margin-top: 2vh; 
-}
-
-/* Submit confirmation modal */
-.submit-popUp {
-    width: 60%; 
-    height: auto; 
-    margin: 35vh auto; 
-    padding: 2vw; 
-    font-size: 1.3em; 
-}
-
-.submit-buttons button {
-    padding: 1vh 4vw; 
-    font-size: 0.7em; 
-    margin-top: 1vh; 
-}
-
-}
+/* ======================================================= */
+/* MODULE 4: TASK MANAGER                                  */
+/* ======================================================= */
+/* Styles for Task Manager will go here */
 
 
-/*Department Manager Panel Styles*/
+/* ======================================================= */
+/* MODULE 5: MANAGE ROLES                                  */
+/* ======================================================= */
+/* Styles for Manage Roles will go here */
+
+
+/* ======================================================= */
+/* MODULE 6: DEPARTMENT MANAGER                            */
+/* ======================================================= */
 .Department-Manager-Panel {
     position: absolute;
     display: none;
@@ -712,7 +704,111 @@ body {
     cursor: pointer;
 }
 
-/* when add button is clicked */
+#departmentListContainer {
+    margin-top: 20px;
+    padding: 10px;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: white;
+    box-sizing: border-box; 
+    white-space: nowrap;
+    border-radius: 0.9em;
+    display: block;
+}
+
+#departmentListContainer div {
+    width: 100%;
+    color: white;
+    background-color: #293A82;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+
+#departmentListContainer .department-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    color: white;
+    background-color: #293A82;
+    padding: 5px 15px;
+    margin-bottom: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: auto;
+    border-radius: 0.9em;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+#departmentListContainer .department-item span {
+    color: white;
+    flex-grow: 1;
+}
+
+#departmentListContainer .department-icons {
+    display: flex;
+    gap: 1em;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 0;
+    padding-right: 1.5em;
+}
+
+#departmentListContainer .department-icons i {
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+#departmentListContainer .department-icons i:hover {
+    color: #fbaf41;
+    transition: color 0.2s ease-in-out;
+}
+
+#departmentListContainer .assigned-role-item {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    width: calc(100% - 20px); 
+    margin: 5px 10px;
+    color: black;
+    background-color: #BAE0F3;
+    padding: 6px 15px;
+    border-radius: 0.5em;
+    box-sizing: border-box;
+    font-size: 0.95em;
+}
+
+#departmentListContainer .assigned-role-item span {
+    flex-grow: 1; 
+    text-align: left; 
+}
+
+#departmentListContainer .assigned-role-icons {
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 1em; 
+    margin-left: auto; 
+    background-color: transparent; 
+}
+
+#departmentListContainer .assigned-role-icons i {
+    font-size: 1.2em;
+    cursor: pointer; 
+    color: black; 
+}
+
+#departmentListContainer .assigned-role-icons i:hover {
+    color: #fbaf41; 
+    transition: color 0.2s ease-in-out;
+}
+
+#departmentListContainer .assigned-role-item .assigned-role-icons i:hover {
+    color: #293A82;
+    transition: color 0.2s ease-in-out;
+}
+
+/* Department Manager Modals */
 #assignNameContainer {
     display: none;
     position: fixed;
@@ -760,7 +856,6 @@ body {
     border-radius: 0.8em;
     color: black;
     margin-left: 3em;
-
 }
 
 #assignNameContainer button:hover {
@@ -775,79 +870,6 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* list of department that will be created */
-#departmentListContainer {
-    margin-top: 20px;
-    padding: 10px;
-    max-height: calc(100vh - 250px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    background-color: white;
-    box-sizing: border-box; /* Ensure padding doesn't increase the width */
-    white-space: nowrap;
-    border-radius: 0.9em;
-    display: block;
-}
-
-#departmentListContainer div {
-    width: 100%;
-    color: white;
-    background-color: #293A82;
-    padding: 10px;
-    margin-bottom: 5px;
-
-}
-
-#departmentListContainer .department-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    color: white;
-    background-color: #293A82;
-    padding: 5px 15px;
-    margin-bottom: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    height: auto;
-    border-radius: 0.9em;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-#departmentListContainer .department-item span {
-    color: white;
-    flex-grow: 1;
-
-}
-
-#departmentListContainer .department-icons {
-    display: flex;
-    gap: 1em;
-    justify-content: flex-end;
-    align-items: center;
-    margin-right: 0;
-    padding-right: 1.5em;
-}
-
-#departmentListContainer .department-icons i {
-    font-size: 1.2em;
-    cursor: pointer;
-
-}
-
-#departmentListContainer .department-icons i:hover {
-    color: #fbaf41;
-    transition: color 0.2s ease-in-out;
-}
-
-/* Hover effect for assigned role icons */
-#departmentListContainer .assigned-role-item .assigned-role-icons i:hover {
-    color: #293A82;
-    transition: color 0.2s ease-in-out;
-}
-
-/* 1st icon */
-/* Styles for Assign Role Pop-up */
 #assignRoleContainer {
     display: none; 
     position: fixed;
@@ -955,48 +977,6 @@ body {
     text-overflow: ellipsis;
 }
 
-
-#departmentListContainer .assigned-role-item {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    width: calc(100% - 20px); 
-    margin: 5px 10px;
-    color: black;
-    background-color: #BAE0F3;
-    padding: 6px 15px;
-    border-radius: 0.5em;
-    box-sizing: border-box;
-    font-size: 0.95em;
-}
-
-#departmentListContainer .assigned-role-item span {
-    flex-grow: 1; 
-    text-align: left; 
-}
-
-
-#departmentListContainer .assigned-role-icons {
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 1em; 
-    margin-left: auto; 
-    background-color: transparent; 
-}
-
-#departmentListContainer .assigned-role-icons i {
-    font-size: 1.2em;
-    cursor: pointer; 
-    color: black; 
-}
-
-#departmentListContainer .assigned-role-icons i:hover {
-    color: #fbaf41; 
-    transition: color 0.2s ease-in-out;
-}
-
-
-/* 2nd icon in departmentlist*/
 #departmentStructureContainer {
     display: none;
     position: fixed;
@@ -1009,15 +989,14 @@ body {
     border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     z-index: 1003;
-    width: 24vw; /* Match assignNameContainer width */
-    height: 20vh; /* Match assignNameContainer height */
+    width: 24vw; 
+    height: 20vh; 
 }
 
 #departmentStructureContainer h2 {
     margin-top: 0;
     align-items: center;
     text-align: center;
-
 }
 
 #departmentStructureContainer input[type="text"] {
@@ -1044,14 +1023,12 @@ body {
     padding: 10px 18px;
     border-radius: 0.8em;
     cursor: pointer;
-
 }
 
 #departmentStructureContainer button#cancelStructure {
     background-color: #D3D3D3;
     border-radius: 0.8em;
     color: black;
-
 }
 
 #departmentStructureContainer button:hover {
@@ -1066,10 +1043,6 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-
-
-/* Styles for Rename Department Pop-up (Matching Assign Name) */
-/* 3rd icon - Revised Rename Department Pop-up Styles */
 #renameDepartmentContainer {
     display: none;
     position: fixed;
@@ -1097,19 +1070,19 @@ body {
 }
 
 #renameDepartmentContainer input[type="text"] {
-    width: calc(100% - 20px); /* Account for padding */
+    width: calc(100% - 20px); 
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 0.5em;
     color: black;
     font-size: 0.8em;
-    box-sizing: border-box; /* Ensure padding doesn't affect overall width */
+    box-sizing: border-box; 
 }
 
 #renameDepartmentContainer .button-group {
     display: flex;
-    justify-content: center; /* Center buttons horizontally */
-    gap: 15px; /* Space between buttons */
+    justify-content: center; 
+    gap: 15px; 
     margin-top: 10px;
 }
 
@@ -1117,7 +1090,7 @@ body {
     background-color: #fbaf41;
     color: white;
     border: none;
-    padding: 7px 16px; /* More standard padding */
+    padding: 7px 16px; 
     border-radius: 0.5em;
     cursor: pointer;
     font-size: 0.8em;
@@ -1138,9 +1111,6 @@ body {
     background-color: #b0b0b0;
 }
 
-
-/* 4th icon */
-/* Styles for Delete Confirmation Pop-up (Matching Rename) */
 #deleteConfirmationContainer {
     display: none;
     position: fixed;
@@ -1193,7 +1163,6 @@ body {
     background-color: #b0b0b0;
 }
 
-/* rename for the assignedrole created */
 .renameroleContainer {
     display: none;
     position: fixed;
@@ -1263,62 +1232,334 @@ body {
 }
 
 
-
-
-
-/* Overlay Styles */
-#overlay {
+/* ======================================================= */
+/* MODULE 7: POLICY MANAGER                                */
+/* ======================================================= */
+.Policy-Manager-Panel {
+    position: absolute;
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
+    top: 60px; 
+    left: 0.8in;
+    width: calc(100% - 0.9in);
+    height: calc(100vh - 120px);
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Process Tracker Outer Look (Blue bg, red border) */
+.pm-outer-wrapper {
+    background-color: #293A82; 
+    border: 2px solid red;     
+    border-radius: 10px;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-    z-index: 1000; /* Ensure it's above most content */
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.Policy_Repo_pdfViewer {
-    position: relative; /* Ensure it is positioned relative to its parent */
-    background-color: #293A82;
+/* Figma Concept Inner Look (White card) */
+.pm-inner-card {
+    background-color: white;
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    padding: 20px 30px;
+    box-sizing: border-box;
+}
+
+.Policy-Manager-Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.PM-Title {
+    color: #293A82; /* Dark Blue Text */
+    font-family: 'Istok Web', sans-serif;
+    font-size: 26px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Figma Concept Search Bar (Grey Pill) */
+.PM-Search-Container {
+    display: flex;
+    align-items: center;
+    background-color: #D9D9D9; 
     border-radius: 20px;
-    top: 100px; /* Remove the top offset */
-    left: 0.9in;
-    width: 94%!important;
-    height: 80%!important; /* Adjust height to account for the header divider */
-    border: 2px solid red;
-    z-index: 1;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-top: 60px; /* Push it below the header divider */
+    padding: 8px 15px;
+    width: 250px;
 }
 
-
-
-canvas {
-    display: block;
-    height: 100%; /* Ensure the canvas fills the container */
-    width: auto;  /* Ensure it doesn't exceed the container height */
-    margin: auto;
+.PM-Search-Container .search-icon {
+    color: #666;
+    margin-right: 10px;
+    font-size: 14px;
 }
 
-.header-pdf_divider{
-    position: relative; /* Ensure it is positioned relative to its parent */
-    top: 0; /* Align it at the top of the container */
-    background-color: gray;
+.PM-Search-Container input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-family: 'Istok Web', sans-serif;
+    color: #333;
+    font-size: 14px;
+}
+
+.PMP-Divider {
     width: 100%;
     height: 2px;
-    margin-bottom: 10px; /* Add spacing below the divider */
+    background-color: #A0A0A0; /* Grey line */
+    margin-bottom: 25px;
 }
 
-#closePdfViewer{
-    background-color: #3b53c0;
-    color: white;
+/* Figma Concept Big Grey Plus Button */
+.pm-big-add-btn {
+    width: 100%;
+    background-color: #D9D9D9; 
     border: none;
-    padding: 5px 10px;
-    height: 30px;
-    width: 50px;
-    border-radius: 20px;
+    border-radius: 15px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
+.pm-big-add-btn i {
+    color: #293A82; /* Blue plus sign */
+    font-size: 30px;
+    font-weight: normal;
+}
+
+.pm-big-add-btn:hover {
+    background-color: #c0c0c0;
+}
+
+/* ======================================================= */
+/* POLICIES MANAGER: FOLDERS & MODALS                      */
+/* ======================================================= */
+
+/* The Blue Folder Banner */
+.pm-folder-item {
+    background-color: #4963D4;
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0; /* Keeps them touching */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#pmFoldersContainer {
+    display: flex;
+    flex-direction: column;
+    /* Add a gap between the last folder and the big + button */
+    margin-bottom: 25px; 
+}
+
+#pmFoldersContainer .pm-folder-item:first-child {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.pm-folder-item:first-child {
+    border-radius: 10px 10px 0 0;
+}
+
+/* Round the bottom corners of the very last folder in the list */
+.pm-folder-item:last-child {
+    border-radius: 0 0 10px 10px;
+    border-bottom: none;
+}
+
+#pmFoldersContainer .pm-folder-item:last-child {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom: none; /* Remove bottom border on the very last one */
+}
+
+.pm-folder-name {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+    font-family: 'Istok Web', sans-serif;
+}
+
+.pm-folder-icons {
+    display: flex;
+    gap: 20px;
+    font-size: 22px;
+}
+
+.pm-folder-icons i {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.pm-folder-icons i:hover {
+    color: #fbaf41; /* Yellow hover effect */
+}
+
+/* Child Folder Indentation */
+.pm-child-folder {
+    /* Use a slightly different blue or a border-left to show it belongs to the parent above */
+    background-color: #5a76e9; 
+    margin-left: 40px; /* Keep it flush to the left */
+    padding-left: 50px; /* Use padding instead of margin to indent the text only */
+
+}
+
+/* Figma "Assign Name" Modal */
+.pm-modal-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #293A82;
+    color: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1005;
+    width: 400px;
+    text-align: center;
+}
+
+.pm-modal-container h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 28px;
+}
+
+.pm-modal-container input {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    font-size: 18px;
+    box-sizing: border-box;
+    font-weight: bold;
+}
+
+.pm-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.pm-modal-buttons button {
+    padding: 10px 30px;
+    border: none;
+    border-radius: 25px; /* Pill shape */
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.2s;
+}
+
+.pm-modal-buttons .cancel-btn {
+    background-color: white;
+    color: #333;
+}
+
+.pm-modal-buttons .cancel-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.pm-modal-buttons .confirm-btn {
+    background-color: #fbaf41;
+    color: black;
+}
+
+.pm-modal-buttons .confirm-btn:hover {
+    background-color: #d98f26;
+}
+
+/* ======================================================= */
+/* MODULE 8: REPORTS                                       */
+/* ======================================================= */
+/* Styles for Reports will go here */
+
+
+/* ======================================================= */
+/* MODULE 9: INFORMATION                                   */
+/* ======================================================= */
+/* Styles for Information will go here */
+
+
+/* ======================================================= */
+/* RESPONSIVE DESIGN (MEDIA QUERIES)                       */
+/* ======================================================= */
+@media (max-width: 768px) {
+
+    /* Policy submission container */
+    .policy-submission {
+        width: 90%; 
+        height: auto; 
+        padding: 2vw; 
+        margin: 2vh auto; 
+    }
+
+    /* Policy submission header text */
+    .policy-submission h2 {
+        font-size: 18px; 
+        margin-bottom: 1.5vw; 
+        margin-top: 1vw;
+    }
+
+    /* Policy submission buttons */
+    .policy-submission-buttons button {
+        width: 100%;
+        padding: 1.5vh 1vw; 
+        font-size: 16px; 
+        margin-bottom: 1vh; 
+    }
+
+    /* Download template button */
+    .policy-submission-buttons button:first-child {
+        margin-top: 1vh; 
+        margin-bottom: 2vh; 
+    }
+
+    /* Submit button */
+    .policy-submission-buttons button:last-child {
+        margin-top: 12vh; 
+    }
+
+    /* Confirmation download modal */
+    .confirm-popUp {
+        width: 45%; 
+        height: auto; 
+        margin: 42vh auto; 
+        padding: 2vw; 
+        font-size: 1.6em; 
+    }
+
+    .cf-buttons button {
+        padding: 1vh 5vw;
+        font-size: 2em; /* Fixed typo from 2emm */
+        margin-top: 2vh; 
+    }
+
+    /* Submit confirmation modal */
+    .submit-popUp {
+        width: 60%; 
+        height: auto; 
+        margin: 35vh auto; 
+        padding: 2vw; 
+        font-size: 1.3em; 
+    }
+
+    .submit-buttons button {
+        padding: 1vh 4vw; 
+        font-size: 0.7em; 
+        margin-top: 1vh; 
+    }
+}

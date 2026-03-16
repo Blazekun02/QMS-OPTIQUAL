@@ -102,8 +102,15 @@ thead th:last-child {
         <div class="PT-Header-Buttons">
             <button id="toggleButton" >Submissions</button>
         </div>
-        <div class="PT-Divider"></div>
     </div>
+
+    <div class="PT-Divider"></div>
+
+    <div class="PT-filter-buttons">
+        <button class="status-btn active" id="pendingButton">Pending</button>
+        <button class="status-btn" id="completedButton">Completed</button>
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -193,6 +200,52 @@ thead th:last-child {
     height: 75px;
 }
 
+.PT-Header-Buttons {
+    margin-left: auto;
+}
+
+.PT-filter-buttons {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 0.35rem;
+}
+
+.status-btn {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ccc;
+    padding: 7px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.status-btn:hover {
+    background-color: #f1f1f1;
+}
+
+.status-btn.active {
+    background-color: #fbaf41;
+    color: #000;
+    border-color: #e0941d;
+}
+
+.Process-Tracker-Panel table {
+    margin-top: 8px;
+}
+
+.Process-Tracker-Panel table th,
+.Process-Tracker-Panel table td {
+    text-align: left;
+    vertical-align: middle;
+}
+
+.Process-Tracker-Panel table td {
+    padding: 8px 10px;
+}
+
 .PTC-Header-Buttons {
     margin-left: auto; 
 
@@ -275,6 +328,47 @@ thead th:last-child {
 
 </style>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const pendingButton = document.getElementById('pendingButton');
+        const completedButton = document.getElementById('completedButton');
+        const rows = document.querySelectorAll('.Process-Tracker-Panel table tbody tr.folder-row');
+
+        function setActive(button) {
+            [pendingButton, completedButton].forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+        }
+
+        function applyFilter(status) {
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(4)');
+                if (!statusCell) return;
+                const value = statusCell.textContent.trim().toLowerCase();
+
+                if (status === 'all' || value === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        pendingButton.addEventListener('click', function () {
+            setActive(pendingButton);
+            applyFilter('pending');
+        });
+
+        completedButton.addEventListener('click', function () {
+            setActive(completedButton);
+            applyFilter('completed');
+        });
+
+        // Initial state: Pending
+        setActive(pendingButton);
+        applyFilter('pending');
+    });
+</script>
+
 <div class="Process-Tracker-Content" style = "display: none;">
     
     <div class="Process-Tracker-Content-Header">
@@ -288,10 +382,9 @@ thead th:last-child {
     <div class="PTC-Trackers">
 
     <?php
-        include ("processTracker_PolicyDetails.php");
-        
-        
-        ?>
+        include ("processTracker_PolicyDetails.php"); ?>
+        </div> 
+        </div>
     
   
 
