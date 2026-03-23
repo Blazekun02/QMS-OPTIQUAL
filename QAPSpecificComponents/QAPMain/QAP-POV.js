@@ -122,4 +122,12 @@ const hamburgerIcon = document.getElementById('hamburger-icon');
         cfOverlay.style.display = "none";
     });
 
+function showTaskManager() {
+    document.getElementById('policy-repo-content').style.display = 'none';
+    document.getElementById('policy-submission-content').style.display = 'none';
+    document.querySelector('.process-tracker').style.display = 'none';
+    document.querySelector('.task-manager').style.display = 'block';
+    document.querySelector('.information').style.display = 'none';
+    document.querySelector('.role-manager').style.display = 'none';
+}
     

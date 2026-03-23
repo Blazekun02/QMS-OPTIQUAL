@@ -3,10 +3,21 @@
     include '../../connect.php';
     if ($conn->connect_error) {
         die("❌ Connection failed: " . $conn->connect_error);
-    } else {
-        echo "<script>alert('✅ Connected successfully');</script>";
     }
 
+    // Fetch user's full name if not already set in session
+    if (!isset($_SESSION['fullName']) && isset($_SESSION['accID'])) {
+        $accID = $_SESSION['accID'];
+        $query = "SELECT fullName FROM accdatatbl WHERE accID = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $accID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $_SESSION['fullName'] = $row['fullName'];
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -74,26 +85,29 @@
 
         <div class="blue-line">Copyright © 2024 OPTIQUAL. All rights reserved</div>
         <div class="yellow-line"></div>
-        <img src="../QAP Sidebar Images/Not Clicked/OIP.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
-        <div>
-            <button type="button" class="button user-btn" id="userButton">
-                <i class="fa fa-user-circle" style="font-size:24px"></i>
-                <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'User'; ?>
-            </button>
-            <button type="button" class="button notif-btn" id="notifButton">
-                <i class="fa fa-bell" style="font-size:24px"></i>
-            </button>
+        <div class="top-nav-bar">
+            <img src="../QAP Sidebar Images/Not Clicked/OIP.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+            <div class="top-nav-right">
+                <button type="button" class="button notif-btn" id="notifButton">
+                    <i class="fa fa-bell" style="font-size:24px"></i>
+                </button>
+                <div class="user-menu-container">
+                    <button type="button" class="button user-btn" id="userButton">
+                        <i class="fa fa-user-circle" style="font-size:24px"></i>
+                        <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'User'; ?>
+                    </button>
+                    <div class="signOut-overlay" id="signOutOverlay">
+                        <div class="signOut-content">
+                            Sign out
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="popupOverlay" id="popupOverlay" style="display: none;">
             <?php include '../../generalComponents/header/Notification-Overlay.php';?>
             
-        </div>
-
-        <div class="signOut-overlay" id="signOutOverlay">
-            <div class="signOut-content">
-                Sign out
-            </div>
         </div>
 
         <!-- Policy Repository --> 
@@ -224,10 +238,6 @@
         </div>
         </div>
 
-
-       
-
-
 <!-- Department Manager  -->
 <div class="Department-Manager-Panel" >
         <div class="Department-Manager-Header">
@@ -241,22 +251,22 @@
         </div>
         <div class="DMP-Divider"></div>
 
-        <div class="add-department-button">
-            <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em; margin-top: 0.9em;">+ Add </button>
-        </div>
-        <div id="departmentListContainer">
-        </div>
+        <div id="departmentListContainer"></div>
+
+        <button class="pm-big-add-btn" id="addDepartmentButton" style="margin-top: 20px;">
+            <i class="fas fa-plus"></i>
+        </button>
 
 
         <div id="overlay"></div>
 
-        <div id="assignNameContainer">
-        <h2>Assign Name</h2>
-        <input type="text" id="departmentNameInput" placeholder="Enter Department Name">
-        <div class="assign-name-buttons">
-            <button id="cancelAssignName">Cancel</button>
-            <button id="confirmAssignName">Confirm</button>
-        </div>
+        <div id="assignNameContainer" class="pm-modal-container" style="display: none;">
+            <h2 style="font-size: 32px; margin-bottom: 20px;">Assign Name</h2>
+            <input type="text" id="departmentNameInput" placeholder="Enter Department Name" style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 25px; box-sizing: border-box;">
+            <div class="pm-modal-buttons">
+                <button id="cancelAssignName" class="cancel-btn">Cancel</button>
+                <button id="confirmAssignName" class="confirm-btn">Confirm</button>
+            </div>
         </div>
 
         <div id="assignRoleContainer" class="popup-container" style="display: none;">
@@ -343,7 +353,7 @@
         <?php include '../../generalComponents/processTracker/processTracker.php';?>
     </div>
 
-    <div class="Task-Manager-Panel" style="display: block;">
+    <div class="Task-Manager-Panel" style="display: none;">
         <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
     </div>
     
@@ -422,6 +432,47 @@
             <button id="pmConfirmRemovePolicy" class="confirm-btn" style="background-color: #f44336; color: white;">Remove</button>
         </div>
     </div>
+
+    <!-- Role Manager Panel -->
+
+    <div class="Role-Manager-Panel" style="display:none;">
+    <h1 class="rm-title">Quality Assurance Team Manager</h1>
+    
+    <div class="rm-controls">
+        <div class="rm-search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" placeholder="find employee" id="rmSearchInput">
+        </div>
+        <button class="rm-icon-btn" id="rmAddRoleBtn" title="Add User"><i class="fas fa-user-plus"></i></button>
+        
+        <button class="rm-icon-btn rm-delete-btn" id="rmDeleteRoleBtn" title="Remove Users"><i class="fas fa-trash-alt"></i></button>
+        
+        <button class="rm-icon-btn" id="rmConfirmDeleteBtn" title="Confirm Removal" style="display: none; color: #4CAF50;"><i class="fas fa-check-circle"></i></button>
+        <span id="rmDeleteInstruction" style="display: none; color: #f44336; font-family: 'Istok Web', sans-serif; font-weight: bold; margin-left: 10px; font-size: 16px;">Select users to be removed.</span>
+    </div>
+    <div class="rm-grid-container" id="rmGridContainer"></div>
+</div>
+
+<div id="rmAddUserModal" class="pm-modal-container" style="display: none;">
+    <h2 class="rm-modal-title">Add to Team</h2>
+    
+    <div class="rm-input-group">
+        <label class="rm-input-label">Name</label>
+        <select id="rmUserSelectInput" class="rm-modal-input rm-modal-select">
+            <option value="" disabled selected>Select an employee...</option>
+        </select>
+    </div>
+    
+    <div class="rm-input-group rm-input-group-last">
+        <label class="rm-input-label">Email</label>
+        <input type="email" id="rmUserEmailInput" class="rm-modal-input rm-readonly-input" placeholder="Email will automatically fill..." readonly>
+    </div>
+
+    <div class="pm-modal-buttons">
+        <button id="rmCancelAddUser" class="cancel-btn">Cancel</button>
+        <button id="rmConfirmAddUser" class="confirm-btn">Confirm</button>
+    </div>
+</div>
 
 <script src="QAD-POV.js"></script>
 

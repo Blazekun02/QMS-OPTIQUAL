@@ -8,6 +8,7 @@ const departmentPanel = document.querySelector('.Department-Manager-Panel');
 const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2'); 
 const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
 const taskManagerPanel = document.querySelector('.Task-Manager-Panel');
+const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
 
 // Overlays & Modals
 const notificationOverlay = document.getElementById('popupOverlay');
@@ -26,6 +27,7 @@ function hideAllPanels() {
     if (processTrackerPanel) processTrackerPanel.style.display = 'none';
     if (policyManagerPanel) policyManagerPanel.style.display = 'none';
     if (taskManagerPanel) taskManagerPanel.style.display = 'none';
+    if (roleManagerPanel) roleManagerPanel.style.display = 'none';
 }
 
 function showPolicyRepository() {
@@ -73,6 +75,12 @@ function showPolicyManager() {
     if (policyManagerPanel) policyManagerPanel.style.display = 'block';
 }
 
+function showRoleManager() {
+    console.log("Role Manager Triggered");
+    hideAllPanels();
+    if (roleManagerPanel) roleManagerPanel.style.display = 'block';
+}
+
 // Attach Event Listeners to Sidebar Icons
 document.addEventListener('DOMContentLoaded', () => {
     const icons = document.querySelectorAll('.menu-icons');
@@ -80,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(icons[1]) icons[1].addEventListener('click', showPolicySubmission);
     if(icons[2]) icons[2].addEventListener('click', showProcessTracker);
     if(icons[3]) icons[3].addEventListener('click', showTaskManager);
-    // Note: Assuming icon[4] is Manage Roles (skipped here based on your code)
+    if(icons[4]) icons[4].addEventListener('click', showRoleManager);
     if(icons[5]) icons[5].addEventListener('click', showDepartmentManager);
     if(icons[6]) icons[6].addEventListener('click', showPolicyManager);
 });
@@ -339,7 +347,6 @@ function showIntroduction(policyTitle, policyContent, pdfPath) {
     }
 } 
 
-
 /* =====================================================================
    6. DEPARTMENT MANAGER
    ===================================================================== */
@@ -376,17 +383,88 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTargetDepartment = null;
     let currentlyEditingRoleTextSpan = null;
     let roleToDelete = null;
-    let currentlyEditingRole = null;
     let activeDepartmentForStructure = null; 
 
-    // Initialize - Fetch Departments
+    // Initialize - Fetch Departments AND Employees
     fetch('../../generalComponents/dpManagerPHP/getDepartments.php')
     .then(response => response.json())
     .then(data => {
         if (data.success && Array.isArray(data.departments)) {
-            data.departments.forEach(dep => {
-                displayNewDepartment(dep.dptName, dep.dptID);
-            });
+            if (data.hasHierarchy) {
+                const parentDepartments = data.departments.filter(dep => !dep.dptParentID);
+                const childDepartments = data.departments.filter(dep => dep.dptParentID);
+                
+                parentDepartments.forEach(dep => {
+                    displayNewDepartment(dep.dptName, dep.dptID, false);
+                });
+                
+                childDepartments.forEach(child => {
+                    const parentElement = document.querySelector(`[data-department-id="${child.dptParentID}"]`);
+                    if (parentElement) {
+                        const childDiv = createDepartmentElement(child.dptName, child.dptID, true);
+                        
+                       
+                        parentElement.parentNode.insertBefore(childDiv, parentElement.nextSibling);
+                    } else {
+                        displayNewDepartment(child.dptName, child.dptID, false);
+                    }
+                });
+            } else {
+                data.departments.forEach(dep => {
+                    displayNewDepartment(dep.dptName, dep.dptID, false);
+                });
+            }
+
+            // Render all assigned employees
+            if (data.employees && Array.isArray(data.employees)) {
+                data.employees.forEach(emp => {
+                    const targetDepartment = document.querySelector(`[data-department-id="${emp.dptID}"]`);
+                    
+                    if (targetDepartment) {
+                        const emailOnly = emp.email ? emp.email.trim() : '';
+                        const newRoleText = `${emp.departmentRole} - ${emp.fullName.trim()} (${emailOnly})`;
+
+                        const assignedRoleDiv = document.createElement('div');
+                        assignedRoleDiv.classList.add('assigned-role-item');
+                        
+                        // ✨ NEW: Check if the parent is a sub-folder to indent deeper!
+                        if (targetDepartment.classList.contains('dpt-child-folder')) {
+                            assignedRoleDiv.classList.add('nested-employee');
+                        } else {
+                            assignedRoleDiv.classList.add('parent-employee');
+                        }
+
+                        assignedRoleDiv.dataset.accId = emp.accID;
+                        assignedRoleDiv.dataset.dptId = emp.dptID;
+                        
+                        assignedRoleDiv.innerHTML = `
+                            <span>${newRoleText}</span>
+                            <div class="assigned-role-icons">
+                                <i class="fas fa-pencil-alt edit-role-icon" title="Edit Role"></i>
+                                <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
+                            </div>
+                        `;
+                        
+                        const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
+                        const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
+
+                        editRoleIcon.addEventListener('click', () => {
+                            currentlyEditingRoleTextSpan = assignedRoleDiv.querySelector('span');
+                            if (renameRoleContainer) renameRoleContainer.style.display = 'block';
+                            if (overlay) overlay.style.display = 'block';
+                        });
+
+                        deleteRoleIcon.addEventListener('click', () => {
+                            roleToDelete = assignedRoleDiv;
+                            departmentToDelete = null; // 🐛 FIX: Clears lingering folder data
+                            if (deleteConfirmationContainer) deleteConfirmationContainer.style.display = 'block';
+                            if (overlay) overlay.style.display = 'block';
+                        });
+
+                        targetDepartment.parentNode.insertBefore(assignedRoleDiv, targetDepartment.nextSibling);
+                    }
+                });
+            }
         }
     });
   
@@ -418,7 +496,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        displayNewDepartment(departmentName, data.departmentId);
+                       
+                        const newId = data.departmentId || data.dptID; 
+                        
+                        displayNewDepartment(departmentName, newId);
                         assignNameContainer.style.display = 'none';
                         if(overlay) overlay.style.display = 'none';
                         departmentNameInput.value = '';
@@ -433,10 +514,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Render Department Item to DOM
-    function displayNewDepartment(name, id = null) {
+    function displayNewDepartment(name, id = null, isChild = false) {
+        const departmentDiv = createDepartmentElement(name, id, isChild);
+        departmentListContainer.appendChild(departmentDiv);
+    }
+
+    function createDepartmentElement(name, id = null, isChild = false) {
         const departmentDiv = document.createElement('div');
         departmentDiv.classList.add('department-item');
+        if (isChild) departmentDiv.classList.add('dpt-child-folder');
+        
         departmentDiv.dataset.departmentName = name;
         if (id) departmentDiv.dataset.departmentId = id; 
 
@@ -448,7 +535,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const iconsDiv = document.createElement('div');
         iconsDiv.classList.add('department-icons');
   
-        // Add User Icon
         const addUserIcon = document.createElement('i');
         addUserIcon.classList.add('fas', 'fa-user-plus');
         addUserIcon.addEventListener('click', () => {
@@ -459,17 +545,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         iconsDiv.appendChild(addUserIcon);
   
-        // Structure Icon
-        const structureIcon = document.createElement('i');
-        structureIcon.classList.add('fas', 'fa-sitemap');
-        structureIcon.addEventListener('click', () => {
-            departmentStructureContainer.style.display = 'block';
-            if(overlay) overlay.style.display = 'block';
-            activeDepartmentForStructure = departmentDiv; 
-        });
-        iconsDiv.appendChild(structureIcon);
+        if (!isChild) {
+            const structureIcon = document.createElement('i');
+            structureIcon.classList.add('fas', 'fa-sitemap');
+            structureIcon.addEventListener('click', () => {
+                departmentStructureContainer.style.display = 'block';
+                if(overlay) overlay.style.display = 'block';
+                activeDepartmentForStructure = departmentDiv; 
+            });
+            iconsDiv.appendChild(structureIcon);
+        }
   
-        // Edit Icon
         const editIcon = document.createElement('i');
         editIcon.classList.add('fas', 'fa-pencil-alt');
         editIcon.addEventListener('click', () => {
@@ -480,21 +566,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         iconsDiv.appendChild(editIcon);
   
-        // Delete Icon
         const deleteIcon = document.createElement('i');
         deleteIcon.classList.add('fas', 'fa-trash-alt');
         deleteIcon.addEventListener('click', () => {
             deleteConfirmationContainer.style.display = 'block';
             if(overlay) overlay.style.display = 'block';
             departmentToDelete = departmentDiv;
+            roleToDelete = null; // 🐛 FIX: Clears lingering user data
         });
         iconsDiv.appendChild(deleteIcon);
   
         departmentDiv.appendChild(iconsDiv);
-        departmentListContainer.appendChild(departmentDiv);
+        return departmentDiv;
     }
   
-    // Assign Roles
     const cancelAssignRoleButton = document.getElementById('cancelAssignRole');
     const confirmAssignRoleButton = document.getElementById('confirmAssignRole');
   
@@ -504,7 +589,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(overlay) overlay.style.display = 'none';
             positionInput.value = '';
             if(nameInput) nameInput.value = '';
-            currentlyEditingRole = null;
             document.querySelectorAll('.scrollable-account-list input[type="radio"]:checked').forEach(radio => radio.checked = false);
         });
     }
@@ -513,70 +597,83 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmAssignRoleButton.addEventListener('click', () => {
             const position = positionInput.value.trim();
             const selectedAccount = document.querySelector('.scrollable-account-list input[type="radio"]:checked');
-  
+
             if (!position) return alert('Please fill in the Position field.');
             if (!selectedAccount) return alert('Please select an account.');
-  
-            const selectedAccountLabel = selectedAccount.nextElementSibling.textContent;
-            const [fullName, email] = selectedAccountLabel.split(' (');
-            const emailOnly = email.replace(')', '').trim();
-            const newRoleText = `${position} - ${fullName.trim()} (${emailOnly})`;
-  
-            if (currentlyEditingRole) {
-                const roleTextSpan = currentlyEditingRole.querySelector('span');
-                roleTextSpan.textContent = newRoleText;
-                currentlyEditingRole = null;
-            } else {
-                const assignedRoleDiv = document.createElement('div');
-                assignedRoleDiv.classList.add('assigned-role-item');
-                assignedRoleDiv.innerHTML = `
-                    <span>${newRoleText}</span>
-                    <div class="assigned-role-icons">
-                        <i class="fas fa-pencil-alt edit-role-icon" title="Edit Role"></i>
-                        <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
-                    </div>
-                `;
-                const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
-                const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
-                const roleTextSpan = assignedRoleDiv.querySelector('span');
-  
-                editRoleIcon.addEventListener('click', () => {
-                    const currentRoleText = roleTextSpan.textContent;
-                    const [currentPosition, currentFullNameWithEmail] = currentRoleText.split(' - ');
-                    const [currentFullName] = currentFullNameWithEmail.split(' (');
-            
-                    positionInput.value = currentPosition;
-                    if(nameInput) nameInput.value = currentFullName.trim();
-            
-                    document.querySelectorAll('.scrollable-account-list .account-item').forEach(item => {
-                        const label = item.querySelector('label').textContent;
-                        item.querySelector('input[type="radio"]').checked = label.startsWith(currentFullName.trim());
+            if (!currentTargetDepartment) return alert('No target department selected.');
+
+            const dptID = currentTargetDepartment.dataset.departmentId;
+            const accID = selectedAccount.value;
+
+            fetch('../../generalComponents/dpManagerPHP/assignEmployee.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    accID: accID, 
+                    dptID: dptID, 
+                    departmentRole: position 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const selectedAccountLabel = selectedAccount.nextElementSibling.textContent;
+                    const [fullName, email] = selectedAccountLabel.split(' (');
+                    const emailOnly = email.replace(')', '').trim();
+                    const newRoleText = `${position} - ${fullName.trim()} (${emailOnly})`;
+
+                    const assignedRoleDiv = document.createElement('div');
+                    assignedRoleDiv.classList.add('assigned-role-item');
+                    
+                    // ✨ NEW: Check if the parent is a sub-folder to indent deeper!
+                    if (currentTargetDepartment.classList.contains('dpt-child-folder')) {
+                        assignedRoleDiv.classList.add('nested-employee');
+                    } else {
+                        assignedRoleDiv.classList.add('parent-employee');
+                    }
+
+                    assignedRoleDiv.dataset.accId = accID;
+                    assignedRoleDiv.dataset.dptId = dptID;
+                    
+                    assignedRoleDiv.innerHTML = `
+                        <span>${newRoleText}</span>
+                        <div class="assigned-role-icons">
+                            <i class="fas fa-pencil-alt edit-role-icon" title="Edit Role"></i>
+                            <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
+                        </div>
+                    `;
+                    
+                    const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
+                    const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
+
+                    editRoleIcon.addEventListener('click', () => {
+                        currentlyEditingRoleTextSpan = assignedRoleDiv.querySelector('span');
+                        if (renameRoleContainer) renameRoleContainer.style.display = 'block';
+                        if (overlay) overlay.style.display = 'block';
                     });
-            
-                    currentlyEditingRole = assignedRoleDiv;
-                    assignRoleContainer.style.display = 'block';
-                    if(overlay) overlay.style.display = 'block';
-                });
-  
-                deleteRoleIcon.addEventListener('click', () => {
-                    deleteConfirmationContainer.style.display = 'block';
-                    if(overlay) overlay.style.display = 'block';
-                    roleToDelete = assignedRoleDiv;
-                });
-  
-                currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
-            }
-  
-            assignRoleContainer.style.display = 'none';
-            if(overlay) overlay.style.display = 'none';
-            positionInput.value = '';
-            if(nameInput) nameInput.value = '';
-            selectedAccount.checked = false;
-            currentTargetDepartment = null;
+
+                    deleteRoleIcon.addEventListener('click', () => {
+                        roleToDelete = assignedRoleDiv;
+                        departmentToDelete = null;
+                        if (deleteConfirmationContainer) deleteConfirmationContainer.style.display = 'block';
+                        if (overlay) overlay.style.display = 'block';
+                    });
+
+                    currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
+
+                    assignRoleContainer.style.display = 'none';
+                    if(overlay) overlay.style.display = 'none';
+                    positionInput.value = '';
+                    if(nameInput) nameInput.value = '';
+                    selectedAccount.checked = false;
+                } else {
+                    alert('Error assigning role: ' + data.message);
+                }
+            })
+            .catch(err => console.error("Error:", err));
         });
     }
   
-    // Account Selection Radio Behavior
     document.querySelectorAll('.scrollable-account-list input[type="radio"]').forEach(radio => {
         radio.addEventListener('change', () => {
             if (radio.checked) {
@@ -587,7 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
   
-    // Department Structure Items
     if (cancelStructureButton) {
         cancelStructureButton.addEventListener('click', () => {
             departmentStructureContainer.style.display = 'none';
@@ -600,33 +696,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirmStructureButton) {
         confirmStructureButton.addEventListener('click', () => {
             const structureName = structureNameInput.value.trim();
-  
-            if (structureName && activeDepartmentForStructure) {
-                const structureDiv = document.createElement('div');
-                structureDiv.classList.add('department-structure-item'); 
-                structureDiv.textContent = `- ${structureName}`; 
-        
-                activeDepartmentForStructure.parentNode.insertBefore(structureDiv, activeDepartmentForStructure.nextSibling);
-        
-                departmentStructureContainer.style.display = 'none';
-                if(overlay) overlay.style.display = 'none';
-                structureNameInput.value = '';
-                activeDepartmentForStructure = null; 
-            } else if (!structureName) {
-                alert('Please enter a structure name.');
-            } else if (!activeDepartmentForStructure) {
-                alert('Error: No department selected for structure.');
-            }
-        });
-    }
-  
-    // Rename Department
-    if (cancelRenameButton) {
-        cancelRenameButton.addEventListener('click', () => {
-            renameDepartmentContainer.style.display = 'none';
-            if(overlay) overlay.style.display = 'none';
-            renameDepartmentInput.value = '';
-            renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+            if (!structureName) return alert('Please enter a structure name.');
+            if (!activeDepartmentForStructure) return alert('Error: No department selected for structure.');
+
+            const parentDptID = activeDepartmentForStructure.dataset.departmentId || activeDepartmentForStructure.getAttribute('data-department-id');
+            if (!parentDptID) return alert("System Error: Could not find the ID for this department.");
+
+            fetch('../../generalComponents/dpManagerPHP/addSubDepartment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    dptName: structureName, 
+                    dptParentID: parentDptID 
+                })
+            })
+            .then(response => response.text()) // Safely catch the raw text first
+            .then(text => {
+                try {
+                    const data = JSON.parse(text); // Try to read it as JSON
+                    
+                    if (data.success) {
+                        // 🐛 FIX 1: Look for ANY valid ID name the PHP might send back
+                        const newId = data.departmentId || data.dptID || data.id || Date.now();
+                        
+                        const childDiv = createDepartmentElement(structureName, newId, true);
+                        
+                        // 🐛 FIX 2: Drops the new folder safely underneath the parent
+                        activeDepartmentForStructure.insertAdjacentElement('afterend', childDiv);
+                        
+                        // 🐛 FIX 3: Force the modal to close and reset
+                        departmentStructureContainer.style.display = 'none';
+                        if(overlay) overlay.style.display = 'none';
+                        structureNameInput.value = '';
+                    } else {
+                        alert('Error adding structure: ' + data.message);
+                    }
+                } catch (e) {
+                    // If the PHP crashed and sent HTML, this will catch it!
+                    console.error("Backend Error:", text);
+                    alert("Database saved the folder, but the server returned a strange response. Refreshing the screen.");
+                    window.location.reload(); // Auto-refresh as a safety net
+                }
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                alert("A network error occurred.");
+            });
         });
     }
 
@@ -666,7 +781,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Delete Department/Role
     if (cancelDeleteButton) {
         cancelDeleteButton.addEventListener('click', () => {
             deleteConfirmationContainer.style.display = 'none';
@@ -676,6 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   
+    // --- 🐛 FIX: DELETING USERS NOW TALKS TO THE DATABASE ---
     if (confirmDeleteButton) {
         confirmDeleteButton.addEventListener('click', () => {
             if (departmentToDelete) {
@@ -694,23 +809,40 @@ document.addEventListener('DOMContentLoaded', () => {
                         assignedRoles.forEach(role => role.remove());
                         departmentToDelete.remove();
                         departmentToDelete = null;
+                        deleteConfirmationContainer.style.display = 'none';
+                        if(overlay) overlay.style.display = 'none';
                     } else {
                         alert('Failed to delete department: ' + (data.message || 'Unknown error'));
                     }
-                    deleteConfirmationContainer.style.display = 'none';
-                    if(overlay) overlay.style.display = 'none';
                 })
                 .catch(error => alert('Error deleting department: ' + error));
+                
             } else if (roleToDelete) {
-                roleToDelete.remove();
-                roleToDelete = null;
-                deleteConfirmationContainer.style.display = 'none';
-                if(overlay) overlay.style.display = 'none';
+                // ACTUALLY DELETE THE ROLE FROM THE DB
+                const accID = roleToDelete.dataset.accId;
+                const dptID = roleToDelete.dataset.dptId;
+                
+                fetch('../../generalComponents/dpManagerPHP/removeEmployee.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accID: accID, dptID: dptID })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        roleToDelete.remove();
+                        roleToDelete = null;
+                        deleteConfirmationContainer.style.display = 'none';
+                        if(overlay) overlay.style.display = 'none';
+                    } else {
+                        alert("Error removing user: " + data.message);
+                    }
+                })
+                .catch(err => console.error("Error:", err));
             }
         });
     }
 
-    // Rename Role
     if (cancelRenameRoleButton) {
         cancelRenameRoleButton.addEventListener('click', () => {
             if(renameRoleContainer) renameRoleContainer.style.display = 'none';
@@ -720,18 +852,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   
+    // --- 🐛 FIX: RENAMING USERS KEEPS THE NAME, CHANGES THE ROLE ---
     if (confirmRenameRoleButton) {
         confirmRenameRoleButton.addEventListener('click', () => {
             const newRoleName = renameRoleInput.value.trim();
             if (newRoleName && currentlyEditingRoleTextSpan) {
-                const currentRoleTextParts = currentlyEditingRoleTextSpan.textContent.split(' - ');
-                const currentPosition = currentRoleTextParts[0];
-                currentlyEditingRoleTextSpan.textContent = `${currentPosition} - ${newRoleName}`;
-                
-                if(renameRoleContainer) renameRoleContainer.style.display = 'none';
-                if(overlay) overlay.style.display = 'none';
-                if(renameRoleInput) renameRoleInput.value = '';
-                currentlyEditingRoleTextSpan = null;
+                const parentDiv = currentlyEditingRoleTextSpan.closest('.assigned-role-item');
+                const accID = parentDiv.dataset.accId;
+                const dptID = parentDiv.dataset.dptId;
+
+                fetch('../../generalComponents/dpManagerPHP/renameEmployeeRole.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accID: accID, dptID: dptID, newRole: newRoleName })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const currentText = currentlyEditingRoleTextSpan.textContent;
+                        
+                        // Finds the first " - " to separate Role from Name
+                        const firstDashIndex = currentText.indexOf(' - ');
+                        // Grabs everything AFTER the dash (e.g., "John Doe (john@email.com)")
+                        const nameAndEmailPart = currentText.substring(firstDashIndex + 3); 
+                        
+                        // Reconstructs string with new role
+                        currentlyEditingRoleTextSpan.textContent = `${newRoleName} - ${nameAndEmailPart}`;
+                        
+                        if(renameRoleContainer) renameRoleContainer.style.display = 'none';
+                        if(overlay) overlay.style.display = 'none';
+                        if(renameRoleInput) renameRoleInput.value = '';
+                        currentlyEditingRoleTextSpan = null;
+                    } else {
+                        alert("Error renaming role: " + data.message);
+                    }
+                })
+                .catch(err => console.error("Error:", err));
             } else {
                 alert('Please enter a new role name.');
             }
@@ -1158,6 +1314,210 @@ function checkForUpdates() {
             }
         });
 }
+/* =====================================================================
+   9. ROLE MANAGER SCRIPT
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const rmGridContainer = document.getElementById('rmGridContainer');
+    const rmAddRoleBtn = document.getElementById('rmAddRoleBtn');
+    const rmAddUserModal = document.getElementById('rmAddUserModal');
+    const globalOverlay = document.getElementById('overlay');
+    const rmCancelAddUser = document.getElementById('rmCancelAddUser');
+    const rmConfirmAddUser = document.getElementById('rmConfirmAddUser');
+    const rmUserSelectInput = document.getElementById('rmUserSelectInput'); 
+    const rmUserEmailInput = document.getElementById('rmUserEmailInput'); 
+
+    // Delete Mode Elements
+    const rmDeleteRoleBtn = document.getElementById('rmDeleteRoleBtn');
+    const rmConfirmDeleteBtn = document.getElementById('rmConfirmDeleteBtn');
+    const rmDeleteInstruction = document.getElementById('rmDeleteInstruction');
+
+    // State Variables
+    let availableUsersForDropdown = [];
+    let isDeleteMode = false;
+    let selectedUsersForDeletion = new Set(); // Uses a Set so IDs don't get duplicated
+
+    // --- DATA LOADING FUNCTION ---
+    function loadRoleData() {
+        fetch('../../generalComponents/roleManagerPHP/getRoleUsers.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (rmGridContainer) rmGridContainer.innerHTML = '';
+                    if (data.teamMembers) {
+                        data.teamMembers.forEach(user => {
+                            renderUserCard(user.fullName, user.accID);
+                        });
+                    }
+                    if (data.availableUsers) {
+                        availableUsersForDropdown = data.availableUsers;
+                        populateUserDropdown(availableUsersForDropdown);
+                    }
+                }
+            })
+            .catch(err => console.error("Error loading users:", err));
+    }
+
+    // Initial Load
+    loadRoleData();
+
+    // --- POPULATE DROPDOWN FUNCTION ---
+    function populateUserDropdown(users) {
+        if (!rmUserSelectInput) return;
+        const options = rmUserSelectInput.querySelectorAll('option:not(:disabled)');
+        options.forEach(opt => opt.remove());
+
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.accID; 
+            option.textContent = user.fullName; 
+            rmUserSelectInput.appendChild(option);
+        });
+    }
+
+    // --- AUTO-FILL EMAIL LOGIC ---
+    if (rmUserSelectInput) {
+        rmUserSelectInput.addEventListener('change', () => {
+            const selectedAccId = rmUserSelectInput.value;
+            if (!selectedAccId) {
+                rmUserEmailInput.value = '';
+                return;
+            }
+            const selectedUser = availableUsersForDropdown.find(user => user.accID == selectedAccId);
+            if (selectedUser) rmUserEmailInput.value = selectedUser.email; 
+        });
+    }
+
+    // --- RENDER USER CARD FUNCTION ---
+    function renderUserCard(name, accId) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'rm-user-card';
+        cardDiv.dataset.accId = accId;
+
+        cardDiv.innerHTML = `
+            <div class="rm-user-icon-circle"><i class="far fa-user"></i></div>
+            <p class="rm-user-name">${name}</p>
+        `;
+
+        // Card Click Event: Handles the Delete Mode selection
+        cardDiv.addEventListener('click', () => {
+            if (isDeleteMode) {
+                if (selectedUsersForDeletion.has(accId)) {
+                    selectedUsersForDeletion.delete(accId); // Deselect
+                    cardDiv.classList.remove('selected-for-deletion');
+                } else {
+                    selectedUsersForDeletion.add(accId); // Select
+                    cardDiv.classList.add('selected-for-deletion');
+                }
+            }
+        });
+
+        if (rmGridContainer) rmGridContainer.appendChild(cardDiv);
+    }
+
+    // --- DELETE MODE TOGGLES ---
+    function cancelDeleteMode() {
+        isDeleteMode = false;
+        rmConfirmDeleteBtn.style.display = 'none';
+        rmDeleteInstruction.style.display = 'none';
+        rmDeleteRoleBtn.style.color = '#f44336'; // Reset trash icon color
+        selectedUsersForDeletion.clear(); // Empty the list
+        
+        // Remove red borders from all cards
+        document.querySelectorAll('.rm-user-card.selected-for-deletion').forEach(card => {
+            card.classList.remove('selected-for-deletion');
+        });
+    }
+
+    if (rmDeleteRoleBtn) {
+        rmDeleteRoleBtn.addEventListener('click', () => {
+            isDeleteMode = !isDeleteMode; // Toggle mode
+            if (isDeleteMode) {
+                rmConfirmDeleteBtn.style.display = 'inline-block';
+                rmDeleteInstruction.style.display = 'inline-block';
+                rmDeleteRoleBtn.style.color = '#999'; // Turn trash icon gray to indicate it's active
+            } else {
+                cancelDeleteMode();
+            }
+        });
+    }
+
+    // --- CONFIRM DELETION LOGIC ---
+    if (rmConfirmDeleteBtn) {
+        rmConfirmDeleteBtn.addEventListener('click', () => {
+            if (selectedUsersForDeletion.size === 0) {
+                alert("Please select at least one user to remove.");
+                return;
+            }
+
+            // Convert the Set to an Array to send to PHP
+            const accIDsArray = Array.from(selectedUsersForDeletion);
+
+            fetch('../../generalComponents/roleManagerPHP/removeRoleUser.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accIDs: accIDsArray })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cancelDeleteMode(); // Turn off delete mode
+                    loadRoleData(); // Refresh the grid and dropdown seamlessly!
+                } else {
+                    alert("Database Error: " + data.message);
+                }
+            })
+            .catch(err => console.error("Error removing users:", err));
+        });
+    }
+
+    // --- MODAL TOGGLES (ADD USER) ---
+    if (rmAddRoleBtn) {
+        rmAddRoleBtn.addEventListener('click', () => {
+            if (isDeleteMode) cancelDeleteMode(); // Turn off delete mode if opening add modal
+            rmAddUserModal.style.display = 'block';
+            if (globalOverlay) globalOverlay.style.display = 'block';
+            if (rmUserSelectInput) rmUserSelectInput.focus();
+        });
+    }
+
+    if (rmCancelAddUser) {
+        rmCancelAddUser.addEventListener('click', () => {
+            rmAddUserModal.style.display = 'none';
+            if (globalOverlay) globalOverlay.style.display = 'none';
+            if (rmUserSelectInput) rmUserSelectInput.selectedIndex = 0; 
+            rmUserEmailInput.value = ''; 
+        });
+    }
+
+    // --- CONFIRM ADD NEW USER LOGIC ---
+    if (rmConfirmAddUser) {
+        rmConfirmAddUser.addEventListener('click', () => {
+            const selectedAccId = rmUserSelectInput.value;
+            if (!selectedAccId) return alert("Please select an employee.");
+
+            fetch('../../generalComponents/roleManagerPHP/addRoleUser.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accID: selectedAccId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    rmAddUserModal.style.display = 'none';
+                    if (globalOverlay) globalOverlay.style.display = 'none';
+                    if (rmUserSelectInput) rmUserSelectInput.selectedIndex = 0; 
+                    rmUserEmailInput.value = ''; 
+                    loadRoleData(); // Refresh grid and dropdown seamlessly!
+                } else {
+                    alert("Database Error: " + data.message);
+                }
+            })
+            .catch(err => console.error("Error adding user:", err));
+        });
+    }
+});
 
 // Check every 5 seconds
 setInterval(checkForUpdates, 5000);

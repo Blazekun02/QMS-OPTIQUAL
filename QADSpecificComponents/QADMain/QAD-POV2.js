@@ -91,3 +91,11 @@
         
     }
 
+    function showTaskManager() {
+        policyRepositoryPanel.style.display = 'none';
+        policySubmissionPanel.style.display = 'none';
+        processTrackerPanel.style.display = 'none';
+        departmentPanel.style.display = 'none'; 
+        policyManagerPanel.style.display = 'none';
+        document.querySelector('.task-manager').style.display = 'block';
+    }

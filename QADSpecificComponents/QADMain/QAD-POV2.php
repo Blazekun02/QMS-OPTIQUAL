@@ -403,6 +403,10 @@ require_once genMsg_dir . '/message_box.php';
         </div>
 </div>   
 
+<!--for task manager-->
+<?php require_once taskManager_dir . '/taskManager.php'; ?>
+
+
 </body>
 
 <script src="QAD-POV2.js"></script>

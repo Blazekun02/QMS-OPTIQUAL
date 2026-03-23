@@ -9,722 +9,277 @@ require_once __DIR__ . '/../../filepaths.php';
 
 //include set message
 require_once genMsg_dir . '/setMessage.php';
-
 ?>
 
 <style>
-    /* for Task manager*/
+    /* ========================================= */
+    /* TASK MANAGER MAIN LAYOUT                  */
+    /* ========================================= */
     .task-manager {
-            width: 93%;
-            float: right;
-            margin: 8vh 0 0 0;
-            background-color: #293A82;
-            display: none;
-            padding: 2%;
-            color: white;
-            position: relative;
-            height: calc(100vh - 8vh); /* Make it take up the full height of the screen */
-            border-radius: 20px; /* Add rounded corners on the left side */
-            box-sizing: border-box;
-        }
-
-        .task-manager .task-header {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 1vh;
-        }
-
-        .task-manager .taskWhite-line {
-            position: absolute;
-            top: 11vh;
-            width: 96.5%;
-            margin-left: -0.3vw;
-            height: 0.2vw;
-            background-color: white;
-            z-index: 10;
-            display: none;
-            margin-bottom: 1vh;
-        }
-
-
-        /*task manager table*/
-
-       .task-manager-table {
-          width: 96%;
-          height: auto;
-          color: black;
-          font-family: 'Istok Web', sans-serif;
-          margin-left: 1.7vw;
-          margin-top: 15.3vh;
-          position: absolute;
-          top: 0;
-          left: 0;
-          border-collapse: collapse;
-        }
-
-        .task-manager-table th,
-        .task-manager-table td {
-              padding: 1vh 2vw;
-              text-align: left;
-            }
-
-        .task-manager-table tHead th {
-          background-color: #fbaf41;
-          color: black;
-          text-align: left;
-        }
-
-        .task-manager-table tBody tr:nth-child(odd) td {
-          background-color: #E0E0E0;
-        }
-
-        .task-manager-table tBody tr:nth-child(even) td {
-          background-color: #FFFFFF;
-        }
-
-          .task-manager-table tBody tr:hover td {
-            background-color: grey;
-        }
-
-        .task-manager-table tBody tr:nth-child(odd):hover td {
-            background-color: #343A40;
-            cursor: pointer;
-
-        }
-
-        .task-manager-table td:nth-child(4) {
-          text-align: left;
-        }
-
-/* WHEN ROW IN THE TABLE IS CLICKED */
-
-        .introduction-section {
-            width: 100%;
-            height: 100%;
-        }
-
-        .introduction-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1.5vh;
-            padding-right: 2vw;
-        }
-
-        .back-button {
-            background-color: white;
-            border: none;
-            padding: 0;
-            border-radius: 0.3em;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            margin-right: 0.5vw;
-            position: relative;
-            overflow: visible;
-            margin-left: -0.7vw;
-            margin-top: -0.3em;
-        }
-
-        .back-button.with-overlay::before {
-           content: "Back";
-            font-size: 2.2vh;
-            position: absolute;
-            top: -1.96vw;
-            left: -1vw;
-            background-color: transparent;
-            color: white;
-            padding: 0.5vh 1vw;
-            border-radius: 0.3vh;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 1;
-            white-space: nowrap;
-        }
-
-        .back-button.with-overlay:hover::before {
-          opacity: 1;
-        }
-
-        .back-arrow {
-            font-size: 3.5vh;
-            border: none;
-            border-radius: 3%;
-            font-weight: bold;
-            color: #293A82;
-            display: inline-block;
-            padding: 0.1vw;
-            line-height: 1;
-            background-color: transparent;
-        }
-
-        .back-arrow hover{
-            color: black;
-        }
-
-        .introduction-title {
-            font-size: 5vh;
-            font-weight: bold;
-            margin-left: 1vw;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            position: absolute;
-            top: 8%;
-            right: 2%;
-            transform: translateY(-50%);
-        }
-
-        .view-policy-button {
-            border-radius: 1.5vh;
-            border: none;
-            color: #293A82;
-            font-weight: bold;
-            font-size: 2.5vh;
-            text-align: center;
-        }
-/* Style for QAP policy management buttons */
-        .QAP_management_btns {
-            display: none;
-        }
-
-
-/*hamburger button in task manager*/
-        .menu-icon {
-            margin-left: 0.5vw;
-            font-size: 3.7vh;
-            border: none;
-            border-radius: 3%;
-            background-color: #293A82;
-            color: white;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .menu-dropdown {
-            position: absolute;
-            top: 14%;
-            right: 0%;
-            background-color: #293A82;
-            border-radius: 2vh;
-            z-index: 1;
-            display: none;
-            margin-top: 0.5vh;
-            Width: auto;
-            min-width: 15%;
-        }
-
-        .dropdown-button {
-            display: block;
-            padding: 3.5% 3.5%;
-            margin-bottom: 0.5vh;
-            text-align: center;
-            border: none;
-            border-radius: 2vh;
-            background-color: #fbaf41;
-            color: black;
-            cursor: pointer;
-            font-size: 80%;
-            width: 85%;
-            height: auto;
-        }
-
-        .dropdown-button:hover {
-            background-color: #db8804;
-        }
-
-/* Staff POV For Revision dropdown options */
-        .ForRevision {
-            display: block;
-        }
-
-        .Rejected {
-            display: none;
-        }
-
-
-/* reply button overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-
-/* Reply Modal Styles */
-        .reply-modal {
-            background-color: #293A82;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 60%;
-            height: 75%;
-            position: relative;
-        }
-
-        .reply-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2%;
-        }
-
-        .reply-header h2 {
-            margin: 0;
-            font-size: 200%;
-            font-weight: bold;
-            text-align: center;
-            flex-grow: 1;
-        }
-
-        .close-button {
-            background: none;
-            border: none;
-            color: #f44336;
-            font-size: 30px;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-        }
-
-        .reply-content{
-            display: flex;
-            flex-direction: column;
-            gap: 1%;
-            margin-bottom: 15%;
-        }
-
-        .reply-content textarea {
-            width: 57%;
-            height: 40%;
-            padding: 5%;
-            padding-top: 1%;
-            padding-bottom: 5%;
-            padding-left: 1%;
-            padding-right: 5%;
-            margin-bottom: 5%;
-            border: 1px solid #ccc;
-            border-radius: 1%;
-            box-sizing: border-box;
-            color: black;
-            flex-grow: 1;
-            min-height: 50vh;
-            position: fixed;
-            resize: none;
-        }
-
-        .reply-content .submit-reply-button {
-            background-color: #fbaf41;
-            color: black;
-            border: none;
-            padding: 1% 3%;
-            border-radius: 1em;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-            position: absolute;
-            margin-top: 43%;
-            margin-left: 40%;
-        }
-
-        .reply-content .submit-reply-button:hover {
-            background-color: #db8804;
-        }
-/* For character count in reply message */
-        .character-counter {
-            font-size: 0.9em;
-            color: black;
-            margin-top: 5px;
-        }
-        .character-counter span {
-            font-weight: bold;
-        }
-
-
-/* this is for the overlay of the submit button in reply*/
-        .confirm-reply-modal {
-            background-color: #293A82;
-            color: white;
-            padding: 1.5vw;
-            border-radius: 1vw;
-            width: 25%;
-            height: 25%;
-            text-align: center;
-        }
-
-        .confirm-reply-modal h2 {
-            margin-top: 0;
-            margin-bottom: 2.5vw;
-            font-size: 2.5vw;
-            font-weight: bold;
-        }
-
-        .confirm-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1.5vw;
-            margin-top: 1.5vw;
-        }
-
-        .confirm-actions button {
-            padding: 0.6vw 1.8vw;
-            border: none;
-            border-radius: 1em;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-        }
-
-        .confirm-actions .cancel-button {
-            background-color: D3D3D3;
-            color: black;
-        }
-
-        .confirm-actions .confirm-button {
-            background-color: #fbaf41;
-            color: black;
-        }
-
-        .confirm-actions .cancel-button:hover {
-            background-color: grey;
-            color: white;
-        }
-
-        .confirm-actions .confirm-button:hover {
-            background-color: #db8804;
-        }
-
-/* REQUEST FOR REVISION BUTTON*/
-      #revisionOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #revisionOverlay .reply-modal {
-            background-color: #293A82;
-            color: white;
-            padding: 1.5em;
-            border-radius: 0.3em;
-            width: 35%;
-            max-width: 35%;
-            max-height: 25vh;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #revisionOverlay .reply-header {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1em;
-            margin-top: -0.5em;
-        }
-
-        #revisionOverlay .reply-header h2 {
-            margin: 0;
-            font-size: 1.8em;
-            font-weight: bold;
-            text-align: center;
-            margin-left: 1em;
-        }
-
-        #revisionOverlay .reply-modal .reply-header .close-button {
-            background: none;
-            border: none;
-            color: #f44336;
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-            opacity: 0.8;
-            transition: opacity 0.3s ease-in-out;
-            margin-top: -1em;
-            margin-right: -0.7em;
-        }
-
-        #revisionOverlay .reply-modal .reply-header .close-button:hover {
-            opacity: 1;
-        }
-
-        #revisionOverlay .reply-content {
-            display: flex;
-            flex-direction: column;
-            align-items: left;
-            gap: 1em;
-            width: 90%;
-        }
-
-        #revisionOverlay .attach-option {
-            display: flex;
-            align-items: left;
-            gap: 0.5em;
-            font-size: 1.2em;
-            margin-left: -0.8em;
-        }
-
-        #revisionOverlay .attach-option svg {
-            width: 1.3em;
-            height: 1.3em;
-            fill: white;
-        }
-
-        #revisionOverlay .reply-content button {
-            padding: 0.3em 1.8em;
-            border-radius: 1em;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            align-items: center;
-            margin-left: 1em;
-        }
-
-        #revisionOverlay .reply-content button#cancelRevision {
-            background-color:#D3D3D3;
-            color: black;
-            margin-left: 4em;
-            border: 0.1em solid #293A82;
-        }
-
-        #revisionOverlay .reply-content button#cancelRevision:hover {
-            background-color: Grey;
-        }
-
-        #revisionOverlay .reply-content button#submitRevision {
-            background-color: #fbaf41;
-            color: black;
-            border: none;
-        }
-
-        #revisionOverlay .reply-content button#submitRevision:hover {
-            background-color: #db8804;
-        }
-
-        #revisionOverlay .reply-content .button-container {
-            display: flex;
-            gap: 1em;
-            margin-top: -0.7em;
-            width: 100%;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
-
-
-/* SUBMIT REVISION CONFIRMATION OVERLAY */
-        #submitRevisionConfirmationOverlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1001;
-            display: none;
-        }
-
-        .submit-revision-confirmation-modal {
-            background-color: #293A82;
-            color: white;
-            padding: 2vw;
-            border-radius: 1vw;
-            text-align: center;
-            width: 30%;
-            max-width: 30%;
-        }
-
-        .submit-revision-confirmation-modal h2 {
-            margin-top: 0;
-            margin-bottom: 1.9vw;
-            font-size: 2vw;
-            font-weight: bold;
-        }
-
-        .submit-revision-confirmation-modal .confirm-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1.5vw;
-            margin-top: 1.5vw;
-        }
-
-        .submit-revision-confirmation-modal .confirm-actions button {
-            padding: 0.4vw 2.3vw;
-            border: none;
-            border-radius: 1em;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-        }
-
-        .submit-revision-confirmation-modal .confirm-actions .cancel-button {
-            background-color: white;
-            color: black;
-        }
-
-        .submit-revision-confirmation-modal .confirm-actions .confirm-button {
-            background-color: #fbaf41;
-            color: black;
-        }
-
-        .submit-revision-confirmation-modal .confirm-actions .cancel-button:hover {
-            background-color: #D3D3D3;
-            color: black;
-        }
-
-        .submit-revision-confirmation-modal .confirm-actions .confirm-button:hover {
-            background-color: #db8804;
-        }
-
-
-/* Download of change request form Confirmation Modal Styles */
-        .download-confirm-modal {
-            background-color: #293A82;
-            color: white;
-            padding: 2vw;
-            border-radius: 1vw;
-            text-align: center;
-            width: 28%;
-            max-width: 28%;
-            height: 23%;
-        }
-
-        .download-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 2.8vw;
-        }
-
-        .download-header h2 {
-            margin: 0;
-            font-size: 2vw;
-            font-weight: bold;
-        }
-
-        .download-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1.5vw;
-            margin-top: 1.5vw;
-        }
-
-        .download-actions button {
-            padding: 0.4vw 2.3vw;
-            border: none;
-            border-radius: 0.5em;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-        }
-
-        .download-actions .cancel-button {
-            background-color: white;
-            color: black;
-        }
-
-        .download-actions .confirm-button {
-            background-color: #fbaf41;
-            color: black;
-        }
-
-        .download-actions .cancel-button:hover {
-            background-color: #D3D3D3;
-            color: black;
-        }
-
-        .download-actions .confirm-button:hover {
-            background-color: #db8804;
-        }
-
-/* Buttons for document signing for either review, verification, approval */
-        .signDocuBtns {
-            display: none;
-        }
-
+        width: 100%;             
+        float: none;             
+        margin: 0;               
+        background-color: #293A82;
+        display: block;
+        padding: 2%;
+        color: white;
+        position: relative;
+        height: 100%;            
+        border-radius: 20px;
+        box-sizing: border-box;
+    }
+
+    .task-manager .task-header {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 1vh;
+    }
+
+    .task-manager .taskWhite-line {
+        position: absolute;
+        top: 11vh;
+        width: 96.5%;
+        margin-left: -0.3vw;
+        height: 0.2vw;
+        background-color: white;
+        z-index: 10;
+        display: none;
+        margin-bottom: 1vh;
+    }
+
+    /* ========================================= */
+    /* TASK MANAGER TABLE                        */
+    /* ========================================= */
+    .task-manager-table {
+        width: 96%;
+        height: auto;
+        color: black;
+        font-family: 'Istok Web', sans-serif;
+        margin-left: 1.7vw;
+        margin-top: 15.3vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-collapse: collapse;
+    }
+
+    .task-manager-table th,
+    .task-manager-table td {
+        padding: 1vh 2vw;
+        text-align: left;
+    }
+
+    .task-manager-table tHead th {
+        background-color: #fbaf41;
+        color: black;
+        text-align: left;
+    }
+
+    .task-manager-table tBody tr:nth-child(odd) td {
+        background-color: #E0E0E0;
+    }
+
+    .task-manager-table tBody tr:nth-child(even) td {
+        background-color: #FFFFFF;
+    }
+
+    .task-manager-table tBody tr:hover td {
+        background-color: grey;
+    }
+
+    .task-manager-table tBody tr:nth-child(odd):hover td {
+        background-color: #343A40;
+        cursor: pointer;
+    }
+
+    /* ========================================= */
+    /* POLICY INTRODUCTION (FIGMA PDF VIEW)      */
+    /* ========================================= */
+    .introduction-section {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .introduction-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* Pushes left block and right block to opposite ends */
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid white; 
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .back-button {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        margin-right: 15px;
+        padding: 0;
+        transition: color 0.2s;
+    }
+
+    .back-button:hover {
+        color: #fbaf41;
+    }
+
+    .introduction-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: white;
+        margin: 0;
+    }
+
+    /* --- FIGMA ACTION BUTTONS --- */
+    .qad-action-buttons {
+        display: flex;
+        gap: 15px;
+    }
+
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: transparent;
+        border: 2px solid #fbaf41; 
+        color: #fbaf41; 
+        border-radius: 8px;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .action-btn i {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .action-btn:hover:not(:disabled) {
+        background-color: #fbaf41;
+        color: #293A82; 
+    }
+
+    .action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        border-color: #999;
+        color: #999;
+    }
+
+    /* Zero-Conflict PDF Container */
+    .pdf-container-wrapper {
+        flex-grow: 1;
+        width: 100%;
+        background-color: white; 
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    /* ========================================= */
+    /* MODALS & OVERLAYS                         */
+    /* ========================================= */
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; }
+    .reply-modal { background-color: #293A82; color: white; padding: 20px; border-radius: 10px; width: 60%; height: 75%; position: relative; }
+    .reply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2%; }
+    .reply-header h2 { margin: 0; font-size: 200%; font-weight: bold; text-align: center; flex-grow: 1; }
+    .close-button { background: none; border: none; color: #f44336; font-size: 30px; cursor: pointer; padding: 0; line-height: 1; }
+    .reply-content { display: flex; flex-direction: column; gap: 1%; margin-bottom: 15%; }
+    .reply-content textarea { width: 57%; height: 40%; padding: 5%; border: 1px solid #ccc; border-radius: 1%; box-sizing: border-box; color: black; flex-grow: 1; min-height: 50vh; position: fixed; resize: none; }
+    .reply-content .submit-reply-button { background-color: #fbaf41; color: black; border: none; padding: 1% 3%; border-radius: 1em; cursor: pointer; font-weight: bold; font-size: 1em; position: absolute; margin-top: 43%; margin-left: 40%; }
+    .reply-content .submit-reply-button:hover { background-color: #db8804; }
+    .character-counter { font-size: 0.9em; color: black; margin-top: 5px; }
+    .character-counter span { font-weight: bold; }
+    .confirm-reply-modal, .download-confirm-modal { background-color: #293A82; color: white; padding: 2vw; border-radius: 1vw; text-align: center; }
+    .confirm-reply-modal { width: 25%; height: 25%; }
+    .download-confirm-modal { width: 28%; max-width: 28%; height: 23%; }
+    .confirm-reply-modal h2, .download-header h2 { margin-top: 0; margin-bottom: 2.5vw; font-size: 2.5vw; font-weight: bold; }
+    .download-header { display: flex; justify-content: center; align-items: center; margin-bottom: 2.8vw; }
+    .download-header h2 { font-size: 2vw; margin-bottom: 0; }
+    .confirm-actions, .download-actions { display: flex; justify-content: center; gap: 1.5vw; margin-top: 1.5vw; }
+    .confirm-actions button, .download-actions button { padding: 0.6vw 1.8vw; border: none; border-radius: 1em; cursor: pointer; font-weight: bold; font-size: 1em; }
+    .cancel-button { background-color: #D3D3D3; color: black; }
+    .cancel-button:hover { background-color: grey; color: white; }
+    .confirm-button { background-color: #fbaf41; color: black; }
+    .confirm-button:hover { background-color: #db8804; }
+    #revisionOverlay .reply-modal { padding: 1.5em; width: 35%; max-width: 35%; max-height: 25vh; align-items: center; }
+    #revisionOverlay .reply-header { width: 100%; justify-content: center; margin-top: -0.5em; }
+    #revisionOverlay .reply-header h2 { font-size: 1.8em; margin-left: 1em; }
+    #revisionOverlay .reply-modal .reply-header .close-button { opacity: 0.8; margin-top: -1em; margin-right: -0.7em; }
+    #revisionOverlay .reply-modal .reply-header .close-button:hover { opacity: 1; }
+    #revisionOverlay .reply-content { align-items: left; width: 90%; }
+    #revisionOverlay .attach-option { display: flex; align-items: left; gap: 0.5em; font-size: 1.2em; margin-left: -0.8em; }
+    #revisionOverlay .attach-option svg { width: 1.3em; height: 1.3em; fill: white; }
+    #revisionOverlay .reply-content button { padding: 0.3em 1.8em; margin-left: 1em; }
+    #revisionOverlay .reply-content button#cancelRevision { background-color: #D3D3D3; margin-left: 4em; border: 0.1em solid #293A82; }
+    #revisionOverlay .reply-content button#cancelRevision:hover { background-color: Grey; }
+    #revisionOverlay .reply-content button#submitRevision { background-color: #fbaf41; }
+    #revisionOverlay .reply-content button#submitRevision:hover { background-color: #db8804; }
+    #revisionOverlay .reply-content .button-container { display: flex; gap: 1em; margin-top: -0.7em; width: 100%; align-items: flex-start; flex-wrap: wrap; }
+    #submitRevisionConfirmationOverlay { background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1001; display: none; }
+    .submit-revision-confirmation-modal { background-color: #293A82; color: white; padding: 2vw; border-radius: 1vw; text-align: center; width: 30%; max-width: 30%; }
+    .submit-revision-confirmation-modal h2 { margin-top: 0; margin-bottom: 1.9vw; font-size: 2vw; font-weight: bold; }
 </style>
 
 <!--FOR TASK MANAGER-->
 <div class="task-manager">
     <div class="task-manager-header-container">
         <h2 class="task-header">Task Manager <br> </h2>
-        <div class = "taskWhite-line" style="display: flex">
-        </div>
+        <div class="taskWhite-line" style="display: flex"></div>
     </div>
 
+    <!-- INTRODUCTION / PDF VIEW SECTION -->
     <div class="introduction-section" style="display: none;">
+        
         <div class="introduction-header">
-            <button class="back-button with-overlay" onclick="showTable()">
-                <span class="back-arrow">&larr;</span>
-            </button>
-
-            <span class="introduction-title">[Policy Title from Database]</span>
-            <div class="header-actions">
-                <button id="viewPolicyButton" class="view-policy-button">View Policy</button>
-                <button class="menu-icon">&#9776;</button>
+            <div class="header-left">
+                <button class="back-button" onclick="showTable()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <span class="introduction-title">[Policy Title from Database]</span>
             </div>
-
-            <!-- For Staff -->
-            <?php if ($_SESSION['accID'] == 4): ?>
-                <div class="menu-dropdown">
-                    <button class="dropdown-button ForRevision">Reply</button>
-                    <button class="dropdown-button ForRevision" onclick="showRevisionModal()">Request for Revision</button>
-                    <button class="dropdown-button ForRevision">Download Change Request Form</button>
-                    <button class="dropdown-button Rejected">Submit Another Request</button>
-                    <button class="dropdown-button Rejected">Cancel Request</button>
-                </div>
-            <?php endif; ?>    
             
-            <!-- QAP policy management buttons-->
-            <?php if ($_SESSION['accID'] == 3 || $_SESSION['accID'] == 2): ?>      
-                <div class="QAP_management_btns">
-                    <button class="QAP_general_btns">Reject</button>
-                    <button class="QAP_general_btns">Assign</button>
-                    <button class="QAP_general_btns">Upload</button>
-                    <button class="QAP_revisionRequest_btns">Reject</button>
-                    <button class="QAP_revisionRequest_btns">Send</button>
-                </div>
-            <?php endif; ?>
-
-            <div class = "taskWhite-line" style="margin-top: 1vh; display: flex"></div>
+            <!-- NEW FIGMA ACTION BUTTONS -->
+            <div class="qad-action-buttons" id="qadActionButtons" style="display: none;">
+                <button class="action-btn" id="qadRejectBtn">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Reject</span>
+                </button>
+                <button class="action-btn" id="qadAssignBtn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Assign</span>
+                </button>
+                <button class="action-btn" id="qadUploadBtn" disabled>
+                    <i class="fas fa-upload"></i>
+                    <span>Upload</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Signing Document buttons -->
-        <div class="signDocuBtns">
-            <form action="signDocument.php" method="POST">
-                <button type="button" id="rejectDocuBtn" name = "reject">Reject Document</button>  
-                <button type="submit" id="signDocuBtn" name="sign">Sign Document</button>
-            </form>     
+        <!-- The Safe iframe PDF Viewer -->
+        <div class="pdf-container-wrapper" id="tmPdfWrapper" style="display: none;">
+            <iframe id="tm-pdf-frame" src="" width="100%" height="100%" style="border: none; min-height: 65vh; background-color: white; border-radius: 8px;"></iframe>
         </div>
-
-        <p class="introduction-content">[Policy Description/Content Here]</p>
-        <div id="policyFeedbackContent" style="display: none; margin-top: 20px; background-color:transparent; color: white;">
-            <h3>Policy Feedback Placeholder</h3>
-            <p>This section will eventually display the actual policy feedback fetched from the database.</p>
-            <p>For now, this is just a placeholder to show where the feedback message will appear when the selected policy is opened.</p>
-        </div>
-        <?php 
-        //include pdfViewer
-        require_once pdfViewer_dir . '/pdfViewer.php'; ?>
+        
     </div>
 
+    <!-- MODALS -->
+    <!-- (Your modals remain identical) -->
     <div id="replyOverlay" class="overlay" style="display: none;">
         <div class="reply-modal">
             <div class="reply-header">
@@ -745,7 +300,6 @@ require_once genMsg_dir . '/setMessage.php';
             </div>
         </div>
     </div>
-
     <div id="confirmReplyOverlay" class="overlay" style="display: none;">
         <div class="confirm-reply-modal">
             <h2>Confirm Reply?</h2>
@@ -755,7 +309,6 @@ require_once genMsg_dir . '/setMessage.php';
             </div>
         </div>
     </div>
-
     <div id="revisionOverlay" class="overlay" style="display: none;">
         <div class="reply-modal">
             <div class="reply-header">
@@ -777,7 +330,6 @@ require_once genMsg_dir . '/setMessage.php';
             </div>
         </div>
     </div>
-
     <div id="submitRevisionConfirmationOverlay">
         <div class="submit-revision-confirmation-modal">
             <h2>Confirm Submission?</h2>
@@ -787,7 +339,6 @@ require_once genMsg_dir . '/setMessage.php';
             </div>
         </div>
     </div>
-
     <div id="downloadConfirmationOverlay" class="overlay" style="display: none;">
         <div class="download-confirm-modal">
             <div class="download-header">
@@ -801,13 +352,16 @@ require_once genMsg_dir . '/setMessage.php';
         </div>
     </div>
 
-
+    <!-- MAIN TASK TABLE -->
     <table class="task-manager-table" style="display: none;">
         <thead>
         <tr>
             <th>Policy Title</th>
-            <th> Author</th>
+            <th>Sender</th>
             <th>Date Submitted</th>
+            <th>Version no.</th>
+            <th>Reviewed by</th>
+            <th>Approved by</th>
             <th>Status</th>
         </tr>
         </thead>
@@ -816,387 +370,205 @@ require_once genMsg_dir . '/setMessage.php';
     </table>
 </div>
 
-
-
 <script>
-    //Get the user role
-    var userRole = "<?php echo $_SESSION['accID']; ?>"; 
-
-//this is for the js of task manager
-function showTaskManager() {
-    document.getElementById('policies-repository-content').style.display = 'none';
-    document.getElementById('policy-submission-content').style.display = 'none';
-    document.querySelector('.process-tracker').style.display = 'none';
-    document.querySelector('.task-manager').style.display = 'flex';
-    document.querySelector('.information').style.display = 'none';
-
-    const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
-    const taskManagerTable = document.querySelector('.task-manager-table');
-    const introductionSection = document.querySelector('.introduction-section');
-
-    taskManagerHeaderContainer.style.display = 'block'; // Show header and line
-    taskManagerTable.style.display = 'table'; // Show the table initially
-    introductionSection.style.display = 'none'; // Ensure introduction is hidden initially
-}
+    var userRole = "<?php echo isset($_SESSION['accID']) ? $_SESSION['accID'] : ''; ?>"; 
 
 function populateTaskTable(tasks) {
     const tableBody = document.getElementById('taskTableBody');
-    tableBody.innerHTML = ''; // Clear any existing rows
+    tableBody.innerHTML = ''; 
 
-    console.log(tasks); // Log the tasks to check the data
+    if (!Array.isArray(tasks)) {
+        const row = tableBody.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 7; 
+        cell.textContent = tasks.message || "No tasks found.";
+        cell.style.textAlign = "center";
+        cell.style.padding = "20px";
+        return; 
+    }
+
     tasks.forEach(task => {
         const row = tableBody.insertRow();
         row.onclick = function() {
-            showIntroduction(task.policyTitle, task.description, task.pdfPath, task.status);
+            showTaskIntroduction(task.policyTitle, task.description, task.pdfPath, task.status);
         };
 
         const titleCell = row.insertCell();
         titleCell.textContent = task.policyTitle;
 
-        const authorCell = row.insertCell();
-        authorCell.textContent = task.author;
+        const senderCell = row.insertCell();
+        senderCell.textContent = task.author; 
 
         const dateCell = row.insertCell();
-        dateCell.textContent = task.dateSubmitted;
+        if (task.dateSubmitted) {
+            const d = new Date(task.dateSubmitted);
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            const year = d.getFullYear().toString().slice(-2);
+            dateCell.textContent = `${month}/${day}/${year}`;
+        } else {
+            dateCell.textContent = '---';
+        }
+
+        const versionCell = row.insertCell();
+        versionCell.textContent = task.version || 'New'; 
+
+        const reviewedCell = row.insertCell();
+        reviewedCell.textContent = '---'; 
+
+        const approvedCell = row.insertCell();
+        approvedCell.textContent = '---'; 
 
         const statusCell = row.insertCell();
         statusCell.textContent = task.status;
+        
+        if (task.status === 'For Upload') {
+            statusCell.style.color = '#00C853'; 
+            statusCell.style.fontWeight = 'bold';
+        } else if (task.status === 'For Review') {
+            statusCell.style.color = '#2962FF'; 
+            statusCell.style.fontWeight = 'bold';
+        } else {
+            statusCell.style.color = 'black';
+            statusCell.style.fontWeight = 'bold';
+        }
     });
 }
 
-//show selected policy content when clicked
-function showIntroduction(policyTitle, policyContent, pdfPath, policyStatus) {
+function showTaskIntroduction(policyTitle, policyContent, pdfPath, policyStatus) {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
     const introductionTitleElement = introductionSection.querySelector('.introduction-title');
-    const introductionContentElement = introductionSection.querySelector('.introduction-content');
-    const policyFeedbackContent = document.getElementById('policyFeedbackContent'); // Get the placeholder
-    const pdfViewerContainer = document.querySelector('.pdfViewerContainer'); // Get the PDF viewer container
-    const viewPolicyButton = document.getElementById('viewPolicyButton'); // Get the View Policy button
-    const introductionContent = document.querySelector('.introduction-content'); // Get the initial content
-
-    introductionTitleElement.textContent = policyTitle;
-    introductionContentElement.textContent = policyContent;
-
-    taskManagerHeaderContainer.style.display = 'none'; // Hide header and line
-    taskManagerTable.style.display = 'none';
-
-    //show features based on task type
-    showFeaturesforTaskType(policyStatus);
-
-    // pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
-    // introductionSection.style.display = 'block';
-    // policyFeedbackContent.style.display = 'block'; // Show the placeholder  
-    // introductionContent.style.display = 'block';
-    // viewPolicyButton.textContent = 'View Policy';
-
-    // Add event listener to dynamically load the PDF when "View Policy" is clicked
-    // let isPolicyVisible = false;
-    // viewPolicyButton.addEventListener('click', function () {
-    //     if (!isPolicyVisible) {
-    //         introductionContent.style.display = 'none';
-    //         pdfViewerContainer.style.display = 'block'; // Show the PDF viewer
-    //         policyFeedbackContent.style.display = 'none';
-    //         viewPolicyButton.textContent = 'View Feedback Report';
-    //         isPolicyVisible = true;
-
-    //         // Dynamically load the PDF into the viewer
-    //         const pdfUrl = `${pdfPath}`; // Adjust the path as needed
-    //         pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc_ => {
-    //             pdfDoc = pdfDoc_;
-    //             document.getElementById('pageCount').textContent = pdfDoc.numPages;
-    //             renderPage(1); // Render the first page
-    //         });
-
-    //     } else {
-    //         introductionContent.style.display = 'block';
-    //         pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer
-    //         policyFeedbackContent.style.display = 'block';
-    //         viewPolicyButton.textContent = 'View Policy';
-    //         isPolicyVisible = false;
-    //     }
-    // });
-}   
-
-function showFeaturesforTaskType(taskType){
-    //Hide all features initially
-    document.querySelectorAll('.header-actions, .QAP_management_btns, .menu-dropdown, signDocuBtns').forEach(el => {
-        el.style.display = 'none';
-    });
-
-    //Show features based on task type
-
     
-    if (taskType === 'For Review' || taskType === 'For Upload') {
-        const reviewFeatures = document.querySelector('.QAP_general_btns');
+    // Grab the new conflict-free iframe wrapper
+    const tmPdfWrapper = document.getElementById('tmPdfWrapper');
+    const tmPdfFrame = document.getElementById('tm-pdf-frame');
+    const actionButtons = document.getElementById('qadActionButtons');
+    
+    // Set Title
+    if (introductionTitleElement) introductionTitleElement.textContent = policyTitle;
 
-        // Show review features
-        if (reviewFeatures) reviewFeatures.style.display = 'block'; 
-    } else if (taskType === 'For Verification' || taskType === 'For Approval') {
-        const verificationFeatures = document.querySelector('.signDocuBtns');
+    // Hide Main Table
+    if (taskManagerHeaderContainer) taskManagerHeaderContainer.style.display = 'none'; 
+    if (taskManagerTable) taskManagerTable.style.display = 'none';
 
-        //Show Verification/Approval features
-        if (verificationFeatures) verificationFeatures.style.display = 'block';
-    } else if (taskType === 'Request for Revision') {
-        const requestForRevisionFeatures = document.querySelector('.QAP_revisionRequest_btns')
+    // Show Section Wrapper
+    if (introductionSection) introductionSection.style.display = 'flex';
 
-        //Show Revision Request features
-        if (requestForRevisionFeatures) requestForRevisionFeatures.style.display = 'block';
-    } else if (taskType === 'For Revision') {
-        const forRevisionFeatures = document.querySelector('.header-actions');
+    // 1. SHOW ACTION BUTTONS IMMEDIATELY 
+    if (actionButtons) actionButtons.style.display = 'flex';
 
-        // Show For Revision features
-        if (forRevisionFeatures) forRevisionFeatures.style.display = 'flex';
+    // 2. CHECK STATUS FOR UPLOAD BUTTON
+    const uploadBtn = document.getElementById('qadUploadBtn');
+    if (uploadBtn) {
+        if (policyStatus === 'Approved') {
+            uploadBtn.disabled = false;
+        } else {
+            uploadBtn.disabled = true;
+        }
     }
 
+    // 3. SHOW PDF VIEWER
+    if (tmPdfWrapper) tmPdfWrapper.style.display = 'block'; 
+
+    // 4. LOAD THE PDF DIRECTLY INTO THE IFRAME
+    if (tmPdfFrame && pdfPath) {
+        tmPdfFrame.src = pdfPath;
+    }
 }
 
-
-
-// Show the task manager table and hide the introduction section
-function showTable() {
+function showTaskTable() {
     const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
     const taskManagerTable = document.querySelector('.task-manager-table');
     const introductionSection = document.querySelector('.introduction-section');
-    const pdfViewerContainer = document.querySelector('.pdfViewerContainer');
+    const actionButtons = document.getElementById('qadActionButtons');
+    const tmPdfFrame = document.getElementById('tm-pdf-frame');
 
-    taskManagerHeaderContainer.style.display = 'block';
-    taskManagerTable.style.display = 'table';
-    introductionSection.style.display = 'none';
-    pdfViewerContainer.style.display = 'none';
+    if (taskManagerHeaderContainer) taskManagerHeaderContainer.style.display = 'block';
+    if (taskManagerTable) taskManagerTable.style.display = 'table';
+    if (introductionSection) introductionSection.style.display = 'none';
+    if (actionButtons) actionButtons.style.display = 'none'; 
+    
+    // Clear the PDF source so it doesn't stay loaded in memory when navigating away
+    if (tmPdfFrame) tmPdfFrame.src = "";
 }
 
-// Show the reply modal when the reply button is clicked
-function showReplyModal() {
-    const replyOverlay = document.getElementById('replyOverlay');
-    if (replyOverlay) {
-        replyOverlay.style.display = 'flex';
-    }
-}
-
-// Close the reply modal when the close button is clicked
-function closeReplyModal() {
-    const replyOverlay = document.getElementById('replyOverlay');
-    if (replyOverlay) {
-        replyOverlay.style.display = 'none';
-    }
-}
-
-//show the confirmation modal when the submit button is clicked
+function showReplyModal() { const o = document.getElementById('replyOverlay'); if (o) o.style.display = 'flex'; }
+function closeReplyModal() { const o = document.getElementById('replyOverlay'); if (o) o.style.display = 'none'; }
 function showConfirmReply() {
-    // Check if the reply message is empty before showing the confirmation modal
-    const replyMessage = document.getElementById('replyMessage').value.trim();
-        if (!replyMessage) {
-            alert('Reply message cannot be empty.');
-            return;
-        }
-
-    const confirmReplyOverlay = document.getElementById('confirmReplyOverlay');
-    if (confirmReplyOverlay) {
-        confirmReplyOverlay.style.display = 'flex';
-    }
+    const rm = document.getElementById('replyMessage').value.trim();
+    if (!rm) { alert('Reply message cannot be empty.'); return; }
+    const o = document.getElementById('confirmReplyOverlay');
+    if (o) o.style.display = 'flex';
 }
-
-// Close the confirmation modal when the close button is clicked
-function closeConfirmReply() {
-    const confirmReplyOverlay = document.getElementById('confirmReplyOverlay');
-    if (confirmReplyOverlay) {
-        confirmReplyOverlay.style.display = 'none';
-    }
-}
-
-// Handle the confirmation of the reply submission
+function closeConfirmReply() { const o = document.getElementById('confirmReplyOverlay'); if (o) o.style.display = 'none'; }
 function handleReplyConfirmation() {
-    // Optionally, you can do validation here again
     document.getElementById('confirmReplyOverlay').style.display = 'none';
     document.getElementById('replyOverlay').style.display = 'none';
     document.getElementById('replyForm').submit();
 }
-
-// Show the revision modal when the revision button is clicked
-function showRevisionModal() {
-    const revisionOverlay = document.getElementById('revisionOverlay');
-    if (revisionOverlay) {
-        revisionOverlay.style.display = 'flex';
-    }
-}
-
-// Close the revision modal when the close button is clicked
-function closeRevisionModal() {
-    const revisionOverlay = document.getElementById('revisionOverlay');
-    if (revisionOverlay) {
-        revisionOverlay.style.display = 'none';
-    }
-}
-
+function showRevisionModal() { const o = document.getElementById('revisionOverlay'); if (o) o.style.display = 'flex'; }
+function closeRevisionModal() { const o = document.getElementById('revisionOverlay'); if (o) o.style.display = 'none'; }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const menuIcon = document.querySelector('.menu-icon');
-    const menuDropdown = document.querySelector('.menu-dropdown');
-    const replyButton = menuDropdown ? menuDropdown.querySelector('.dropdown-button:nth-child(1)') : null;
-    const replyOverlay = document.getElementById('replyOverlay');
-    const submitReplyButton = replyOverlay ? replyOverlay.querySelector('.reply-content .submit-reply-button') : null;
-    const confirmReplyOverlay = document.getElementById('confirmReplyOverlay');
-    const revisionButton = menuDropdown ? menuDropdown.querySelector('.dropdown-button:nth-child(2)') : null;
-    const revisionOverlay = document.getElementById('revisionOverlay');
-    const revisionPopupContent = document.getElementById('revisionPopupContent'); // Target the correct content div
-    const cancelRevisionButton = document.getElementById('cancelRevision');
-    const viewPolicyButton = document.getElementById('viewPolicyButton'); // Get the View Policy button
-    const policyFeedbackContent = document.getElementById('policyFeedbackContent'); // Get the placeholder
-    const introductionContent = document.querySelector('.introduction-content'); // Get the initial content
-    const pdfViewerContainer = document.querySelector('.pdfViewerContainer'); // Get the PDF viewer container
-    let isPolicyVisible = false;
-
-    if (menuIcon && menuDropdown) {
-        menuIcon.addEventListener('click', function(event) {
-            event.stopPropagation();
-            menuDropdown.style.display = (menuDropdown.style.display === 'block') ? 'none' : 'block';
-        });
-
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.header-actions')) {
-                menuDropdown.style.display = 'none';
-            }
-        });
-    }
-
-    if (replyButton && replyOverlay) {
-        replyButton.addEventListener('click', function() {
-            menuDropdown.style.display = 'none';
-            showReplyModal();
-        });
-    }
-
-    if (submitReplyButton && confirmReplyOverlay) {
-        submitReplyButton.addEventListener('click', function() {
-            showConfirmReply();
-        });
-    }
-
-    if (revisionButton && revisionOverlay && revisionPopupContent) { // Ensure revisionPopupContent exists
-        revisionButton.addEventListener('click', function() {
-            menuDropdown.style.display = 'none';
-            showRevisionModal();
-        });
-    }
-
-    if (cancelRevisionButton && revisionOverlay) {
-        cancelRevisionButton.addEventListener('click', function() {
-            revisionOverlay.style.display = 'none';
-        });
-    }
-
-    const downloadChangeRequestButton = document.querySelector('.dropdown-button:nth-child(3)'); // Target the "Download Change Request Form" button
-    const downloadConfirmationOverlay = document.getElementById('downloadConfirmationOverlay');
-    const downloadConfirmNoButton = document.getElementById('downloadConfirmNo');
-    const downloadConfirmYesButton = document.getElementById('downloadConfirmYes');
-
-    if (downloadChangeRequestButton && downloadConfirmationOverlay) {
-        downloadChangeRequestButton.addEventListener('click', function() {
-            const menuDropdown = document.querySelector('.menu-dropdown');
-            if (menuDropdown) {
-                menuDropdown.style.display = 'none'; // Close the dropdown
-            }
-            downloadConfirmationOverlay.style.display = 'flex';
-        });
-    }
-
-    if (downloadConfirmNoButton && downloadConfirmationOverlay) {
-        downloadConfirmNoButton.addEventListener('click', function() {
-            downloadConfirmationOverlay.style.display = 'none';
-        });
-    }
-
-    if (downloadConfirmYesButton && downloadConfirmationOverlay) {
-        downloadConfirmYesButton.addEventListener('click', function() {
-            downloadConfirmationOverlay.style.display = 'none'; // Hide the confirmation
-            alert('Download initiated!'); // Show the alert message
-            // In a real application, you would trigger the download here
-        });
-    }
-
-    // View Policy Button Functionality
-    if (viewPolicyButton && policyFeedbackContent && introductionContent) {
-        viewPolicyButton.addEventListener('click', function() {
-            if (!isPolicyVisible) {
-                introductionContent.style.display = 'none';
-                pdfViewerContainer.style.display = 'block'; // Show the PDF viewer container
-                policyFeedbackContent.style.display = 'none';
-                viewPolicyButton.textContent = 'View Feedback Report';
-                isPolicyVisible = true;
-            } else {
-                introductionContent.style.display = 'block';
-                pdfViewerContainer.style.display = 'none'; // Hide the PDF viewer container
-                policyFeedbackContent.style.display = 'block';
-                viewPolicyButton.textContent = 'View Policy';
-                isPolicyVisible = false;
-            }
-        });
-    }
-
-    // Fetch task data from the server
     fetch('/qms_optiqual/generalComponents/taskManager/fetchTasks.php')
         .then(response => response.json())
         .then(data => {
             if (data.error) {
                 console.error('Error fetching tasks:', data.error);
             } else {
-                populateTaskTable(data); // Populate the table with fetched data
+                populateTaskTable(data); 
+                // Show the table and header after populating
+                const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
+                const taskManagerTable = document.querySelector('.task-manager-table');
+                if (taskManagerHeaderContainer) taskManagerHeaderContainer.style.display = 'block';
+                if (taskManagerTable) taskManagerTable.style.display = 'table';
             }
         })
         .catch(error => console.error('Error:', error));
 
-    //function to handle the character count for the reply message
     const replyMessage = document.getElementById('replyMessage');
     const charCount = document.getElementById('charCount');
-    const maxChars = 255; // Set the maximum character limit
+    const maxChars = 255; 
 
-    // Update the character count as the user types
-    replyMessage.addEventListener('input', function () {
-        const currentLength = replyMessage.value.length;
-        charCount.textContent = currentLength;
-
-        // Optional: Provide feedback if the limit is exceeded
-        if (currentLength > maxChars) {
-            charCount.style.color = 'red'; // Change color to red if limit is exceeded
-        } else {
-            charCount.style.color = 'black'; // Reset color if within limit
-        }
-    });
-
+    if (replyMessage && charCount) {
+        replyMessage.addEventListener('input', function () {
+            const currentLength = replyMessage.value.length;
+            charCount.textContent = currentLength;
+            if (currentLength > maxChars) {
+                charCount.style.color = 'red'; 
+            } else {
+                charCount.style.color = 'black'; 
+            }
+        });
+    }
 });
 
-
-//Document Object Model JavaScript event listener that ensures the code inside 
-// the function runs only after the HTML document has been fully loaded and parsed 
-// by the browser.
 document.addEventListener('DOMContentLoaded', function () {
-    const submitRevisionConfirmationOverlay = document.getElementById('submitRevisionConfirmationOverlay');
-    const revisionConfirmNoButton = document.getElementById('revisionConfirmNo');
-    const revisionConfirmYesButton = document.getElementById('revisionConfirmYes');
-    const triggerButton = document.getElementById('submitRevision'); // Correctly target the submit button in the revision modal
-    const revisionOverlay = document.getElementById('revisionOverlay'); // Get the revision overlay
+    const submitOverlay = document.getElementById('submitRevisionConfirmationOverlay');
+    const noBtn = document.getElementById('revisionConfirmNo');
+    const yesBtn = document.getElementById('revisionConfirmYes');
+    const trigBtn = document.getElementById('submitRevision'); 
+    const revOverlay = document.getElementById('revisionOverlay'); 
 
-    // Show the overlay
-    if (triggerButton && submitRevisionConfirmationOverlay && revisionOverlay) {
-        triggerButton.addEventListener('click', function () {
-            revisionOverlay.style.display = 'none'; // Hide the revision modal
-            submitRevisionConfirmationOverlay.style.display = 'flex'; // Show the confirmation overlay
+    if (trigBtn && submitOverlay && revOverlay) {
+        trigBtn.addEventListener('click', function () {
+            revOverlay.style.display = 'none'; 
+            submitOverlay.style.display = 'flex'; 
         });
     }
 
-    // Hide the overlay when "No" is clicked
-    if (revisionConfirmNoButton && submitRevisionConfirmationOverlay) {
-        revisionConfirmNoButton.addEventListener('click', function () {
-            submitRevisionConfirmationOverlay.style.display = 'none';
+    if (noBtn && submitOverlay) {
+        noBtn.addEventListener('click', function () {
+            submitOverlay.style.display = 'none';
             showRevisionModal();
         });
     }
 
-     if (revisionConfirmYesButton && submitRevisionConfirmationOverlay) {
-        revisionConfirmYesButton.addEventListener('click', function () {
-            submitRevisionConfirmationOverlay.style.display = 'none';
+     if (yesBtn && submitOverlay) {
+        yesBtn.addEventListener('click', function () {
+            submitOverlay.style.display = 'none';
             alert('Submission confirmed!');
         });
     }
