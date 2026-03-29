@@ -9,8 +9,10 @@
         $file = $_FILES['policyFile'];
         $accID  = $_SESSION['accID'];
 
-        // Folder to place the uploaded files
-        $targetDir = "uploads";
+        // ✨ FIX 1: Point the physical upload to the correct "files" folder
+        // Using ../ goes up one level from generalComponents to qms_optiqual
+        $targetDir = "../files/"; 
+        
         if (!file_exists($targetDir)) {
             mkdir($targetDir, 0777, true);
         }
@@ -22,9 +24,16 @@
             exit();
         }
 
+        // ✨ FIX 2: Clean the filename to prevent spaces from breaking the URL
         $fileName = basename($file["name"]);
-        $targetFilePath = $targetDir . $fileName;
-        $relativePath = "/qms_optiqual/files/" . $fileName;
+        $cleanFileName = str_replace(' ', '_', $fileName); // Replaces spaces with underscores
+        
+        // The physical path where the file is moved on the server
+        $targetFilePath = $targetDir . $cleanFileName;
+        
+        // The URL path saved to the database for the iframe to read
+        $relativePath = "/qms_optiqual/files/" . $cleanFileName;
+        
         $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
 
         // Allowed file types
@@ -34,7 +43,7 @@
             // Upload Files to Server
             if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {
                 
-                // ✨ FIX APPLIED HERE: Explicitly set categoryID to NULL for new submissions
+                // Explicitly set categoryID to NULL for new submissions
                 $stmt = $conn->prepare("INSERT INTO policytbl (title, contentPath, policyAuthor, categoryID) VALUES (?, ?, ?, NULL)");
                 $stmt->bind_param("ssi", $policyTitle, $relativePath, $accID);
                 
@@ -61,10 +70,10 @@
                 $stmt->close();
                 
             } else {
-                echo "<script>alert('Error moving uploaded file.');</script>";
+                echo "<script>alert('Error moving uploaded file. Check folder permissions.');</script>";
             }
         } else {
-            echo "<script>alert('Invalid file type.');</script>";
+            echo "<script>alert('Invalid file type. Only PDF, DOC, DOCX, and TXT are allowed.');</script>";
         }
     }
     $conn->close();

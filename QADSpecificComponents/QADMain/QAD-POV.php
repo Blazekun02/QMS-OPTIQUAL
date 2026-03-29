@@ -30,6 +30,10 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="your-integrity-hash" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+        <script>
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        </script>
 
         <link rel="stylesheet" href="QAD-POV.css">
     </head>
@@ -184,14 +188,35 @@
 
                 
         </div>
-        <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none; width:100%; height:600px; margin-top:20px;">
-            <div class="pdfViewer-header">
-                <button class="btn" id="closePdfViewer"><i class="fa fa-times"></i></button>
-                <div class="header-pdf_divider"></div>
-                <?php include '../../generalComponents/pdfViewer/pdfViewer.php';?>
+        <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none;">
+            
+            <div class="introduction-header" style="border-bottom: 2px solid white; padding-bottom: 15px; margin-bottom: 15px; display: flex; align-items: center;">
+                <button id="closePdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; transition: color 0.2s;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <span class="introduction-title" style="color: white; font-size: 28px; font-weight: bold;">Policy Viewer</span>
             </div>
+
+            <div class="pdf-container-wrapper" style="display: flex; flex-direction: column; flex-grow: 1; background-color: white; border-radius: 8px; overflow: hidden;">
                 
+                <div class="custom-pdf-toolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px; border-radius: 8px 8px 0 0;">
+                    <div class="pdf-tools-left">
+                        <button id="pr_prevPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                        <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="pr_pageNum">1</span> of <span id="pr_pageCount">?</span></span>
+                        <button id="pr_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="pdf-tools-right">
+                        <button id="pr_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
+                        <span id="pr_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
+                        <button id="pr_zoomIn" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="pdf-canvas-container" style="background-color: #525659; height: 68vh; overflow: auto; display: block; text-align: center; padding: 20px 0; border-radius: 0 0 8px 8px;">
+                    <canvas id="pr_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
+                </div>
             </div>
+        </div>
                     
         <!-- POLICY SUBMISSION -->
         <div class="policy-submission-content" id="policy-submission-content" >
@@ -473,6 +498,32 @@
         <button id="rmConfirmAddUser" class="confirm-btn">Confirm</button>
     </div>
 </div>
+
+<div class="Welcome-Panel" id="Welcome-Panel">
+            
+            <div class="welcome-text-container">
+                <h1 class="welcome-title">Welcome to OPTIQUAL</h1>
+                <p class="welcome-subtitle">Quality Assurance Director Dashboard</p>
+            </div>
+
+            <div class="mountain-layer back-mountain"></div>
+            <div class="mountain-layer mid-mountain"></div>
+            <div class="mountain-layer front-mountain"></div>
+
+            <div class="ram-container">
+                <svg viewBox="0 0 120 100" class="ram-svg">
+                    <circle cx="20" cy="45" r="6" fill="#343A40" />
+                    <line x1="45" y1="65" x2="35" y2="90" class="leg back-leg" />
+                    <line x1="75" y1="60" x2="65" y2="85" class="leg back-leg" />
+                    <ellipse cx="50" cy="50" rx="35" ry="22" fill="#343A40" />
+                    <line x1="35" y1="65" x2="45" y2="90" class="leg front-leg" />
+                    <line x1="65" y1="65" x2="75" y2="90" class="leg front-leg" />
+                    <circle cx="85" cy="38" r="14" fill="#343A40" />
+                    <path d="M 85 30 C 105 15, 115 45, 90 50 C 80 52, 75 40, 80 35" fill="none" stroke="#fbaf41" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            
+        </div>
 
 <script src="QAD-POV.js"></script>
 

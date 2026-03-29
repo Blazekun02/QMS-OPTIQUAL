@@ -20,6 +20,9 @@ const cfOverlay = document.getElementById('confirm-dl');
 /* =====================================================================
    1. PANEL SWITCHING LOGIC (Sidebar Navigation)
    ===================================================================== */
+/* =====================================================================
+   1. PANEL SWITCHING LOGIC (Sidebar Navigation)
+   ===================================================================== */
 function hideAllPanels() {
     if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
     if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
@@ -28,6 +31,10 @@ function hideAllPanels() {
     if (policyManagerPanel) policyManagerPanel.style.display = 'none';
     if (taskManagerPanel) taskManagerPanel.style.display = 'none';
     if (roleManagerPanel) roleManagerPanel.style.display = 'none';
+    
+    // ✨ FIX: Hide the welcome dashboard when a menu item is clicked!
+    const welcomePanel = document.getElementById('Welcome-Panel');
+    if (welcomePanel) welcomePanel.style.display = 'none';
 }
 
 function showPolicyRepository() {
@@ -142,6 +149,77 @@ document.addEventListener('DOMContentLoaded', () => {
 /* =====================================================================
    3. POLICY REPOSITORY & PDF VIEWER
    ===================================================================== */
+
+// ✨ POLICY REPO PDF ENGINE VARIABLES (Prefixed with pr_) ✨
+var pr_pdfDoc = null,
+    pr_pageNum = 1,
+    pr_pageRendering = false,
+    pr_pageNumPending = null,
+    pr_scale = 1.2,
+    pr_canvas = null,
+    pr_ctx = null;
+
+function pr_renderPage(num) {
+    pr_pageRendering = true;
+    if (pr_pdfDoc) {
+        pr_pdfDoc.getPage(num).then(function(page) {
+            let viewport = page.getViewport({scale: pr_scale});
+            pr_canvas.height = viewport.height;
+            pr_canvas.width = viewport.width;
+
+            let renderContext = {
+                canvasContext: pr_ctx,
+                viewport: viewport
+            };
+            let renderTask = page.render(renderContext);
+
+            renderTask.promise.then(function() {
+                pr_pageRendering = false;
+                if (pr_pageNumPending !== null) {
+                    pr_renderPage(pr_pageNumPending);
+                    pr_pageNumPending = null;
+                }
+            });
+        });
+
+        const pageNumEl = document.getElementById('pr_pageNum');
+        const zoomLevelEl = document.getElementById('pr_zoomLevel');
+        if (pageNumEl) pageNumEl.textContent = num;
+        if (zoomLevelEl) zoomLevelEl.textContent = Math.round(pr_scale * 100) + '%';
+    }
+}
+
+function pr_queueRenderPage(num) {
+    if (pr_pageRendering) {
+        pr_pageNumPending = num;
+    } else {
+        pr_renderPage(num);
+    }
+}
+
+function pr_onPrevPage() {
+    if (pr_pageNum <= 1) return;
+    pr_pageNum--;
+    pr_queueRenderPage(pr_pageNum);
+}
+
+function pr_onNextPage() {
+    if (!pr_pdfDoc || pr_pageNum >= pr_pdfDoc.numPages) return;
+    pr_pageNum++;
+    pr_queueRenderPage(pr_pageNum);
+}
+
+function pr_onZoomIn() {
+    pr_scale += 0.2;
+    pr_queueRenderPage(pr_pageNum);
+}
+
+function pr_onZoomOut() {
+    if (pr_scale <= 0.6) return; 
+    pr_scale -= 0.2;
+    pr_queueRenderPage(pr_pageNum);
+}
+
 // Folder Accordion Toggle
 const parentFolders = document.querySelectorAll('.PR-Parent-Folders');
 parentFolders.forEach(folder => {
@@ -226,25 +304,62 @@ document.querySelectorAll('.PR-Policies').forEach(policy => {
         const filePath = policy.getAttribute('data-file'); 
         const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
         
-        if(pdfViewerContainer) pdfViewerContainer.style.display = 'block'; 
-        if (typeof loadPDF === 'function') {
-            loadPDF(filePath); 
-        }
+        if(pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
         if(policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+
+        // Load PDF via custom engine
+        if (typeof pdfjsLib !== 'undefined') {
+            const encodedUrl = encodeURI(filePath);
+            pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
+                pr_pdfDoc = pdfDoc_;
+                const pageCountEl = document.getElementById('pr_pageCount');
+                if (pageCountEl) pageCountEl.textContent = pr_pdfDoc.numPages;
+                
+                pr_pageNum = 1;
+                pr_scale = 1.2;
+                pr_renderPage(pr_pageNum);
+            }).catch(function(error) {
+                console.error("Error loading PDF: ", error);
+                alert("Error loading document.");
+            });
+        }
     });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Bind Repository PDF Canvas & Buttons
+    pr_canvas = document.getElementById('pr_pdfCanvas');
+    if(pr_canvas) pr_ctx = pr_canvas.getContext('2d');
+
+    const prevBtn = document.getElementById('pr_prevPage');
+    if(prevBtn) prevBtn.addEventListener('click', pr_onPrevPage);
+    
+    const nextBtn = document.getElementById('pr_nextPage');
+    if(nextBtn) nextBtn.addEventListener('click', pr_onNextPage);
+    
+    const zoomInBtn = document.getElementById('pr_zoomIn');
+    if(zoomInBtn) zoomInBtn.addEventListener('click', pr_onZoomIn);
+    
+    const zoomOutBtn = document.getElementById('pr_zoomOut');
+    if(zoomOutBtn) zoomOutBtn.addEventListener('click', pr_onZoomOut);
+
+    // Close Viewer Logic
     const closePdfViewerButton = document.getElementById('closePdfViewer');
     const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
     if (closePdfViewerButton) {
         closePdfViewerButton.addEventListener('click', () => {
             if (pdfViewerContainer) pdfViewerContainer.style.display = 'none';
             if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+            
+            // Clear memory when closing
+            if (pr_ctx && pr_canvas) {
+                pr_ctx.clearRect(0, 0, pr_canvas.width, pr_canvas.height);
+                pr_canvas.height = 0;
+            }
         });
     }
 });
-
 
 /* =====================================================================
    4. POLICY SUBMISSION LOGIC
@@ -346,12 +461,10 @@ function showIntroduction(policyTitle, policyContent, pdfPath) {
         });
     }
 } 
-
 /* =====================================================================
    6. DEPARTMENT MANAGER
    ===================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-    // Buttons & Inputs
     const addDepartmentButton = document.getElementById('addDepartmentButton');
     const assignNameContainer = document.getElementById('assignNameContainer');
     const overlay = document.getElementById('overlay');
@@ -378,14 +491,117 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmRenameRoleButton = document.getElementById('confirmRenameRole');
     const renameRoleInput = document.getElementById('renameRoleInput');
     
-    // State Tracking Variables
     let departmentToDelete = null;
     let currentTargetDepartment = null;
     let currentlyEditingRoleTextSpan = null;
     let roleToDelete = null;
     let activeDepartmentForStructure = null; 
 
-    // Initialize - Fetch Departments AND Employees
+    // Helper: Builds the folder AND its hidden container
+    function displayNewDepartment(name, id = null, isChild = false, parentId = null) {
+        const departmentDiv = createDepartmentElement(name, id, isChild);
+        
+        // Create the hidden container that will hold its children/employees
+        const childContainer = document.createElement('div');
+        childContainer.classList.add('department-children-container');
+        childContainer.style.display = 'none'; // Hidden by default!
+        childContainer.style.flexDirection = 'column';
+        childContainer.dataset.parentId = id; 
+
+        if (isChild && parentId) {
+            // Find the parent's hidden container and drop this inside it
+            const parentContainer = document.querySelector(`.department-children-container[data-parent-id="${parentId}"]`);
+            if (parentContainer) {
+                parentContainer.appendChild(departmentDiv);
+                parentContainer.appendChild(childContainer);
+            }
+        } else {
+            // It's a main folder, drop it in the main list
+            departmentListContainer.appendChild(departmentDiv);
+            departmentListContainer.appendChild(childContainer);
+        }
+    }
+
+    function createDepartmentElement(name, id = null, isChild = false) {
+        const departmentDiv = document.createElement('div');
+        departmentDiv.classList.add('department-item');
+        if (isChild) departmentDiv.classList.add('dpt-child-folder');
+        
+        departmentDiv.dataset.departmentName = name;
+        if (id) departmentDiv.dataset.departmentId = id; 
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        nameSpan.id = `department-name-${id ? id : Date.now()}`; 
+        departmentDiv.appendChild(nameSpan);
+  
+        const iconsDiv = document.createElement('div');
+        iconsDiv.classList.add('department-icons');
+  
+        const addUserBtn = document.createElement('div');
+        addUserBtn.className = 'expandable-btn';
+        addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i><span class="btn-text">Assign User</span>';
+        addUserBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            assignRoleContainer.style.display = 'block';
+            if(overlay) overlay.style.display = 'block';
+            currentTargetDepartment = departmentDiv;
+            assignRoleContainer.dataset.targetDepartment = departmentDiv;
+        });
+        iconsDiv.appendChild(addUserBtn);
+  
+        if (!isChild) {
+            const structureBtn = document.createElement('div');
+            structureBtn.className = 'expandable-btn';
+            structureBtn.innerHTML = '<i class="fas fa-sitemap"></i><span class="btn-text">Add Sub-folder</span>';
+            structureBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                departmentStructureContainer.style.display = 'block';
+                if(overlay) overlay.style.display = 'block';
+                activeDepartmentForStructure = departmentDiv; 
+            });
+            iconsDiv.appendChild(structureBtn);
+        }
+  
+        const editBtn = document.createElement('div');
+        editBtn.className = 'expandable-btn';
+        editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i><span class="btn-text">Rename</span>';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            renameDepartmentContainer.style.display = 'block';
+            if(overlay) overlay.style.display = 'block';
+            renameDepartmentInput.value = nameSpan.textContent;
+            renameDepartmentContainer.dataset.targetDepartmentSpan = nameSpan.id;
+        });
+        iconsDiv.appendChild(editBtn);
+  
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'expandable-btn delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i><span class="btn-text">Delete</span>';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteConfirmationContainer.style.display = 'block';
+            if(overlay) overlay.style.display = 'block';
+            departmentToDelete = departmentDiv;
+            roleToDelete = null; 
+        });
+        iconsDiv.appendChild(deleteBtn);
+  
+        departmentDiv.appendChild(iconsDiv);
+
+        // TOGGLE FOLDER LOGIC
+        departmentDiv.addEventListener('click', () => {
+            const container = document.querySelector(`.department-children-container[data-parent-id="${id}"]`);
+            if (container) {
+                const isHidden = container.style.display === 'none';
+                container.style.display = isHidden ? 'flex' : 'none';
+            }
+        });
+
+        return departmentDiv;
+    }
+
+    // INITIAL LOAD: Fetch Departments AND Employees
     fetch('../../generalComponents/dpManagerPHP/getDepartments.php')
     .then(response => response.json())
     .then(data => {
@@ -394,40 +610,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parentDepartments = data.departments.filter(dep => !dep.dptParentID);
                 const childDepartments = data.departments.filter(dep => dep.dptParentID);
                 
-                parentDepartments.forEach(dep => {
-                    displayNewDepartment(dep.dptName, dep.dptID, false);
-                });
-                
-                childDepartments.forEach(child => {
-                    const parentElement = document.querySelector(`[data-department-id="${child.dptParentID}"]`);
-                    if (parentElement) {
-                        const childDiv = createDepartmentElement(child.dptName, child.dptID, true);
-                        
-                       
-                        parentElement.parentNode.insertBefore(childDiv, parentElement.nextSibling);
-                    } else {
-                        displayNewDepartment(child.dptName, child.dptID, false);
-                    }
-                });
+                parentDepartments.forEach(dep => displayNewDepartment(dep.dptName, dep.dptID, false));
+                childDepartments.forEach(child => displayNewDepartment(child.dptName, child.dptID, true, child.dptParentID));
             } else {
-                data.departments.forEach(dep => {
-                    displayNewDepartment(dep.dptName, dep.dptID, false);
-                });
+                data.departments.forEach(dep => displayNewDepartment(dep.dptName, dep.dptID, false));
             }
 
-            // Render all assigned employees
+            // Render all assigned employees into their parent's hidden container!
             if (data.employees && Array.isArray(data.employees)) {
                 data.employees.forEach(emp => {
+                    const parentContainer = document.querySelector(`.department-children-container[data-parent-id="${emp.dptID}"]`);
                     const targetDepartment = document.querySelector(`[data-department-id="${emp.dptID}"]`);
                     
-                    if (targetDepartment) {
+                    if (parentContainer && targetDepartment) {
                         const emailOnly = emp.email ? emp.email.trim() : '';
                         const newRoleText = `${emp.departmentRole} - ${emp.fullName.trim()} (${emailOnly})`;
 
                         const assignedRoleDiv = document.createElement('div');
                         assignedRoleDiv.classList.add('assigned-role-item');
                         
-                        // ✨ NEW: Check if the parent is a sub-folder to indent deeper!
                         if (targetDepartment.classList.contains('dpt-child-folder')) {
                             assignedRoleDiv.classList.add('nested-employee');
                         } else {
@@ -439,9 +640,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         assignedRoleDiv.innerHTML = `
                             <span>${newRoleText}</span>
-                            <div class="assigned-role-icons">
-                                <i class="fas fa-pencil-alt edit-role-icon" title="Edit Role"></i>
-                                <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
+                            <div class="assigned-role-icons" style="display: flex;">
+                                <div class="expandable-btn edit-role-icon">
+                                    <i class="fas fa-pencil-alt"></i><span class="btn-text">Edit</span>
+                                </div>
+                                <div class="expandable-btn delete-role-icon">
+                                    <i class="fas fa-trash-alt"></i><span class="btn-text">Remove</span>
+                                </div>
                             </div>
                         `;
                         
@@ -456,19 +661,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         deleteRoleIcon.addEventListener('click', () => {
                             roleToDelete = assignedRoleDiv;
-                            departmentToDelete = null; // 🐛 FIX: Clears lingering folder data
+                            departmentToDelete = null; 
                             if (deleteConfirmationContainer) deleteConfirmationContainer.style.display = 'block';
                             if (overlay) overlay.style.display = 'block';
                         });
 
-                        targetDepartment.parentNode.insertBefore(assignedRoleDiv, targetDepartment.nextSibling);
+                        parentContainer.appendChild(assignedRoleDiv);
                     }
                 });
             }
         }
     });
   
-    // Add New Department
+    // Add New Main Department
     if(addDepartmentButton) {
         addDepartmentButton.addEventListener('click', () => {
             assignNameContainer.style.display = 'block';
@@ -496,9 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                       
-                        const newId = data.departmentId || data.dptID; 
-                        
+                        const newId = data.departmentId || data.dptID || Date.now();
                         displayNewDepartment(departmentName, newId);
                         assignNameContainer.style.display = 'none';
                         if(overlay) overlay.style.display = 'none';
@@ -512,72 +715,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Please enter a department name.');
             }
         });
-    }
-
-    function displayNewDepartment(name, id = null, isChild = false) {
-        const departmentDiv = createDepartmentElement(name, id, isChild);
-        departmentListContainer.appendChild(departmentDiv);
-    }
-
-    function createDepartmentElement(name, id = null, isChild = false) {
-        const departmentDiv = document.createElement('div');
-        departmentDiv.classList.add('department-item');
-        if (isChild) departmentDiv.classList.add('dpt-child-folder');
-        
-        departmentDiv.dataset.departmentName = name;
-        if (id) departmentDiv.dataset.departmentId = id; 
-
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = name;
-        nameSpan.id = `department-name-${id ? id : Date.now()}`; 
-        departmentDiv.appendChild(nameSpan);
-  
-        const iconsDiv = document.createElement('div');
-        iconsDiv.classList.add('department-icons');
-  
-        const addUserIcon = document.createElement('i');
-        addUserIcon.classList.add('fas', 'fa-user-plus');
-        addUserIcon.addEventListener('click', () => {
-            assignRoleContainer.style.display = 'block';
-            if(overlay) overlay.style.display = 'block';
-            currentTargetDepartment = departmentDiv;
-            assignRoleContainer.dataset.targetDepartment = departmentDiv;
-        });
-        iconsDiv.appendChild(addUserIcon);
-  
-        if (!isChild) {
-            const structureIcon = document.createElement('i');
-            structureIcon.classList.add('fas', 'fa-sitemap');
-            structureIcon.addEventListener('click', () => {
-                departmentStructureContainer.style.display = 'block';
-                if(overlay) overlay.style.display = 'block';
-                activeDepartmentForStructure = departmentDiv; 
-            });
-            iconsDiv.appendChild(structureIcon);
-        }
-  
-        const editIcon = document.createElement('i');
-        editIcon.classList.add('fas', 'fa-pencil-alt');
-        editIcon.addEventListener('click', () => {
-            renameDepartmentContainer.style.display = 'block';
-            if(overlay) overlay.style.display = 'block';
-            renameDepartmentInput.value = nameSpan.textContent;
-            renameDepartmentContainer.dataset.targetDepartmentSpan = nameSpan.id;
-        });
-        iconsDiv.appendChild(editIcon);
-  
-        const deleteIcon = document.createElement('i');
-        deleteIcon.classList.add('fas', 'fa-trash-alt');
-        deleteIcon.addEventListener('click', () => {
-            deleteConfirmationContainer.style.display = 'block';
-            if(overlay) overlay.style.display = 'block';
-            departmentToDelete = departmentDiv;
-            roleToDelete = null; // 🐛 FIX: Clears lingering user data
-        });
-        iconsDiv.appendChild(deleteIcon);
-  
-        departmentDiv.appendChild(iconsDiv);
-        return departmentDiv;
     }
   
     const cancelAssignRoleButton = document.getElementById('cancelAssignRole');
@@ -593,6 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   
+    // Add New Employee
     if (confirmAssignRoleButton) {
         confirmAssignRoleButton.addEventListener('click', () => {
             const position = positionInput.value.trim();
@@ -608,11 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetch('../../generalComponents/dpManagerPHP/assignEmployee.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    accID: accID, 
-                    dptID: dptID, 
-                    departmentRole: position 
-                })
+                body: JSON.stringify({ accID: accID, dptID: dptID, departmentRole: position })
             })
             .then(response => response.json())
             .then(data => {
@@ -625,7 +759,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const assignedRoleDiv = document.createElement('div');
                     assignedRoleDiv.classList.add('assigned-role-item');
                     
-                    // ✨ NEW: Check if the parent is a sub-folder to indent deeper!
                     if (currentTargetDepartment.classList.contains('dpt-child-folder')) {
                         assignedRoleDiv.classList.add('nested-employee');
                     } else {
@@ -636,12 +769,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     assignedRoleDiv.dataset.dptId = dptID;
                     
                     assignedRoleDiv.innerHTML = `
-                        <span>${newRoleText}</span>
-                        <div class="assigned-role-icons">
-                            <i class="fas fa-pencil-alt edit-role-icon" title="Edit Role"></i>
-                            <i class="fas fa-trash-alt delete-role-icon" title="Delete Role"></i>
-                        </div>
-                    `;
+                            <span>${newRoleText}</span>
+                            <div class="assigned-role-icons" style="display: flex;">
+                                <div class="expandable-btn edit-role-icon">
+                                    <i class="fas fa-pencil-alt"></i><span class="btn-text">Edit</span>
+                                </div>
+                                <div class="expandable-btn delete-role-icon">
+                                    <i class="fas fa-trash-alt"></i><span class="btn-text">Remove</span>
+                                </div>
+                            </div>
+                        `;
                     
                     const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
                     const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
@@ -659,7 +796,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (overlay) overlay.style.display = 'block';
                     });
 
-                    currentTargetDepartment.parentNode.insertBefore(assignedRoleDiv, currentTargetDepartment.nextSibling);
+                    // Drop the new employee into the hidden container
+                    const parentContainer = document.querySelector(`.department-children-container[data-parent-id="${dptID}"]`);
+                    if (parentContainer) {
+                        parentContainer.appendChild(assignedRoleDiv);
+                        parentContainer.style.display = 'flex'; // Auto-expand to show new addition
+                    }
 
                     assignRoleContainer.style.display = 'none';
                     if(overlay) overlay.style.display = 'none';
@@ -670,7 +812,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Error assigning role: ' + data.message);
                 }
             })
-            .catch(err => console.error("Error:", err));
+            .catch(err => {
+                alert("Database blocked insertion. Employee may already be in this folder.");
+            });
         });
     }
   
@@ -693,38 +837,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   
+    // Add Sub-Folder
     if (confirmStructureButton) {
         confirmStructureButton.addEventListener('click', () => {
             const structureName = structureNameInput.value.trim();
             if (!structureName) return alert('Please enter a structure name.');
             if (!activeDepartmentForStructure) return alert('Error: No department selected for structure.');
 
-            const parentDptID = activeDepartmentForStructure.dataset.departmentId || activeDepartmentForStructure.getAttribute('data-department-id');
+            const parentDptID = activeDepartmentForStructure.dataset.departmentId;
             if (!parentDptID) return alert("System Error: Could not find the ID for this department.");
 
             fetch('../../generalComponents/dpManagerPHP/addSubDepartment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    dptName: structureName, 
-                    dptParentID: parentDptID 
-                })
+                body: JSON.stringify({ dptName: structureName, dptParentID: parentDptID })
             })
-            .then(response => response.text()) // Safely catch the raw text first
+            .then(response => response.text()) 
             .then(text => {
                 try {
-                    const data = JSON.parse(text); // Try to read it as JSON
-                    
+                    const data = JSON.parse(text); 
                     if (data.success) {
-                        // 🐛 FIX 1: Look for ANY valid ID name the PHP might send back
                         const newId = data.departmentId || data.dptID || data.id || Date.now();
+                        displayNewDepartment(structureName, newId, true, parentDptID);
                         
-                        const childDiv = createDepartmentElement(structureName, newId, true);
+                        // Auto-expand parent container so user sees the new folder
+                        const parentContainer = document.querySelector(`.department-children-container[data-parent-id="${parentDptID}"]`);
+                        if (parentContainer) parentContainer.style.display = 'flex';
                         
-                        // 🐛 FIX 2: Drops the new folder safely underneath the parent
-                        activeDepartmentForStructure.insertAdjacentElement('afterend', childDiv);
-                        
-                        // 🐛 FIX 3: Force the modal to close and reset
                         departmentStructureContainer.style.display = 'none';
                         if(overlay) overlay.style.display = 'none';
                         structureNameInput.value = '';
@@ -732,16 +871,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert('Error adding structure: ' + data.message);
                     }
                 } catch (e) {
-                    // If the PHP crashed and sent HTML, this will catch it!
-                    console.error("Backend Error:", text);
-                    alert("Database saved the folder, but the server returned a strange response. Refreshing the screen.");
-                    window.location.reload(); // Auto-refresh as a safety net
+                    alert("Database saved folder, reloading UI.");
+                    window.location.reload(); 
                 }
             })
-            .catch(err => {
-                console.error("Fetch Error:", err);
-                alert("A network error occurred.");
-            });
+            .catch(err => alert("Network Error."));
         });
     }
 
@@ -790,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   
-    // --- 🐛 FIX: DELETING USERS NOW TALKS TO THE DATABASE ---
+    // Delete Folder or User
     if (confirmDeleteButton) {
         confirmDeleteButton.addEventListener('click', () => {
             if (departmentToDelete) {
@@ -805,8 +939,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        const assignedRoles = departmentToDelete.querySelectorAll('.assigned-role-item');
-                        assignedRoles.forEach(role => role.remove());
+                        // Delete the folder AND its hidden container to prevent ghost elements
+                        const containerToDelete = document.querySelector(`.department-children-container[data-parent-id="${departmentId}"]`);
+                        if (containerToDelete) containerToDelete.remove();
+                        
                         departmentToDelete.remove();
                         departmentToDelete = null;
                         deleteConfirmationContainer.style.display = 'none';
@@ -818,7 +954,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(error => alert('Error deleting department: ' + error));
                 
             } else if (roleToDelete) {
-                // ACTUALLY DELETE THE ROLE FROM THE DB
                 const accID = roleToDelete.dataset.accId;
                 const dptID = roleToDelete.dataset.dptId;
                 
@@ -852,7 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   
-    // --- 🐛 FIX: RENAMING USERS KEEPS THE NAME, CHANGES THE ROLE ---
+    // Rename User Role
     if (confirmRenameRoleButton) {
         confirmRenameRoleButton.addEventListener('click', () => {
             const newRoleName = renameRoleInput.value.trim();
@@ -870,13 +1005,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     if (data.success) {
                         const currentText = currentlyEditingRoleTextSpan.textContent;
-                        
-                        // Finds the first " - " to separate Role from Name
                         const firstDashIndex = currentText.indexOf(' - ');
-                        // Grabs everything AFTER the dash (e.g., "John Doe (john@email.com)")
                         const nameAndEmailPart = currentText.substring(firstDashIndex + 3); 
                         
-                        // Reconstructs string with new role
                         currentlyEditingRoleTextSpan.textContent = `${newRoleName} - ${nameAndEmailPart}`;
                         
                         if(renameRoleContainer) renameRoleContainer.style.display = 'none';
@@ -894,8 +1025,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 /* =====================================================================
-   8. POLICY MANAGER SCRIPT
+   8. POLICY MANAGER SCRIPT (With Sync Logic)
    ===================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
     // 1. DOM Elements
@@ -947,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderPMFolder(folder.categoryName, folder.categoryID, folder.parentCategoryID);
                     });
                 }
-                // Draw all policies inside those folders
+                // Draw all policies inside their respective hidden containers
                 if (data.policies) {
                     data.policies.forEach(policy => {
                         renderPMPolicy(policy.title, policy.policyID, policy.categoryID);
@@ -958,7 +1090,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => console.error("Network error:", error));
-
 
     // --- CREATE FOLDER LOGIC ---
     if (pmAddBtn) {
@@ -995,9 +1126,19 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.success) {
                     renderPMFolder(folderName, data.categoryID, currentParentCategoryId);
+                    
+                    // Auto-open parent folder so user sees the new sub-folder
+                    if (currentParentCategoryId) {
+                        const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${currentParentCategoryId}"]`);
+                        if (parentContainer) parentContainer.style.display = 'flex';
+                    }
+
                     pmCreateModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     pmFolderInput.value = '';
+                    
+                    // ✨ INSTANT SYNC FIX
+                    location.reload();
                 } else {
                     alert("Database Error: " + data.message);
                 }
@@ -1005,7 +1146,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Error:", error));
         });
     }
-
 
     // --- RENAME FOLDER LOGIC ---
     if (pmCancelRename) {
@@ -1035,6 +1175,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     pmRenameInput.value = '';
                     folderToEditId = null;
+                    
+                    // ✨ INSTANT SYNC FIX
+                    location.reload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1042,7 +1185,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Error:", error));
         });
     }
-
 
     // --- DELETE FOLDER LOGIC ---
     if (pmCancelDelete) {
@@ -1063,10 +1205,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // Delete the folder AND its hidden container to prevent ghost elements
+                    const containerToDelete = document.querySelector(`.pm-children-container[data-parent-folder-id="${folderToEditId}"]`);
+                    if (containerToDelete) containerToDelete.remove();
+
                     folderToEditElement.remove();
                     pmDeleteModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     folderToEditId = null;
+                    
+                    // ✨ INSTANT SYNC FIX
+                    location.reload();
                 } else {
                     alert("Cannot delete: " + data.message);
                 }
@@ -1074,7 +1223,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Error:", error));
         });
     }
-
 
     // --- ADD FILE MODAL LOGIC ---
     if (pmCancelAddFile) {
@@ -1104,9 +1252,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const policyTitle = pmPolicySelect.options[pmPolicySelect.selectedIndex].text;
                     renderPMPolicy(policyTitle, selectedPolicyID, currentFolderForFile);
                     
+                    // Auto-expand folder so user sees the new file
+                    const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${currentFolderForFile}"]`);
+                    if (parentContainer) parentContainer.style.display = 'flex';
+
                     pmAddFileModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     currentFolderForFile = null;
+                    
+                    // ✨ INSTANT SYNC FIX
+                    location.reload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1114,7 +1269,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Error:", error));
         });
     }
-
 
     // --- REMOVE POLICY LOGIC ---
     if (pmCancelRemovePolicy) {
@@ -1139,6 +1293,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     pmRemovePolicyModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     policyToRemoveId = null;
+                    
+                    // ✨ INSTANT SYNC FIX
+                    location.reload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1147,65 +1304,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    // --- RENDER POLICY FILE FUNCTION ---
-    function renderPMPolicy(title, policyId, categoryId) {
-        const policyDiv = document.createElement('div');
-        policyDiv.style.backgroundColor = '#7B8EDE'; 
-        policyDiv.style.color = 'white';
-        policyDiv.style.padding = '12px 25px';
-        policyDiv.style.marginLeft = '40px'; 
-        policyDiv.style.borderBottom = '1px solid rgba(255, 255, 255, 0.2)';
-        policyDiv.style.fontFamily = "'Istok Web', sans-serif";
-        policyDiv.style.display = 'flex';
-        policyDiv.style.justifyContent = 'space-between';
-        policyDiv.style.alignItems = 'center';
-        
-        policyDiv.innerHTML = `
-            <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: #fbaf41;"></i> ${title}</span>
-            <i class="fas fa-trash-alt remove-policy-btn" style="cursor: pointer; transition: color 0.2s;" title="Remove Policy"></i>
-        `;
-
-        const trashIcon = policyDiv.querySelector('.remove-policy-btn');
-        trashIcon.addEventListener('mouseenter', () => trashIcon.style.color = '#f44336');
-        trashIcon.addEventListener('mouseleave', () => trashIcon.style.color = 'white');
-
-        trashIcon.addEventListener('click', () => {
-            policyToRemoveId = policyId;
-            policyToRemoveElement = policyDiv;
-            
-            pmRemovePolicyModal.style.display = 'block';
-            if(globalOverlay) globalOverlay.style.display = 'block';
-        });
-
-        const parentFolder = document.querySelector(`.pm-folder-item[data-category-id="${categoryId}"]`);
-        if (parentFolder) {
-            parentFolder.after(policyDiv);
-        }
-    }
-
+    // =====================================================================
+    // CORE RENDERING FUNCTIONS (MERGED ACCORDION LOGIC)
+    // =====================================================================
 
     // --- RENDER FOLDER FUNCTION ---
     function renderPMFolder(name, categoryId, parentId) {
         const folderDiv = document.createElement('div');
         folderDiv.className = 'pm-folder-item';
+        if (parentId !== null) folderDiv.classList.add('pm-child-folder');
         folderDiv.dataset.categoryId = categoryId;
         
-        let iconsHTML = '';
-
-        if (parentId === null) {
+       if (parentId === null) {
             iconsHTML = `
-                <i class="fas fa-file add-file-btn" title="Add File"></i>
-                <i class="fas fa-folder add-child-btn" title="Add Child Folder"></i>
-                <i class="fas fa-pencil-alt edit-folder-btn" title="Rename Folder"></i>
-                <i class="fas fa-trash-alt delete-folder-btn" title="Delete Folder"></i>
+                <div class="expandable-btn add-file-btn"><i class="fas fa-file"></i><span class="btn-text">Add File</span></div>
+                <div class="expandable-btn add-child-btn"><i class="fas fa-folder"></i><span class="btn-text">Add Sub-folder</span></div>
+                <div class="expandable-btn edit-folder-btn"><i class="fas fa-pencil-alt"></i><span class="btn-text">Rename</span></div>
+                <div class="expandable-btn delete-folder-btn"><i class="fas fa-trash-alt"></i><span class="btn-text">Delete</span></div>
             `;
         } else {
-            folderDiv.classList.add('pm-child-folder');
             iconsHTML = `
-                <i class="fas fa-file add-file-btn" title="Add File"></i>
-                <i class="fas fa-pencil-alt edit-folder-btn" title="Rename Folder"></i>
-                <i class="fas fa-trash-alt delete-folder-btn" title="Delete Folder"></i>
+                <div class="expandable-btn add-file-btn"><i class="fas fa-file"></i><span class="btn-text">Add File</span></div>
+                <div class="expandable-btn edit-folder-btn"><i class="fas fa-pencil-alt"></i><span class="btn-text">Rename</span></div>
+                <div class="expandable-btn delete-folder-btn"><i class="fas fa-trash-alt"></i><span class="btn-text">Delete</span></div>
             `;
         }
 
@@ -1216,10 +1337,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Button Click: Add Child
+        // EVENT LISTENERS FOR ICONS (Added stopPropagation!)
         const addChildBtn = folderDiv.querySelector('.add-child-btn');
         if (addChildBtn) {
-            addChildBtn.addEventListener('click', () => {
+            addChildBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); 
                 currentParentCategoryId = categoryId; 
                 pmCreateModal.style.display = 'block';
                 if(globalOverlay) globalOverlay.style.display = 'block';
@@ -1227,41 +1349,37 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Button Click: Rename
         const renameBtn = folderDiv.querySelector('.edit-folder-btn');
         if (renameBtn) {
-            renameBtn.addEventListener('click', () => {
+            renameBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 folderToEditId = categoryId;
                 folderToEditElement = folderDiv;
                 pmRenameInput.value = name; 
-                
                 pmRenameModal.style.display = 'block';
                 if(globalOverlay) globalOverlay.style.display = 'block';
                 pmRenameInput.focus();
             });
         }
 
-        // Button Click: Delete
         const deleteBtn = folderDiv.querySelector('.delete-folder-btn');
         if (deleteBtn) {
-            deleteBtn.addEventListener('click', () => {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 folderToEditId = categoryId;
                 folderToEditElement = folderDiv;
-                
                 pmDeleteModal.style.display = 'block';
                 if(globalOverlay) globalOverlay.style.display = 'block';
             });
         }
 
-        // Button Click: Add File
         const addFileBtn = folderDiv.querySelector('.add-file-btn');
         if (addFileBtn) {
-            addFileBtn.addEventListener('click', () => {
+            addFileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 currentFolderForFile = categoryId;
-                
                 pmAddFileModal.style.display = 'block';
                 if(globalOverlay) globalOverlay.style.display = 'block';
-                
                 pmPolicySelect.innerHTML = '<option value="">Loading policies...</option>';
 
                 fetch('../../generalComponents/policyManagerPHP/getAvailablePolicies.php')
@@ -1287,33 +1405,71 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Insert into DOM
+        // CREATE HIDDEN CHILD CONTAINER
+        const childContainer = document.createElement('div');
+        childContainer.classList.add('pm-children-container');
+        childContainer.style.display = 'none'; // Hidden by default
+        childContainer.dataset.parentFolderId = categoryId;
+
+        // TOGGLE ACCORDION CLICK
+        folderDiv.addEventListener('click', () => {
+            const isHidden = childContainer.style.display === 'none';
+            childContainer.style.display = isHidden ? 'flex' : 'none';
+        });
+
+        // INSERT BOTH INTO DOM
         if (parentId === null) {
             pmFoldersContainer.appendChild(folderDiv);
+            pmFoldersContainer.appendChild(childContainer);
         } else {
-            const parentDiv = document.querySelector(`.pm-folder-item[data-category-id="${parentId}"]`);
-            if (parentDiv) parentDiv.after(folderDiv);
-            else pmFoldersContainer.appendChild(folderDiv);
+            const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${parentId}"]`);
+            if (parentContainer) {
+                parentContainer.appendChild(folderDiv);
+                parentContainer.appendChild(childContainer);
+            } else {
+                pmFoldersContainer.appendChild(folderDiv);
+                pmFoldersContainer.appendChild(childContainer);
+            }
+        }
+    }
+
+    // --- RENDER POLICY FILE FUNCTION ---
+    function renderPMPolicy(title, policyId, categoryId) {
+        // Drop directly into the parent folder's hidden container!
+        const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${categoryId}"]`);
+        
+        if (parentContainer) {
+            const policyDiv = document.createElement('div');
+            policyDiv.classList.add('pm-policy-item');
+            policyDiv.dataset.policyId = policyId;
+            
+            policyDiv.innerHTML = `
+                <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: #fbaf41;"></i> ${title}</span>
+                <div class="pm-folder-icons" style="display: flex;">
+                    <div class="expandable-btn remove-policy-btn">
+                        <i class="fas fa-trash-alt"></i><span class="btn-text">Remove</span>
+                    </div>
+                </div>
+            `;
+
+            const trashIcon = policyDiv.querySelector('.remove-policy-btn');
+            trashIcon.addEventListener('mouseenter', () => trashIcon.style.color = '#f44336');
+            trashIcon.addEventListener('mouseleave', () => trashIcon.style.color = 'black');
+
+            trashIcon.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevents folder from toggling
+                policyToRemoveId = policyId;
+                policyToRemoveElement = policyDiv;
+                pmRemovePolicyModal.style.display = 'block';
+                if(globalOverlay) globalOverlay.style.display = 'block';
+            });
+
+            parentContainer.appendChild(policyDiv);
         }
     }
 });
 
-/* =====================================================================
-   7. AUTO-REFRESH SCRIPT
-   ===================================================================== */
-let lastUpdate = null;
 
-function checkForUpdates() {
-    fetch('../../generalComponents/Refresh/Policy_Repo_Refresh.php')
-        .then(response => response.text())
-        .then(timestamp => {
-            if (lastUpdate === null) {
-                lastUpdate = timestamp;
-            } else if (lastUpdate !== timestamp) {
-                location.reload(); 
-            }
-        });
-}
 /* =====================================================================
    9. ROLE MANAGER SCRIPT
    ===================================================================== */
@@ -1518,6 +1674,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-// Check every 5 seconds
-setInterval(checkForUpdates, 5000);

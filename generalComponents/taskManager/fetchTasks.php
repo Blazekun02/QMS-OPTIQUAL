@@ -37,7 +37,7 @@ try {
 
     // IF USER IS QA DIRECTOR (roleID == 2)
     if ($userRole == 2) {
-        // Fetch ALL Pending Policies (policyStatusID = 1) AND tasks specifically assigned to them
+        // ✨ FIX: Updated table and column names to perfectly match your phpMyAdmin!
         $stmt = $pdo->prepare("
             SELECT 
                 p.policyID,
@@ -45,11 +45,12 @@ try {
                 a.fullName AS author, 
                 p.dateSubmitted, 
                 p.versionNo AS version, 
-                'Pending' AS status, 
+                ps.policyStatusName AS status, 
                 p.contentPath AS pdfPath
             FROM policytbl p
             LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
-            WHERE p.policyStatusID = 1
+            LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+            WHERE p.policyStatusID IN (1, 2, 3)
         ");
         
         // Execute the query for Pending policies

@@ -102,68 +102,74 @@ require_once genMsg_dir . '/setMessage.php';
 
 
 <script>
-
-    const url = ''; // URL of the PDF file
-    function loadPDF(url) {
-    pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-        pdfDoc = pdfDoc_;
-        document.getElementById('pageCount').textContent = pdfDoc.numPages;
-        renderPage(pageNum);
-        console.log('PDF URL:', url); // Debugging
-    });
-}
-
-// Expose loadPDF globally
-window.loadPDF = loadPDF;
-   
-
-
-
     let pdfDoc = null,
         pageNum = 1,
         pageRendering = false,
         pageNumPending = null,
-        scale = 2,
+        scale = 1.5, // Default scale
         canvas = document.getElementById('pdfViewer'),
         ctx = canvas.getContext('2d');
 
-    // Load the PDF
+    // Function to load and render a PDF
     function loadPDF(url) {
-    pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-        pdfDoc = pdfDoc_;
-        document.getElementById('pageCount').textContent = pdfDoc.numPages;
-        renderPage(pageNum);
-    });
-}
-    
+        // Ensure pdf.js is loaded
+        if (typeof pdfjsLib === 'undefined') {
+            console.error("pdf.js is not loaded.");
+            return;
+        }
 
-    // Render the page
+        console.log("Attempting to load PDF from:", url); // Debugging line
+
+        // Asynchronously load the PDF
+        var loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(function(pdf) {
+            console.log('PDF loaded');
+            pdfDoc = pdf;
+            document.getElementById('pageCount').textContent = pdfDoc.numPages;
+            // Reset to the first page whenever a new PDF is loaded
+            pageNum = 1; 
+            renderPage(pageNum);
+        }, function (reason) {
+            // PDF loading error
+            console.error(reason);
+        });
+    }
+
+    // Make the function globally accessible
+    window.loadPDF = loadPDF;
+
+    // Function to render a specific page
     function renderPage(num) {
         pageRendering = true;
-        pdfDoc.getPage(num).then(page => {
-            const viewport = page.getViewport({ scale: scale });
+        // Using promise to fetch the page
+        pdfDoc.getPage(num).then(function(page) {
+            var viewport = page.getViewport({ scale: scale });
             canvas.height = viewport.height;
             canvas.width = viewport.width;
 
-            const renderContext = {
+            // Render PDF page into canvas context
+            var renderContext = {
                 canvasContext: ctx,
-                viewport: viewport,
+                viewport: viewport
             };
-            const renderTask = page.render(renderContext);
+            var renderTask = page.render(renderContext);
 
-            renderTask.promise.then(() => {
+            // Wait for rendering to finish
+            renderTask.promise.then(function() {
                 pageRendering = false;
                 if (pageNumPending !== null) {
+                    // New page rendering is pending
                     renderPage(pageNumPending);
                     pageNumPending = null;
                 }
             });
         });
 
+        // Update page counters
         document.getElementById('pageNum').textContent = num;
     }
 
-    // Queue a page for rendering
+    // Function to queue a page for rendering
     function queueRenderPage(num) {
         if (pageRendering) {
             pageNumPending = num;
@@ -172,42 +178,36 @@ window.loadPDF = loadPDF;
         }
     }
 
-    // Show previous page
-    document.getElementById('prevPage').addEventListener('click', () => {
+    // Event listener for the 'Previous Page' button
+    document.getElementById('prevPage').addEventListener('click', function() {
         if (pageNum <= 1) {
             return;
         }
         pageNum--;
         queueRenderPage(pageNum);
-
-        // Reset scroll position to the top of the container
-        const pdfContainer = document.getElementById('pdf_container');
-        pdfContainer.scrollTop = 0;
+        document.getElementById('pdf_container').scrollTop = 0; // Reset scroll
     });
 
-    // Show next page
-    document.getElementById('nextPage').addEventListener('click', () => {
+    // Event listener for the 'Next Page' button
+    document.getElementById('nextPage').addEventListener('click', function() {
         if (pageNum >= pdfDoc.numPages) {
             return;
         }
         pageNum++;
         queueRenderPage(pageNum);
-
-        // Reset scroll position to the top of the container
-        const pdfContainer = document.getElementById('pdf_container');
-        pdfContainer.scrollTop = 0;
+        document.getElementById('pdf_container').scrollTop = 0; // Reset scroll
     });
 
-    // Zoom functionality
-    const zoomSlider = document.getElementById('zoomSlider');
-
-    // Update zoom level when the slider value changes
-    zoomSlider.addEventListener('input', () => {
-        scale = parseFloat(zoomSlider.value); // Get the slider value
-        document.getElementById('zoom_percentage').textContent = `${Math.round(scale * 100)}%`;
-
-        // Apply scaling to the canvas
-        const canvas = document.getElementById('pdfViewer');
-        canvas.style.transform = `scale(${scale})`;
+    // Event listener for the zoom slider
+    document.getElementById('zoomSlider').addEventListener('input', function() {
+        if (!pdfDoc) {
+            return;
+        }
+        scale = parseFloat(this.value);
+        document.getElementById('zoom_percentage').textContent = Math.round(scale * 100) + '%';
+        
+        // Re-render the page with the new scale
+        renderPage(pageNum);
     });
+
 </script>
