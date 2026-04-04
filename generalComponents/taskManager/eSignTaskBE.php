@@ -3,12 +3,11 @@ session_start();
 include '../../connect.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
-
 $policyID = $data['policyID'];
 $password = $data['password']; 
 $accID = $_SESSION['accID'];
 
-// 1. Verify the User's Password
+// 1. Verify Password
 $stmt = $conn->prepare("SELECT password FROM accdatatbl WHERE accID = ?");
 $stmt->bind_param("i", $accID);
 $stmt->execute();
@@ -35,38 +34,44 @@ if ($result->num_rows > 0) {
 }
 $stmt->close();
 
-// 2. Generate the Cryptographic E-Signature (The "Barcode")
+// 2. Generate Cryptographic Hash
 $signatureData = $accID . "-" . $policyID . "-" . microtime(true);
 $digitalSignatureHash = hash('sha256', $signatureData);
 
-// ✨ 3. THE FIX: Determine the NEXT Status dynamically!
+// 3. Determine NEXT Status
 $statusQuery = $conn->prepare("SELECT policyStatusID FROM policytbl WHERE policyID = ?");
 $statusQuery->bind_param("i", $policyID);
 $statusQuery->execute();
 $statusResult = $statusQuery->get_result();
 
-$currentStatus = 3; // Fallback
+$currentStatus = 1; 
 if ($statusResult->num_rows > 0) {
     $currentStatus = $statusResult->fetch_assoc()['policyStatusID'];
 }
 $statusQuery->close();
 
-// If it is currently Pending(1) or Reviewed(2), signing it makes it Verified(3)
-// If it is already Verified(3), signing it makes it Approved(4)!
-$newStatus = 3; 
-if ($currentStatus == 1 || $currentStatus == 2) {
-    $newStatus = 3; 
+// ✨ 4. THE 4-STEP WORKFLOW LOGIC (Now with Name Tracking!)
+if ($currentStatus == 1) {
+    $newStatus = 2; // QA Staff signs -> becomes 2 (Reviewed)
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, reviewedBy = ? WHERE policyID = ?");
+    $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
+} else if ($currentStatus == 2) {
+    $newStatus = 3; // Verifier signs -> becomes 3 (Verified)
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, verifiedBy = ? WHERE policyID = ?");
+    $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
 } else if ($currentStatus == 3) {
-    $newStatus = 4; 
+    $newStatus = 4; // Approver signs -> becomes 4 (Approved)
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, approvedBy = ? WHERE policyID = ?");
+    $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
+} else {
+    // Fallback
+    $newStatus = $currentStatus;
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ? WHERE policyID = ?");
+    $updatePolicy->bind_param("ii", $newStatus, $policyID);
 }
 
-// 4. Complete the Task & Update Policy Status
-$updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ? WHERE policyID = ?");
-$updatePolicy->bind_param("ii", $newStatus, $policyID);
-
 if ($updatePolicy->execute()) {
-    
-    // Mark the task as completed by deleting the assignment
+    // Clear from tasktbl so it leaves the inbox
     $completeTask = $conn->prepare("DELETE FROM tasktbl WHERE policyAssigned = ? AND assignedTo = ?");
     $completeTask->bind_param("ii", $policyID, $accID);
     $completeTask->execute();
@@ -74,11 +79,10 @@ if ($updatePolicy->execute()) {
     echo json_encode([
         'success' => true, 
         'signatureHash' => $digitalSignatureHash,
-        'message' => 'Document successfully signed and verified!'
+        'message' => 'Document successfully signed and advanced!'
     ]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to update document status.']);
 }
-
 $conn->close();
 ?>

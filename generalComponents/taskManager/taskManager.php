@@ -10,20 +10,21 @@ require_once __DIR__ . '/../../filepaths.php';
 //include set message
 require_once genMsg_dir . '/setMessage.php';
 
-// ✨ FIX: SECURE ROLE CHECK ✨
-// We must grab the exact roleID from the database to ensure Staff cannot see QAD buttons
+// ✨ SECURE ROLE CHECK
 require_once BASE_DIR . '/connect.php';
 $roleID = 0;
-if(isset($_SESSION['accID'])){
+if(isset($_SESSION['accID']) && isset($conn)){
     $accID = $_SESSION['accID'];
     $stmt = $conn->prepare("SELECT roleID FROM accdatatbl WHERE accID = ?");
-    $stmt->bind_param("i", $accID);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if($row = $result->fetch_assoc()){
-        $roleID = $row['roleID'];
+    if ($stmt) { 
+        $stmt->bind_param("i", $accID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($row = $result->fetch_assoc()){
+            $roleID = $row['roleID'];
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 ?>
 
@@ -71,7 +72,7 @@ if(isset($_SESSION['accID'])){
     }
 
     /* ========================================= */
-    /* TASK MANAGER TABLE                        */
+    /* TASK MANAGER TABLE & BUTTONS              */
     /* ========================================= */
     .task-manager-table {
         width: 96%;
@@ -88,7 +89,7 @@ if(isset($_SESSION['accID'])){
 
     .task-manager-table th,
     .task-manager-table td {
-        padding: 1vh 2vw;
+        padding: 1vh 1vw;
         text-align: left;
     }
 
@@ -113,6 +114,25 @@ if(isset($_SESSION['accID'])){
     .task-manager-table tBody tr:nth-child(odd):hover td {
         background-color: #343A40;
         cursor: pointer;
+        color: white; /* Make text white on hover */
+    }
+
+    /* ✨ NEW: INLINE ACTION BUTTON STYLES ✨ */
+    .action-btn-inline {
+        background-color: #fbaf41;
+        color: black;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 13px;
+        transition: 0.2s;
+    }
+
+    .action-btn-inline:hover {
+        background-color: #db8804;
     }
 
     /* ========================================= */
@@ -163,7 +183,6 @@ if(isset($_SESSION['accID'])){
         margin: 0;
     }
 
-    /* --- FIGMA ACTION BUTTONS --- */
     .qad-action-buttons {
         display: flex;
         gap: 15px;
@@ -213,7 +232,6 @@ if(isset($_SESSION['accID'])){
         margin-top: 10px;
     }
 
-    /* ✨ CUSTOM PDF TOOLBAR STYLES ✨ */
     .custom-pdf-toolbar {
         display: flex;
         justify-content: space-between;
@@ -249,15 +267,15 @@ if(isset($_SESSION['accID'])){
         background-color: #525659;
         height: 60vh;
         overflow: auto; 
-        display: block;      /* ✨ FIX: Removed Flexbox */
-        text-align: center;  /* ✨ FIX: Centers the PDF safely */
+        display: block;      
+        text-align: center;  
         padding: 20px 0;
         border-radius: 0 0 8px 8px;
     }
 
     #tm_pdfCanvas {
         box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-        margin: 0 auto;      /* ✨ FIX: Keeps the canvas centered when zoomed out */
+        margin: 0 auto;      
     }
 
     /* ========================================= */
@@ -287,7 +305,6 @@ if(isset($_SESSION['accID'])){
     .confirm-button { background-color: #fbaf41; color: black; }
     .confirm-button:hover { background-color: #db8804; }
 
-    /* ✨ ASSIGN TASK MODAL STYLES ✨ */
     .assign-task-modal {
         background-color: #293A82; 
         color: white; 
@@ -449,8 +466,10 @@ if(isset($_SESSION['accID'])){
             <th>Date Submitted</th>
             <th>Version no.</th>
             <th>Reviewed by</th>
+            <th>Verified by</th>
             <th>Approved by</th>
             <th>Status</th>
+            <th>Action</th>
         </tr>
         </thead>
         <tbody id="taskTableBody">
@@ -460,15 +479,17 @@ if(isset($_SESSION['accID'])){
 
 <script>
 var userRole = "<?php echo isset($_SESSION['accID']) ? $_SESSION['accID'] : ''; ?>"; 
-
-// ✨ We now correctly have the true Database Role ID to secure the buttons!
 var systemRoleID = <?php echo $roleID; ?>; 
 
-// ✨ GLOBAL TASK TRACKERS ✨
 var currentTaskPolicyID = null;
 var currentTaskStatus = null;
 
-// ✨ UNIQUE PDF.JS ENGINE VARIABLES ✨
+// ✨ GLOBAL VARIABLES FOR ASSIGN MODAL ✨
+let assignDepartmentsData = [];
+let assignEmployeesData = [];
+let assignSelectedAccID = null;
+let assignFolderHistory = [];
+
 var tm_pdfDoc = null,
     tm_pageNum = 1,
     tm_pageRendering = false,
@@ -508,36 +529,166 @@ function tm_renderPage(num) {
 }
 
 function tm_queueRenderPage(num) {
-    if (tm_pageRendering) {
-        tm_pageNumPending = num;
-    } else {
-        tm_renderPage(num);
-    }
+    if (tm_pageRendering) tm_pageNumPending = num;
+    else tm_renderPage(num);
 }
-
 function tm_onPrevPage() {
     if (tm_pageNum <= 1) return;
     tm_pageNum--;
     tm_queueRenderPage(tm_pageNum);
 }
-
 function tm_onNextPage() {
     if (!tm_pdfDoc || tm_pageNum >= tm_pdfDoc.numPages) return;
     tm_pageNum++;
     tm_queueRenderPage(tm_pageNum);
 }
-
 function tm_onZoomIn() {
     tm_scale += 0.2;
     tm_queueRenderPage(tm_pageNum);
 }
-
 function tm_onZoomOut() {
     if (tm_scale <= 0.6) return; 
     tm_scale -= 0.2;
     tm_queueRenderPage(tm_pageNum);
 }
 
+// ✨ REUSABLE FUNCTION TO OPEN ASSIGN MODAL ✨
+function openAssignModalForTask(policyID, status) {
+    currentTaskPolicyID = policyID;
+    currentTaskStatus = status;
+    
+    let requiredRole = "Verifier";
+    if (status === 'Verified') {
+        requiredRole = "Approver";
+    }
+
+    const assignTaskTitle = document.getElementById('assignTaskTitle');
+    const assignTaskSubtitle = document.getElementById('assignTaskSubtitle');
+    const assignTaskOverlay = document.getElementById('assignTaskOverlay');
+    const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
+
+    assignTaskTitle.textContent = `Assign ${requiredRole}`;
+    assignTaskSubtitle.textContent = `Select a department folder to find the ${requiredRole}.`;
+    assignTaskOverlay.style.display = 'flex';
+
+    document.getElementById('assignLoading').style.display = 'block';
+    document.getElementById('assignFoldersList').style.display = 'none';
+    document.getElementById('assignEmployeesList').style.display = 'none';
+    document.getElementById('assignFolderNav').style.display = 'none';
+    
+    confirmAssignTaskBtn.disabled = true;
+    confirmAssignTaskBtn.style.opacity = '0.5';
+    confirmAssignTaskBtn.style.cursor = 'not-allowed';
+    
+    assignSelectedAccID = null;
+    assignFolderHistory = [];
+
+    fetch('/qms_optiqual/generalComponents/dpManagerPHP/getDepartments.php')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('assignLoading').style.display = 'none';
+            if (data.success) {
+                assignDepartmentsData = data.departments || [];
+                assignEmployeesData = data.employees || [];
+                renderAssignView(null, 'Departments'); 
+            } else {
+                document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Error loading data.';
+                document.getElementById('assignLoading').style.display = 'block';
+            }
+        })
+        .catch(err => {
+            console.error('Fetch Error:', err);
+            document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Network error.';
+            document.getElementById('assignLoading').style.display = 'block';
+        });
+}
+
+function renderAssignView(dptID, dptName) {
+    const foldersList = document.getElementById('assignFoldersList');
+    const empList = document.getElementById('assignEmployeesList');
+    const navHeader = document.getElementById('assignFolderNav');
+    const currentNameEl = document.getElementById('assignCurrentFolderName');
+    const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
+
+    foldersList.innerHTML = '';
+    empList.innerHTML = '';
+
+    assignSelectedAccID = null;
+    confirmAssignTaskBtn.disabled = true;
+    confirmAssignTaskBtn.style.opacity = '0.5';
+    confirmAssignTaskBtn.style.cursor = 'not-allowed';
+
+    if (dptID === null) {
+        navHeader.style.display = 'none';
+    } else {
+        navHeader.style.display = 'flex';
+        currentNameEl.innerHTML = `<i class="fas fa-folder-open" style="color:#fbaf41; margin-right:8px;"></i> ${dptName}`;
+    }
+
+    const isRoot = (id) => id === null || id === undefined || id === "null" || id === 0 || id === "0" || id === "";
+
+    const subFolders = assignDepartmentsData.filter(d => {
+        if (dptID === null) return isRoot(d.dptParentID);
+        return d.dptParentID == dptID;
+    });
+
+    const emps = assignEmployeesData.filter(e => {
+        if (dptID === null) return false; 
+        return e.dptID == dptID;
+    });
+
+    if (subFolders.length === 0 && emps.length === 0) {
+        foldersList.innerHTML = '<p style="color:white; text-align:center; margin-top:30px; font-size: 18px;"><i class="fas fa-folder-open" style="display:block; font-size: 40px; margin-bottom: 10px; color:#555;"></i>This folder is empty.</p>';
+        foldersList.style.display = 'flex';
+        empList.style.display = 'none';
+    } else {
+        subFolders.forEach(dpt => {
+            const folderDiv = document.createElement('div');
+            folderDiv.className = 'assign-dpt-folder';
+            folderDiv.innerHTML = `
+                <span><i class="fas fa-folder" style="color: #fbaf41; margin-right: 12px;"></i> ${dpt.dptName}</span>
+                <i class="fas fa-chevron-right" style="font-size: 14px; opacity: 0.7;"></i>
+            `;
+            folderDiv.onclick = () => {
+                assignFolderHistory.push({ id: dptID, name: dptName });
+                renderAssignView(dpt.dptID, dpt.dptName);
+            };
+            foldersList.appendChild(folderDiv);
+        });
+
+        emps.forEach(emp => {
+            const empDiv = document.createElement('div');
+            empDiv.className = 'assign-emp-item';
+            empDiv.innerHTML = `
+                <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82;"></i>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-weight: bold; font-size: 16px;">${emp.fullName}</span>
+                    <span style="font-size: 13px; color: #444; margin-top:2px;"><strong>${emp.departmentRole || 'Employee'}</strong> | ${emp.email}</span>
+                </div>
+                <i class="fas fa-check-circle check-icon" style="margin-left: auto; font-size: 24px; color: #293A82; display: none;"></i>
+            `;
+            empDiv.onclick = () => {
+                document.querySelectorAll('.assign-emp-item').forEach(el => {
+                    el.classList.remove('selected');
+                    el.querySelector('.check-icon').style.display = 'none';
+                });
+                empDiv.classList.add('selected');
+                empDiv.querySelector('.check-icon').style.display = 'block';
+                
+                assignSelectedAccID = emp.accID;
+                confirmAssignTaskBtn.disabled = false;
+                confirmAssignTaskBtn.style.opacity = '1';
+                confirmAssignTaskBtn.style.cursor = 'pointer';
+            };
+            empList.appendChild(empDiv);
+        });
+
+        foldersList.style.display = subFolders.length > 0 ? 'flex' : 'none';
+        empList.style.display = emps.length > 0 ? 'flex' : 'none';
+    }
+}
+
+// ✨ UPDATED TABLE POPULATOR (WITH INLINE BUTTONS) ✨
 function populateTaskTable(tasks) {
     const tableBody = document.getElementById('taskTableBody');
     if (!tableBody) return;
@@ -546,7 +697,7 @@ function populateTaskTable(tasks) {
     if (!Array.isArray(tasks) || tasks.length === 0) {
         const row = tableBody.insertRow();
         const cell = row.insertCell();
-        cell.colSpan = 7; 
+        cell.colSpan = 9; 
         cell.textContent = tasks.message || "No tasks found.";
         cell.style.textAlign = "center";
         cell.style.padding = "20px";
@@ -555,6 +706,8 @@ function populateTaskTable(tasks) {
 
     tasks.forEach(task => {
         const row = tableBody.insertRow();
+        
+        // Clicking anywhere else on the row still opens the PDF Viewer!
         row.onclick = function() {
             showTaskIntroduction(task.policyID, task.policyTitle, task.author, task.pdfPath, task.status);
         };
@@ -579,11 +732,15 @@ function populateTaskTable(tasks) {
         const versionCell = row.insertCell();
         versionCell.textContent = task.version || 'New'; 
 
+        // ✨ The 3 Name Columns ✨
         const reviewedCell = row.insertCell();
-        reviewedCell.textContent = '---'; 
+        reviewedCell.textContent = task.reviewerName || '---'; 
+
+        const verifiedCell = row.insertCell();
+        verifiedCell.textContent = task.verifierName || '---'; 
 
         const approvedCell = row.insertCell();
-        approvedCell.textContent = '---'; 
+        approvedCell.textContent = task.approverName || '---';
 
         const statusCell = row.insertCell();
         statusCell.textContent = task.status;
@@ -598,6 +755,45 @@ function populateTaskTable(tasks) {
             statusCell.style.color = 'black';
             statusCell.style.fontWeight = 'bold';
         }
+
+        // ✨ INLINE ACTION BUTTON ✨
+        const actionCell = row.insertCell();
+        
+        // This stops the row click from triggering when they click the button!
+        actionCell.onclick = function(e) {
+            e.stopPropagation(); 
+        };
+
+        const actionBtn = document.createElement('button');
+        actionBtn.className = 'action-btn-inline';
+
+        if (systemRoleID == 2) { 
+            // QAD Logic
+            if (task.status === 'Approved' || task.status === 'For Upload') {
+                actionBtn.textContent = 'Upload';
+                actionBtn.onclick = () => alert("Upload feature coming soon!"); 
+            } else if (task.status === 'Reviewed' || task.status === 'Verified') {
+                actionBtn.textContent = 'Assign';
+                actionBtn.onclick = () => openAssignModalForTask(task.policyID, task.status);
+            } else {
+                actionBtn.textContent = 'View';
+                actionBtn.onclick = () => row.click();
+            }
+        } else { 
+            // QA Staff / Regular Staff Logic
+            if (task.status === 'Pending') actionBtn.textContent = 'Review';
+            else if (task.status === 'Reviewed') actionBtn.textContent = 'Verify';
+            else actionBtn.textContent = 'Approve';
+            
+            actionBtn.onclick = () => {
+                currentTaskPolicyID = task.policyID;
+                currentTaskStatus = task.status;
+                document.getElementById('eSignPasswordInput').value = '';
+                document.getElementById('eSignOverlay').style.display = 'flex';
+            };
+        }
+        
+        actionCell.appendChild(actionBtn);
     });
 }
 
@@ -622,19 +818,16 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
     if (introductionSection) introductionSection.style.display = 'flex';
     if (actionButtons) actionButtons.style.display = 'flex';
 
-    // ✨ FIX: STRICT SECURE VISIBILITY LOGIC
     const uploadBtn = document.getElementById('qadUploadBtn');
     const assignBtn = document.getElementById('qadAssignBtn');
     const eSignBtn = document.getElementById('qadESignBtn');
     const rejectBtn = document.getElementById('qadRejectBtn');
 
-    // 1. Hide everything first to prevent visual bugs
     if (uploadBtn) uploadBtn.style.display = 'none';
     if (assignBtn) assignBtn.style.display = 'none';
     if (eSignBtn) eSignBtn.style.display = 'none';
     if (rejectBtn) rejectBtn.style.display = 'none';
 
-    // 2. QAD (Role 2) Check: Only they see Assign, Upload, and Reject
     if (systemRoleID == 2) {
         if (assignBtn) assignBtn.style.display = 'flex';
         if (rejectBtn) rejectBtn.style.display = 'flex';
@@ -642,16 +835,15 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
             uploadBtn.style.display = 'flex';
             uploadBtn.disabled = !(policyStatus === 'Approved' || policyStatus === 'For Upload');
         }
-    } 
-    // 3. Staff / QA Staff Check: Only they see the Verify/Sign button!
-    else {
+    } else {
         if (eSignBtn) {
             eSignBtn.style.display = 'flex';
             
-            // Smart Text: Change "Verify" to "Approve" dynamically if needed!
             const eSignText = eSignBtn.querySelector('span');
             if (eSignText) {
-                if (policyStatus === 'Verifying' || policyStatus === 'Pending' || policyStatus === 'For Review') {
+                if (policyStatus === 'Pending') {
+                    eSignText.textContent = 'Review';
+                } else if (policyStatus === 'Reviewed') {
                     eSignText.textContent = 'Verify';
                 } else {
                     eSignText.textContent = 'Approve';
@@ -747,8 +939,16 @@ document.addEventListener('DOMContentLoaded', function() {
     tm_canvas = document.getElementById('tm_pdfCanvas');
     if(tm_canvas) tm_ctx = tm_canvas.getContext('2d');
 
-    // THIS FETCH POPULATES YOUR TABLE!
-    fetch('/qms_optiqual/generalComponents/taskManager/fetchTasks.php')
+    const fetchUrl = '/qms_optiqual/generalComponents/taskManager/fetchTasks.php?t=' + new Date().getTime();
+    
+    fetch(fetchUrl, {
+        method: 'GET',
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -763,7 +963,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Fetch Error:', error));
 
-    // ✨ E-SIGNATURE LOGIC ✨
     const qadESignBtn = document.getElementById('qadESignBtn');
     const eSignOverlay = document.getElementById('eSignOverlay');
     const confirmESignBtn = document.getElementById('confirmESignBtn');
@@ -772,7 +971,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (qadESignBtn) {
         qadESignBtn.addEventListener('click', () => {
             eSignOverlay.style.display = 'flex';
-            eSignPasswordInput.value = ''; // Clear old password
+            eSignPasswordInput.value = ''; 
         });
     }
 
@@ -781,7 +980,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const pwd = eSignPasswordInput.value.trim();
             if (!pwd) return alert("You must enter your password to sign.");
 
-            // Add loading state
             confirmESignBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing...';
             confirmESignBtn.disabled = true;
 
@@ -799,10 +997,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmESignBtn.disabled = false;
 
                 if (data.success) {
-                    // SHOW THE "BARCODE" HASH TO THE USER SO THEY KNOW IT WORKED!
                     alert(data.message + "\n\nYour Unique Digital Signature Hash:\n" + data.signatureHash);
                     eSignOverlay.style.display = 'none';
-                    location.reload(); // Refresh table
+                    location.reload(); 
                 } else {
                     alert(data.message);
                 }
@@ -816,148 +1013,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✨ ASSIGN BUTTON LOGIC (DRILL-DOWN FOLDER UI) ✨
+    // Inner Assign Button Logic
     const qadAssignBtn = document.getElementById('qadAssignBtn');
-    const assignTaskOverlay = document.getElementById('assignTaskOverlay');
-    const assignTaskTitle = document.getElementById('assignTaskTitle');
-    const assignTaskSubtitle = document.getElementById('assignTaskSubtitle');
-    const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
     const assignBackBtn = document.getElementById('assignBackBtn');
-
-    let assignDepartmentsData = [];
-    let assignEmployeesData = [];
-    let assignSelectedAccID = null;
-    let assignFolderHistory = []; // Tracks where we are!
+    const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
 
     if (qadAssignBtn) {
         qadAssignBtn.addEventListener('click', () => {
             if (!currentTaskPolicyID) return alert("No task selected.");
-
-            let requiredRole = "Verifier";
-            if (currentTaskStatus === 'Verified' || currentTaskStatus === 'For Review') {
-                requiredRole = "Approver";
-            }
-
-            assignTaskTitle.textContent = `Assign ${requiredRole}`;
-            assignTaskSubtitle.textContent = `Select a department folder to find the ${requiredRole}.`;
-            assignTaskOverlay.style.display = 'flex';
-
-            document.getElementById('assignLoading').style.display = 'block';
-            document.getElementById('assignFoldersList').style.display = 'none';
-            document.getElementById('assignEmployeesList').style.display = 'none';
-            document.getElementById('assignFolderNav').style.display = 'none';
-            
-            confirmAssignTaskBtn.disabled = true;
-            confirmAssignTaskBtn.style.opacity = '0.5';
-            confirmAssignTaskBtn.style.cursor = 'not-allowed';
-            
-            assignSelectedAccID = null;
-            assignFolderHistory = [];
-
-            // Fetch Data
-            fetch('/qms_optiqual/generalComponents/dpManagerPHP/getDepartments.php')
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('assignLoading').style.display = 'none';
-                    if (data.success) {
-                        assignDepartmentsData = data.departments || [];
-                        assignEmployeesData = data.employees || [];
-                        renderAssignView(null, 'Departments'); 
-                    } else {
-                        document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Error loading data.';
-                        document.getElementById('assignLoading').style.display = 'block';
-                    }
-                })
-                .catch(err => {
-                    console.error('Fetch Error:', err);
-                    document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Network error.';
-                    document.getElementById('assignLoading').style.display = 'block';
-                });
+            openAssignModalForTask(currentTaskPolicyID, currentTaskStatus);
         });
-    }
-
-    function renderAssignView(dptID, dptName) {
-        const foldersList = document.getElementById('assignFoldersList');
-        const empList = document.getElementById('assignEmployeesList');
-        const navHeader = document.getElementById('assignFolderNav');
-        const currentNameEl = document.getElementById('assignCurrentFolderName');
-
-        foldersList.innerHTML = '';
-        empList.innerHTML = '';
-
-        assignSelectedAccID = null;
-        confirmAssignTaskBtn.disabled = true;
-        confirmAssignTaskBtn.style.opacity = '0.5';
-        confirmAssignTaskBtn.style.cursor = 'not-allowed';
-
-        if (dptID === null) {
-            navHeader.style.display = 'none';
-        } else {
-            navHeader.style.display = 'flex';
-            currentNameEl.innerHTML = `<i class="fas fa-folder-open" style="color:#fbaf41; margin-right:8px;"></i> ${dptName}`;
-        }
-
-        const isRoot = (id) => id === null || id === undefined || id === "null" || id === 0 || id === "0" || id === "";
-
-        const subFolders = assignDepartmentsData.filter(d => {
-            if (dptID === null) return isRoot(d.dptParentID);
-            return d.dptParentID == dptID;
-        });
-
-        const emps = assignEmployeesData.filter(e => {
-            if (dptID === null) return false; 
-            return e.dptID == dptID;
-        });
-
-        if (subFolders.length === 0 && emps.length === 0) {
-            foldersList.innerHTML = '<p style="color:white; text-align:center; margin-top:30px; font-size: 18px;"><i class="fas fa-folder-open" style="display:block; font-size: 40px; margin-bottom: 10px; color:#555;"></i>This folder is empty.</p>';
-            foldersList.style.display = 'flex';
-            empList.style.display = 'none';
-        } else {
-            subFolders.forEach(dpt => {
-                const folderDiv = document.createElement('div');
-                folderDiv.className = 'assign-dpt-folder';
-                folderDiv.innerHTML = `
-                    <span><i class="fas fa-folder" style="color: #fbaf41; margin-right: 12px;"></i> ${dpt.dptName}</span>
-                    <i class="fas fa-chevron-right" style="font-size: 14px; opacity: 0.7;"></i>
-                `;
-                folderDiv.onclick = () => {
-                    assignFolderHistory.push({ id: dptID, name: dptName });
-                    renderAssignView(dpt.dptID, dpt.dptName);
-                };
-                foldersList.appendChild(folderDiv);
-            });
-
-            emps.forEach(emp => {
-                const empDiv = document.createElement('div');
-                empDiv.className = 'assign-emp-item';
-                empDiv.innerHTML = `
-                    <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82;"></i>
-                    <div style="display: flex; flex-direction: column;">
-                        <span style="font-weight: bold; font-size: 16px;">${emp.fullName}</span>
-                        <span style="font-size: 13px; color: #444; margin-top:2px;"><strong>${emp.departmentRole || 'Employee'}</strong> | ${emp.email}</span>
-                    </div>
-                    <i class="fas fa-check-circle check-icon" style="margin-left: auto; font-size: 24px; color: #293A82; display: none;"></i>
-                `;
-                empDiv.onclick = () => {
-                    document.querySelectorAll('.assign-emp-item').forEach(el => {
-                        el.classList.remove('selected');
-                        el.querySelector('.check-icon').style.display = 'none';
-                    });
-                    empDiv.classList.add('selected');
-                    empDiv.querySelector('.check-icon').style.display = 'block';
-                    
-                    assignSelectedAccID = emp.accID;
-                    confirmAssignTaskBtn.disabled = false;
-                    confirmAssignTaskBtn.style.opacity = '1';
-                    confirmAssignTaskBtn.style.cursor = 'pointer';
-                };
-                empList.appendChild(empDiv);
-            });
-
-            foldersList.style.display = subFolders.length > 0 ? 'flex' : 'none';
-            empList.style.display = emps.length > 0 ? 'flex' : 'none';
-        }
     }
 
     if (assignBackBtn) {
@@ -975,6 +1040,7 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmAssignTaskBtn.addEventListener('click', () => {
             if (!assignSelectedAccID) return alert("Please select an employee.");
 
+            const assignTaskTitle = document.getElementById('assignTaskTitle');
             const requiredRole = assignTaskTitle.textContent.includes('Verifier') ? 'Verifier' : 'Approver';
 
             fetch('/qms_optiqual/generalComponents/taskManager/assignTaskBE.php', {
@@ -990,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     alert(`${requiredRole} successfully assigned!`);
-                    assignTaskOverlay.style.display = 'none';
+                    document.getElementById('assignTaskOverlay').style.display = 'none';
                     location.reload(); 
                 } else {
                     alert("Error assigning task: " + data.message);

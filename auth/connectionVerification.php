@@ -31,6 +31,7 @@ function directTo($accID){
     $conn->close();
 
     //Redirect based on RoleID
+    //Redirect based on RoleID
     switch ($roleID){
         case 1://Admin
             setMessage("Logged In Succesfully!","success");
@@ -42,7 +43,8 @@ function directTo($accID){
             break;
         case 3://QA Personnel
             setMessage("Logged In Succesfully!","success");
-            header("");
+            // ✨ FIX: Add the correct path to the new QA Staff Dashboard!
+            header("Location: /qms_optiqual/QAPSpecificComponents/QAPMain/QAP-POV.php"); 
             break;
         case 4://Staff
             setMessage("Logged In Succesfully!","success");
