@@ -1,103 +1,85 @@
 /* =====================================================================
-   0. GLOBAL VARIABLES & DOM ELEMENTS
+   0. OVERLAYS & MODALS (Global)
    ===================================================================== */
-// Main Panels
-const policyRepositoryPanel = document.getElementById('policy-repo-content');
-const policySubmissionPanel = document.getElementById('policy-submission-content');
-const departmentPanel = document.querySelector('.Department-Manager-Panel');
-const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2'); 
-const policyManagerPanel = document.querySelector('.Policy-Manager-Panel');
-const taskManagerPanel = document.querySelector('.Task-Manager-Panel');
-const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
-
-// Overlays & Modals
 const notificationOverlay = document.getElementById('popupOverlay');
 const signOutOverlay = document.getElementById('signOutOverlay');
 const submitOverlay = document.getElementById('submitOverlay');
 const cfOverlay = document.getElementById('confirm-dl');
 
+/* =====================================================================
+   1. BULLETPROOF PANEL SWITCHING LOGIC
+   ===================================================================== */
+// This helper function guarantees we never get a "null" style error!
+function safeHide(selector) {
+    const el = document.querySelector(selector);
+    if (el) el.style.display = 'none';
+}
 
-/* =====================================================================
-   1. PANEL SWITCHING LOGIC (Sidebar Navigation)
-   ===================================================================== */
-/* =====================================================================
-   1. PANEL SWITCHING LOGIC (Sidebar Navigation)
-   ===================================================================== */
 function hideAllPanels() {
-    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
-    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
-    if (departmentPanel) departmentPanel.style.display = 'none';
-    if (processTrackerPanel) processTrackerPanel.style.display = 'none';
-    if (policyManagerPanel) policyManagerPanel.style.display = 'none';
-    if (taskManagerPanel) taskManagerPanel.style.display = 'none';
-    if (roleManagerPanel) roleManagerPanel.style.display = 'none';
-    
-    // ✨ FIX: Hide the welcome dashboard when a menu item is clicked!
-    const welcomePanel = document.getElementById('Welcome-Panel');
-    if (welcomePanel) welcomePanel.style.display = 'none';
+    safeHide('#Welcome-Panel');
+    safeHide('#policy-repo-content');
+    safeHide('#policy-submission-content');
+    safeHide('.Department-Manager-Panel');
+    safeHide('.Policy-Manager-Panel');
+    safeHide('.Role-Manager-Panel');
+    safeHide('.Workspace-Panel');
+}
+
+function showWorkspace() {
+    hideAllPanels();
+    const panel = document.querySelector('.Workspace-Panel');
+    if (panel) {
+        panel.style.display = 'block';
+    } else {
+        alert("CRITICAL ERROR: Workspace Panel is missing! PHP crashed inside taskManager.php.");
+    }
 }
 
 function showPolicyRepository() {
-    console.log("Policy Repository Triggered");
     hideAllPanels();
-    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+    const panel = document.querySelector('#policy-repo-content');
+    if (panel) panel.style.display = 'block';
 }
 
 function showPolicySubmission() {
-    console.log("Policy Submission Triggered");
     hideAllPanels();
-    if (policySubmissionPanel) policySubmissionPanel.style.display = 'flex';
-}
-
-function showProcessTracker() {
-    console.log("Process Tracker Triggered");
-    hideAllPanels();
-    if (processTrackerPanel) processTrackerPanel.style.display = 'block';
-}
-
-function showTaskManager() {
-    console.log('Task Manager Triggered');
-    hideAllPanels();
-    if (taskManagerPanel) taskManagerPanel.style.display = 'flex';
-
-    // Additional Task Manager-specific logic
-    const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
-    const taskManagerTable = document.querySelector('.task-manager-table');
-    const introductionSection = document.querySelector('.introduction-section');
-
-    if (taskManagerHeaderContainer) taskManagerHeaderContainer.style.display = 'block';
-    if (taskManagerTable) taskManagerTable.style.display = 'table';
-    if (introductionSection) introductionSection.style.display = 'none';
+    const panel = document.querySelector('#policy-submission-content');
+    if (panel) panel.style.display = 'flex';
 }
 
 function showDepartmentManager() {    
-    console.log("Department Manager Triggered");
     hideAllPanels();
-    if (departmentPanel) departmentPanel.style.display = 'block';
+    const panel = document.querySelector('.Department-Manager-Panel');
+    if (panel) panel.style.display = 'block';
 }
 
 function showPolicyManager() {
-    console.log("Policy Manager Triggered");
     hideAllPanels();
-    if (policyManagerPanel) policyManagerPanel.style.display = 'block';
+    const panel = document.querySelector('.Policy-Manager-Panel');
+    if (panel) panel.style.display = 'block';
 }
 
 function showRoleManager() {
-    console.log("Role Manager Triggered");
     hideAllPanels();
-    if (roleManagerPanel) roleManagerPanel.style.display = 'block';
+    const panel = document.querySelector('.Role-Manager-Panel');
+    if (panel) panel.style.display = 'block';
+}
+
+function showReports() {
+    hideAllPanels();
+    console.warn('Reports panel is not yet implemented.');
 }
 
 // Attach Event Listeners to Sidebar Icons
 document.addEventListener('DOMContentLoaded', () => {
     const icons = document.querySelectorAll('.menu-icons');
-    if(icons[0]) icons[0].addEventListener('click', showPolicyRepository);
-    if(icons[1]) icons[1].addEventListener('click', showPolicySubmission);
-    if(icons[2]) icons[2].addEventListener('click', showProcessTracker);
-    if(icons[3]) icons[3].addEventListener('click', showTaskManager);
-    if(icons[4]) icons[4].addEventListener('click', showRoleManager);
-    if(icons[5]) icons[5].addEventListener('click', showDepartmentManager);
-    if(icons[6]) icons[6].addEventListener('click', showPolicyManager);
+    if (icons[0]) icons[0].addEventListener('click', showPolicyRepository);
+    if (icons[1]) icons[1].addEventListener('click', showPolicySubmission);
+    if (icons[2]) icons[2].addEventListener('click', showWorkspace);
+    if (icons[3]) icons[3].addEventListener('click', showRoleManager);
+    if (icons[4]) icons[4].addEventListener('click', showDepartmentManager);
+    if (icons[5]) icons[5].addEventListener('click', showPolicyManager);
+    if (icons[6]) icons[6].addEventListener('click', showReports);
 });
 
 

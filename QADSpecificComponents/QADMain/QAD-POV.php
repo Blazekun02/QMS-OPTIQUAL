@@ -35,7 +35,7 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         </script>
 
-        <link rel="stylesheet" href="QAD-POV.css">
+        <link rel="stylesheet" href="QAD-POV.css?v=<?php echo time(); ?>">
     </head>
 
     <body>
@@ -55,12 +55,8 @@
                     <span class="icon-label">Policy Submission</span>
                 </li>
                 <li class="menu-icons">
-                    <img src="../QAP Sidebar Images/Not Clicked/Pro_Track.png" alt="Icon 3">
-                    <span class="icon-label">Process Tracker</span>
-                </li>
-                <li class="menu-icons">
-                    <img src="../QAP Sidebar Images/Not Clicked/Task_Manage.png" alt="Icon 4">
-                    <span class="icon-label">Task Manager</span>
+                    <img src="../../assets/task manager-notClicked.png" alt="Icon 4">
+                    <span class="icon-label">My Workspace</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Role_Manage.png" alt="Icon 6">
@@ -374,13 +370,9 @@
 </div>
 
 
-    <div class="Process-Tracker-Panel2" style ="display: none;">
-        <?php include '../../generalComponents/processTracker/processTracker.php';?>
-    </div>
-
-    <div class="Task-Manager-Panel" style="display: none;">
-        <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
-    </div>
+<div class="Workspace-Panel" style="display: none;">
+            <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
+        </div>
     
 <!-- Policy Manager -->
 

@@ -642,13 +642,17 @@ body {
 /* ======================================================= */
 /* 5. TASK MANAGER (MODULE 4)                              */
 /* ======================================================= */
-.Task-Manager-Panel {
+.Task-Manager-Panel,
+.Workspace-Panel {
     position: absolute;
     display: none;
     top: 75px;
     left: 0.9in;
     width: calc(100% - 1.1in);
     height: calc(100vh - 130px);
+    padding: 20px 30px;
+    box-sizing: border-box;
+    overflow-y: auto;
     z-index: 1;
 }
 
