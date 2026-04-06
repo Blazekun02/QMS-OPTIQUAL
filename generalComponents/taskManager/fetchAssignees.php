@@ -1,30 +1,73 @@
 <?php
 session_start();
-include '../../connect.php';
+error_reporting(0); // Suppress ugly HTML errors from breaking the JSON
+header('Content-Type: application/json');
 
-// ✨ FIX: Updated the table name to match your database exactly (empperdeptbl)
-$query = "
-    SELECT DISTINCT a.accID, a.fullName, a.email 
-    FROM accdatatbl a
-    JOIN empperdeptbl da ON a.accID = da.accID
-    ORDER BY a.fullName ASC
-";
+$response = [
+    'success' => false, 
+    'departments' => [], 
+    'employees' => [], 
+    'message' => 'Unknown error.'
+];
 
-$result = $conn->query($query);
-$employees = [];
+try {
+    require_once '../../connect.php';
 
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $employees[] = $row;
+    if (!$conn) {
+        throw new Exception("Database connection failed.");
     }
-    echo json_encode(['success' => true, 'employees' => $employees]);
-} else {
-    // Fallback: If no one is in a department yet, just fetch all active accounts
-    $fallbackQuery = "SELECT accID, fullName, email FROM accdatatbl ORDER BY fullName ASC";
-    $fallbackResult = $conn->query($fallbackQuery);
-    while ($row = $fallbackResult->fetch_assoc()) {
-        $employees[] = $row;
+
+    // ✨ FIX: Updated to your exact table name: "dorgtbl"
+    $dptQuery = "SELECT * FROM dorgtbl ORDER BY dptName ASC";
+    $dptResult = $conn->query($dptQuery);
+    
+    if ($dptResult && $dptResult->num_rows > 0) {
+        while ($row = $dptResult->fetch_assoc()) {
+            $response['departments'][] = [
+                'dptID' => $row['dptID'],
+                'dptName' => $row['dptName'],
+                'dptParentID' => $row['dptParentID']
+            ];
+        }
+    } elseif ($conn->error) {
+        // If there's still a typo, catch it!
+        throw new Exception("Database Error: " . $conn->error);
     }
-    echo json_encode(['success' => true, 'employees' => $employees]);
+
+    // 2. Fetch Employees assigned to those folders
+    $empQuery = "
+        SELECT a.accID, a.fullName, a.email, ed.dptID 
+        FROM accdatatbl a
+        JOIN empperdeptbl ed ON a.accID = ed.accID
+        ORDER BY a.fullName ASC
+    ";
+    $empResult = $conn->query($empQuery);
+
+    if ($empResult && $empResult->num_rows > 0) {
+        while ($row = $empResult->fetch_assoc()) {
+            $response['employees'][] = $row;
+        }
+        $response['success'] = true;
+    } else {
+        // ULTIMATE FALLBACK: If folder mapping is empty, just grab all users so the UI isn't blank
+        $fallback = $conn->query("SELECT accID, fullName, email, NULL as dptID FROM accdatatbl ORDER BY fullName ASC");
+        if ($fallback && $fallback->num_rows > 0) {
+            while ($row = $fallback->fetch_assoc()) {
+                $response['employees'][] = $row;
+            }
+            $response['success'] = true;
+        } else {
+            throw new Exception("Could not fetch any employees.");
+        }
+    }
+
+    $conn->close();
+
+} catch (Exception $e) {
+    $response['success'] = false;
+    $response['message'] = $e->getMessage();
 }
+
+echo json_encode($response);
+exit;
 ?>

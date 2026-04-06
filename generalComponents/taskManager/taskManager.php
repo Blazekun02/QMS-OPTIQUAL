@@ -17,12 +17,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
 }
 ?>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script>
-    if (typeof pdfjsLib !== 'undefined') {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-    }
-</script>
+
 
 <style>
     /* ========================================= */
@@ -168,6 +163,8 @@ if(isset($_SESSION['accID']) && isset($conn)){
     .confirm-button:hover { background-color: #db8804; }
 
     .assign-task-modal { background-color: #293A82; color: white; padding: 2vw; border-radius: 1vw; text-align: center; width: 50%; height: 75vh; display: flex; flex-direction: column; }
+    .assign-dpt-folder { background-color: #4963D4; color: white; padding: 15px 20px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: 'Istok Web', sans-serif; font-size: 18px; font-weight: bold; transition: background-color 0.2s; margin-bottom: 5px; }
+    .assign-dpt-folder:hover { background-color: #3b4e9b; }
     .assign-emp-item { background-color: #BFE6F8; color: black; padding: 12px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s; border: 2px solid transparent; margin-bottom: 5px; }
     .assign-emp-item:hover { background-color: #9cd5f0; }
     .assign-emp-item.selected { border-color: #fbaf41; background-color: #fbaf41; }
@@ -284,13 +281,13 @@ if(isset($_SESSION['accID']) && isset($conn)){
     <div id="assignTaskOverlay" class="overlay" style="display: none;">
         <div class="assign-task-modal">
             <h2 id="assignTaskTitle" style="margin-bottom: 5px;">Assign Verifier</h2>
-            <p id="assignTaskSubtitle" style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;">Select an employee from the list below.</p>
+            <p id="assignTaskSubtitle" style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;">Expand the folders to select an employee.</p>
 
             <div id="assignContentArea" style="flex-grow: 1; overflow-y: auto; background-color: #343A40; border-radius: 10px; padding: 15px; text-align: left;">
                 <div id="assignLoading" style="text-align: center; color: white; margin-top: 20px; font-size: 18px;">
-                    <i class="fas fa-spinner fa-spin" style="margin-right: 10px; color: #fbaf41;"></i> Loading employees...
+                    <i class="fas fa-spinner fa-spin" style="margin-right: 10px; color: #fbaf41;"></i> Loading data...
                 </div>
-                <div id="assignEmployeesList" style="display: none; flex-direction: column;"></div>
+                <div id="assignFoldersList" style="display: none; flex-direction: column; gap: 5px;"></div>
             </div>
 
             <div class="confirm-actions" style="margin-top: 25px; display: flex; justify-content: center; gap: 1.5vw;">
@@ -311,7 +308,7 @@ let currentTab = 'action'; // 'action' or 'track'
 
 var currentTaskPolicyID = null;
 var currentTaskStatus = null;
-var currentTaskPolicyTitle = null; // ✨ NEW
+var currentTaskPolicyTitle = null; 
 
 let assignSelectedAccID = null;
 
@@ -475,11 +472,9 @@ function closeTracker() {
 // PDF VIEWER / DOCUMENT INTRODUCTION LOGIC
 // ==========================================
 function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, policyStatus) {
-    console.log('showTaskIntroduction called with:', { policyID, policyTitle, policyContent, pdfPath, policyStatus });
-    
     currentTaskPolicyID = policyID;
     currentTaskStatus = policyStatus;
-    currentTaskPolicyTitle = policyTitle; // ✨ NEW
+    currentTaskPolicyTitle = policyTitle; 
 
     document.getElementById('workspaceHeaderArea').style.display = 'none'; 
     document.getElementById('workspaceTable').style.display = 'none';
@@ -494,8 +489,6 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
     };
     
     updateTitle(policyTitle);
-    
-    // Also update after a short delay to ensure DOM is ready
     setTimeout(() => updateTitle(policyTitle), 50);
 
     const actionButtons = document.getElementById('qadActionButtons');
@@ -512,7 +505,9 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
     if (rejectBtn) rejectBtn.style.display = 'none';
 
     if (systemRoleID == 2) {
-        if (assignBtn) assignBtn.style.display = 'flex';
+        if (assignBtn) {
+            assignBtn.style.display = 'flex';
+        }
         if (rejectBtn) rejectBtn.style.display = 'flex';
         if (uploadBtn) {
             uploadBtn.style.display = 'flex';
@@ -586,11 +581,13 @@ function showTaskTable() {
         tm_canvas.height = 0;
     }
 }
+// ==========================================
+// ASSIGNMENT LOGIC (ACCORDION FOLDERS)
+// ==========================================
+let assignDepartmentsData = [];
+let assignEmployeesData = [];
 
-// ==========================================
-// ASSIGNMENT LOGIC
-// ==========================================
-function openAssignModalForTask(policyID, status, policyTitle) { // ✨ Added policyTitle
+function openAssignModalForTask(policyID, status, policyTitle) {
     currentTaskPolicyID = policyID;
     currentTaskStatus = status;
     currentTaskPolicyTitle = policyTitle;
@@ -599,13 +596,11 @@ function openAssignModalForTask(policyID, status, policyTitle) { // ✨ Added po
     if (status === 'Verified') requiredRole = "Approver";
 
     document.getElementById('assignTaskTitle').textContent = `Assign ${requiredRole}`;
-    
-    // ✨ NEW: Inject the policy title into the subtitle!
-    document.getElementById('assignTaskSubtitle').innerHTML = `Assigning for: <strong style="color:white; font-size: 18px;">${policyTitle}</strong><br><span style="font-size:14px;">Select an employee from the list below.</span>`;
+    document.getElementById('assignTaskSubtitle').innerHTML = `Assigning for: <strong style="color:white; font-size: 18px;">${policyTitle}</strong><br><span style="font-size:14px;">Expand the folders below to select an employee.</span>`;
     
     document.getElementById('assignTaskOverlay').style.display = 'flex';
     document.getElementById('assignLoading').style.display = 'block';
-    document.getElementById('assignEmployeesList').style.display = 'none';
+    document.getElementById('assignFoldersList').style.display = 'none';
     
     const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
     confirmAssignTaskBtn.disabled = true;
@@ -615,61 +610,186 @@ function openAssignModalForTask(policyID, status, policyTitle) { // ✨ Added po
     assignSelectedAccID = null;
 
     fetch('/qms_optiqual/generalComponents/taskManager/fetchAssignees.php?t=' + new Date().getTime())
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('assignLoading').style.display = 'none';
-            if (data.success) {
-                renderEmployeeList(data.employees); 
-            } else {
-                document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Error loading data.';
+        .then(res => res.text()) 
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
+                document.getElementById('assignLoading').style.display = 'none';
+                
+                if (data.success) {
+                    assignDepartmentsData = data.departments || [];
+                    assignEmployeesData = data.employees || [];
+                    renderAccordionView(); 
+                } else {
+                    document.getElementById('assignLoading').innerHTML = `<i class="fas fa-exclamation-triangle" style="color:red;"></i> ${data.message}`;
+                    document.getElementById('assignLoading').style.display = 'block';
+                }
+            } catch (e) {
+                console.error("Raw Server Response:", text);
+                document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Backend error. Press F12 to check console.';
                 document.getElementById('assignLoading').style.display = 'block';
             }
         })
         .catch(err => {
-            console.error('Fetch Error:', err);
-            document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Network error.';
+            document.getElementById('assignLoading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red;"></i> Network disconnected.';
             document.getElementById('assignLoading').style.display = 'block';
         });
 }
 
-function renderEmployeeList(emps) {
-    const empList = document.getElementById('assignEmployeesList');
-    empList.innerHTML = '';
-    
-    if (!emps || emps.length === 0) {
-        empList.innerHTML = '<p style="color:white; text-align:center; margin-top:30px; font-size: 18px;">No employees found.</p>';
-    } else {
-        emps.forEach(emp => {
-            const empDiv = document.createElement('div');
-            empDiv.className = 'assign-emp-item';
-            empDiv.innerHTML = `
-                <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82;"></i>
-                <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: bold; font-size: 16px;">${emp.fullName}</span>
-                    <span style="font-size: 13px; color: #444; margin-top:2px;">${emp.email}</span>
-                </div>
-                <i class="fas fa-check-circle check-icon" style="margin-left: auto; font-size: 24px; color: #293A82; display: none;"></i>
-            `;
-            empDiv.onclick = () => {
-                document.querySelectorAll('.assign-emp-item').forEach(el => { 
-                    el.classList.remove('selected'); 
-                    el.querySelector('.check-icon').style.display = 'none'; 
-                });
-                empDiv.classList.add('selected'); 
-                empDiv.querySelector('.check-icon').style.display = 'block';
-                
-                assignSelectedAccID = emp.accID;
-                const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
-                confirmAssignTaskBtn.disabled = false; 
-                confirmAssignTaskBtn.style.opacity = '1'; 
-                confirmAssignTaskBtn.style.cursor = 'pointer';
-            };
-            empList.appendChild(empDiv);
-        });
+function renderAccordionView() {
+    const contentArea = document.getElementById('assignFoldersList');
+    contentArea.innerHTML = '';
+    contentArea.style.display = 'flex';
+
+    if (assignDepartmentsData.length === 0) {
+        renderEmployeeListFlat(assignEmployeesData, contentArea);
+        return;
     }
-    empList.style.display = 'flex';
+
+    const isRoot = (id) => id === null || id === undefined || id === "null" || id === 0 || id === "0" || id === "";
+
+    const roots = assignDepartmentsData.filter(d => isRoot(d.dptParentID));
+    const children = assignDepartmentsData.filter(d => !isRoot(d.dptParentID));
+
+    if (roots.length === 0 && children.length === 0) {
+         contentArea.innerHTML = '<p style="color:white; text-align:center;">No folders found.</p>';
+         return;
+    }
+
+    // 1. Build Root Folders
+    roots.forEach(root => {
+        const rootBlock = buildFolderBlock(root, false);
+        contentArea.appendChild(rootBlock.folderDiv);
+        contentArea.appendChild(rootBlock.childContainer);
+
+        // 2. Build Sub-folders inside Root
+        const myChildren = children.filter(c => c.dptParentID == root.dptID);
+        myChildren.forEach(child => {
+            const childBlock = buildFolderBlock(child, true);
+            rootBlock.childContainer.appendChild(childBlock.folderDiv);
+            rootBlock.childContainer.appendChild(childBlock.childContainer);
+
+            // Add Employees to Sub-folder
+            const childEmps = assignEmployeesData.filter(e => e.dptID == child.dptID);
+            childEmps.forEach(emp => {
+                const empDiv = buildEmpDiv(emp, true);
+                childBlock.childContainer.appendChild(empDiv);
+            });
+        });
+
+        // 3. Add Employees directly to Root
+        const rootEmps = assignEmployeesData.filter(e => e.dptID == root.dptID);
+        rootEmps.forEach(emp => {
+            const empDiv = buildEmpDiv(emp, false);
+            rootBlock.childContainer.appendChild(empDiv);
+        });
+    });
+
+    // 4. Handle any unassigned employees
+    const unassignedEmps = assignEmployeesData.filter(e => isRoot(e.dptID));
+    unassignedEmps.forEach(emp => {
+         const empDiv = buildEmpDiv(emp, false);
+         empDiv.style.marginLeft = '0px';
+         empDiv.style.width = '100%';
+         contentArea.appendChild(empDiv);
+    });
 }
 
+function buildFolderBlock(dpt, isChild) {
+    const folderDiv = document.createElement('div');
+    folderDiv.className = 'assign-dpt-folder';
+    
+    if (isChild) {
+        folderDiv.style.marginLeft = '20px';
+        folderDiv.style.width = 'calc(100% - 20px)';
+        folderDiv.style.backgroundColor = '#5a76e9'; 
+        folderDiv.style.boxSizing = 'border-box';
+    } else {
+        folderDiv.style.width = '100%';
+        folderDiv.style.boxSizing = 'border-box';
+    }
+    
+    folderDiv.innerHTML = `
+        <span><i class="fas fa-folder" style="color: #fbaf41; margin-right: 12px;"></i> ${dpt.dptName}</span>
+        <i class="fas fa-chevron-down toggle-icon" style="font-size: 14px; opacity: 0.7;"></i>
+    `;
+
+    const childContainer = document.createElement('div');
+    childContainer.style.display = 'none'; // Hidden initially
+    childContainer.style.flexDirection = 'column';
+    childContainer.style.gap = '5px';
+    childContainer.style.marginBottom = '5px';
+
+    folderDiv.onclick = () => {
+        const isHidden = childContainer.style.display === 'none';
+        childContainer.style.display = isHidden ? 'flex' : 'none';
+        
+        // Flip the arrow direction
+        const icon = folderDiv.querySelector('.toggle-icon');
+        if (isHidden) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    };
+
+    return { folderDiv, childContainer };
+}
+
+function buildEmpDiv(emp, isNested) {
+    const empDiv = document.createElement('div');
+    empDiv.className = 'assign-emp-item';
+    empDiv.style.boxSizing = 'border-box';
+    
+    if (isNested) {
+        empDiv.style.marginLeft = '40px';
+        empDiv.style.width = 'calc(100% - 40px)';
+    } else {
+        empDiv.style.marginLeft = '20px';
+        empDiv.style.width = 'calc(100% - 20px)';
+    }
+
+    empDiv.innerHTML = `
+        <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82;"></i>
+        <div style="display: flex; flex-direction: column;">
+            <span style="font-weight: bold; font-size: 16px;">${emp.fullName}</span>
+            <span style="font-size: 13px; color: #444; margin-top:2px;">${emp.email}</span>
+        </div>
+        <i class="fas fa-check-circle check-icon" style="margin-left: auto; font-size: 24px; color: #293A82; display: none;"></i>
+    `;
+
+    empDiv.onclick = (e) => {
+        e.stopPropagation(); // prevent folder from closing when clicking user
+        document.querySelectorAll('.assign-emp-item').forEach(el => { 
+            el.classList.remove('selected'); 
+            el.querySelector('.check-icon').style.display = 'none'; 
+        });
+        empDiv.classList.add('selected'); 
+        empDiv.querySelector('.check-icon').style.display = 'block';
+        
+        assignSelectedAccID = emp.accID;
+        const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
+        confirmAssignTaskBtn.disabled = false; 
+        confirmAssignTaskBtn.style.opacity = '1'; 
+        confirmAssignTaskBtn.style.cursor = 'pointer';
+    };
+    return empDiv;
+}
+
+function renderEmployeeListFlat(emps, container) {
+    if (!emps || emps.length === 0) {
+        container.innerHTML = '<p style="color:white; text-align:center; margin-top:30px; font-size: 18px;">No users found.</p>';
+    } else {
+        emps.forEach(emp => {
+            const empDiv = buildEmpDiv(emp, false);
+            empDiv.style.marginLeft = '0px';
+            empDiv.style.width = '100%';
+            container.appendChild(empDiv);
+        });
+    }
+}
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -743,8 +863,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const qadAssignBtn = document.getElementById('qadAssignBtn');
     if (qadAssignBtn) {
         qadAssignBtn.addEventListener('click', () => {
-            if (!currentTaskPolicyID) return alert("No task selected.");
-            // ✨ NEW: Pass the title into the modal!
+            if (!currentTaskPolicyID) {
+                alert("No task selected.");
+                return;
+            }
             openAssignModalForTask(currentTaskPolicyID, currentTaskStatus, currentTaskPolicyTitle); 
         });
     }
@@ -769,6 +891,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     location.reload(); 
                 } else alert("Error: " + data.message);
             });
+        });
+    }
+
+    // Folder Back Button Logic
+    const assignBackBtn = document.getElementById('assignBackBtn');
+    if (assignBackBtn) {
+        assignBackBtn.addEventListener('click', () => {
+            if (assignFolderHistory.length > 0) {
+                const prevState = assignFolderHistory.pop();
+                renderAssignView(prevState.id, prevState.name);
+            } else { 
+                renderAssignView(null, 'Departments'); 
+            }
         });
     }
 });

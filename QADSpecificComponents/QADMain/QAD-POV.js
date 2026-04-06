@@ -284,10 +284,18 @@ if (searchInput) {
 document.querySelectorAll('.PR-Policies').forEach(policy => {
     policy.addEventListener('click', function () {
         const filePath = policy.getAttribute('data-file'); 
+        
+        // ✨ FIX: Safety check! Don't freeze if no PDF exists.
+        if (!filePath || filePath === 'null' || filePath.trim() === '') {
+            alert("No PDF document has been uploaded for this policy yet.");
+            return; 
+        }
+
         const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+        const repoPanel = document.getElementById('policy-repo-content'); // ✨ FIX: Safely grab the panel
         
         if(pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
-        if(policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+        if(repoPanel) repoPanel.style.display = 'none'; // ✨ FIX: Safely hide it
 
         // Load PDF via custom engine
         if (typeof pdfjsLib !== 'undefined') {
@@ -302,8 +310,10 @@ document.querySelectorAll('.PR-Policies').forEach(policy => {
                 pr_renderPage(pr_pageNum);
             }).catch(function(error) {
                 console.error("Error loading PDF: ", error);
-                alert("Error loading document.");
+                alert("Error loading document. The file may be missing or corrupted.");
             });
+        } else {
+            alert("PDF Library failed to load. Please refresh the page.");
         }
     });
 });
@@ -329,10 +339,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close Viewer Logic
     const closePdfViewerButton = document.getElementById('closePdfViewer');
     const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+    
     if (closePdfViewerButton) {
         closePdfViewerButton.addEventListener('click', () => {
+            const repoPanel = document.getElementById('policy-repo-content'); // ✨ FIX: Safely grab the panel
+            
             if (pdfViewerContainer) pdfViewerContainer.style.display = 'none';
-            if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+            if (repoPanel) repoPanel.style.display = 'block'; // ✨ FIX: Safely show it again
             
             // Clear memory when closing
             if (pr_ctx && pr_canvas) {
@@ -342,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 /* =====================================================================
    4. POLICY SUBMISSION LOGIC
    ===================================================================== */
@@ -1656,3 +1668,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+

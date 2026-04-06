@@ -517,7 +517,7 @@
             
         </div>
 
-<script src="QAD-POV.js"></script>
+<script src="QAD-POV.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>
