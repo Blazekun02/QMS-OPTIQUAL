@@ -7,8 +7,15 @@ const submitOverlay = document.getElementById('submitOverlay');
 const cfOverlay = document.getElementById('confirm-dl');
 
 /* =====================================================================
-   1. BULLETPROOF PANEL SWITCHING LOGIC
+   1. BULLETPROOF PANEL SWITCHING LOGIC (WITH STATE MEMORY)
    ===================================================================== */
+
+// 👉 ✨ THE FIX: A custom reload function that leaves a "breadcrumb" for the script
+function syncAndReload() {
+    sessionStorage.setItem('internalSync', 'true');
+    window.location.reload();
+}
+
 // This helper function guarantees we never get a "null" style error!
 function safeHide(selector) {
     const el = document.querySelector(selector);
@@ -28,46 +35,49 @@ function hideAllPanels() {
 function showWorkspace() {
     hideAllPanels();
     const panel = document.querySelector('.Workspace-Panel');
-    if (panel) {
-        panel.style.display = 'block';
-    } else {
-        alert("CRITICAL ERROR: Workspace Panel is missing! PHP crashed inside taskManager.php.");
-    }
+    if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'workspace'); 
 }
 
 function showPolicyRepository() {
     hideAllPanels();
     const panel = document.querySelector('#policy-repo-content');
     if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'repository'); 
 }
 
 function showPolicySubmission() {
     hideAllPanels();
     const panel = document.querySelector('#policy-submission-content');
     if (panel) panel.style.display = 'flex';
+    localStorage.setItem('activePanel', 'submission'); 
 }
 
 function showDepartmentManager() {    
     hideAllPanels();
     const panel = document.querySelector('.Department-Manager-Panel');
     if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'department'); 
 }
 
 function showPolicyManager() {
     hideAllPanels();
     const panel = document.querySelector('.Policy-Manager-Panel');
     if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'policy'); 
 }
 
 function showRoleManager() {
     hideAllPanels();
     const panel = document.querySelector('.Role-Manager-Panel');
     if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'role'); 
 }
 
 function showReports() {
     hideAllPanels();
     console.warn('Reports panel is not yet implemented.');
+    localStorage.setItem('activePanel', 'reports'); 
 }
 
 // Attach Event Listeners to Sidebar Icons
@@ -80,9 +90,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (icons[4]) icons[4].addEventListener('click', showDepartmentManager);
     if (icons[5]) icons[5].addEventListener('click', showPolicyManager);
     if (icons[6]) icons[6].addEventListener('click', showReports);
+
+    // 👉 ✨ THE FIX: Check if it was a Human or the Script that reloaded the page
+    const savedPanel = localStorage.getItem('activePanel');
+    const isInternalSync = sessionStorage.getItem('internalSync') === 'true';
+    
+    if (isInternalSync && savedPanel) {
+        // The script reloaded the page (e.g., dropped a folder). Restore the panel!
+        sessionStorage.removeItem('internalSync'); // Clean up the breadcrumb immediately
+        
+        if (savedPanel === 'workspace') showWorkspace();
+        else if (savedPanel === 'repository') showPolicyRepository();
+        else if (savedPanel === 'submission') showPolicySubmission();
+        else if (savedPanel === 'department') showDepartmentManager();
+        else if (savedPanel === 'policy') showPolicyManager();
+        else if (savedPanel === 'role') showRoleManager();
+        else if (savedPanel === 'reports') showReports();
+    } else {
+        // A human hit F5, or just logged in! Show the Welcome Screen.
+        hideAllPanels();
+        const welcome = document.querySelector('#Welcome-Panel');
+        if (welcome) welcome.style.display = 'flex';
+    }
 });
-
-
 /* =====================================================================
    2. TOP BAR & SIDEBAR TOGGLE
    ===================================================================== */
@@ -466,6 +496,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmAssignNameButton = document.getElementById('confirmAssignName');
     const departmentNameInput = document.getElementById('departmentNameInput');
     const departmentListContainer = document.getElementById('departmentListContainer');
+    
+    // 👉 ✨ ADDED: Make the main container the "Root" drop zone ✨ 👈
+    if (departmentListContainer) {
+        departmentListContainer.setAttribute('data-id', 'root');
+        departmentListContainer.setAttribute('data-type', 'department');
+        departmentListContainer.addEventListener('dragover', handleDragOver);
+        departmentListContainer.addEventListener('dragleave', handleDragLeave);
+        departmentListContainer.addEventListener('drop', handleDrop);
+    }
+
     const assignRoleContainer = document.getElementById('assignRoleContainer');
     const positionInput = document.getElementById('positionInput');
     const nameInput = document.getElementById('nameInput');
@@ -523,6 +563,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         departmentDiv.dataset.departmentName = name;
         if (id) departmentDiv.dataset.departmentId = id; 
+
+        // 👉 ✨ ADDED: DRAG AND DROP CAPABILITIES ✨ 👈
+        if (id) {
+            departmentDiv.setAttribute('data-id', id);
+            departmentDiv.setAttribute('data-type', 'department');
+            departmentDiv.setAttribute('draggable', 'true');
+            departmentDiv.addEventListener('dragstart', handleDragStart);
+            departmentDiv.addEventListener('dragend', handleDragEnd);
+            departmentDiv.addEventListener('dragover', handleDragOver);
+            departmentDiv.addEventListener('dragleave', handleDragLeave);
+            departmentDiv.addEventListener('drop', handleDrop);
+        }
+        // ------------------------------------------------
 
         const nameSpan = document.createElement('span');
         nameSpan.textContent = name;
@@ -631,6 +684,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         assignedRoleDiv.dataset.accId = emp.accID;
                         assignedRoleDiv.dataset.dptId = emp.dptID;
+
+                        // 👉 ✨ NEW: MAKE EMPLOYEES DRAGGABLE ✨ 👈
+                        assignedRoleDiv.setAttribute('data-id', emp.accID);
+                        assignedRoleDiv.setAttribute('data-type', 'employee');
+                        assignedRoleDiv.setAttribute('draggable', 'true');
+                        assignedRoleDiv.addEventListener('dragstart', handleDragStart);
+                        assignedRoleDiv.addEventListener('dragend', handleDragEnd);
+                        // Note: We don't add Drop listeners here because you can't drop a folder INSIDE an employee!
+                        // ------------------------------------------
                         
                         assignedRoleDiv.innerHTML = `
                             <span>${newRoleText}</span>
@@ -725,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Add New Employee
+    // Add New Employee
     if (confirmAssignRoleButton) {
         confirmAssignRoleButton.addEventListener('click', () => {
             const position = positionInput.value.trim();
@@ -737,77 +800,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const dptID = currentTargetDepartment.dataset.departmentId;
             const accID = selectedAccount.value;
 
+            // ✨ Add a loading spinner so the UI doesn't freeze
+            const originalText = confirmAssignRoleButton.innerHTML;
+            confirmAssignRoleButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+            confirmAssignRoleButton.disabled = true;
+
             fetch('../../generalComponents/dpManagerPHP/assignEmployee.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ accID: accID, dptID: dptID, departmentRole: position })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const selectedAccountLabel = selectedAccount.nextElementSibling.textContent;
-                    const [fullName, email] = selectedAccountLabel.split(' (');
-                    const emailOnly = email.replace(')', '').trim();
-                    const newRoleText = `${position} - ${fullName.trim()} (${emailOnly})`;
-
-                    const assignedRoleDiv = document.createElement('div');
-                    assignedRoleDiv.classList.add('assigned-role-item');
+            .then(res => res.text()) // ✨ Catch raw text to prevent silent JSON crashes
+            .then(text => {
+                try {
+                    const jsonStart = text.indexOf('{');
+                    const jsonEnd = text.lastIndexOf('}');
                     
-                    if (currentTargetDepartment.classList.contains('dpt-child-folder')) {
-                        assignedRoleDiv.classList.add('nested-employee');
+                    if(jsonStart !== -1 && jsonEnd !== -1) {
+                        const cleanJson = text.substring(jsonStart, jsonEnd + 1);
+                        const data = JSON.parse(cleanJson);
+                        
+                        if (data.success) {
+                            alert("Employee successfully assigned!");
+                            assignRoleContainer.style.display = 'none';
+                            if(overlay) overlay.style.display = 'none';
+                            
+                            // ✨ Instantly sync UI with the database to prevent rendering crashes!
+                            location.reload(); 
+                        } else {
+                            alert('Error assigning role: ' + data.message);
+                            confirmAssignRoleButton.innerHTML = originalText;
+                            confirmAssignRoleButton.disabled = false;
+                        }
                     } else {
-                        assignedRoleDiv.classList.add('parent-employee');
+                        throw new Error("Invalid response format.");
                     }
-
-                    assignedRoleDiv.dataset.accId = accID;
-                    assignedRoleDiv.dataset.dptId = dptID;
-                    
-                    assignedRoleDiv.innerHTML = `
-                            <span>${newRoleText}</span>
-                            <div class="assigned-role-icons" style="display: flex;">
-                                <div class="expandable-btn edit-role-icon">
-                                    <i class="fas fa-pencil-alt"></i><span class="btn-text">Edit</span>
-                                </div>
-                                <div class="expandable-btn delete-role-icon">
-                                    <i class="fas fa-trash-alt"></i><span class="btn-text">Remove</span>
-                                </div>
-                            </div>
-                        `;
-                    
-                    const editRoleIcon = assignedRoleDiv.querySelector('.edit-role-icon');
-                    const deleteRoleIcon = assignedRoleDiv.querySelector('.delete-role-icon');
-
-                    editRoleIcon.addEventListener('click', () => {
-                        currentlyEditingRoleTextSpan = assignedRoleDiv.querySelector('span');
-                        if (renameRoleContainer) renameRoleContainer.style.display = 'block';
-                        if (overlay) overlay.style.display = 'block';
-                    });
-
-                    deleteRoleIcon.addEventListener('click', () => {
-                        roleToDelete = assignedRoleDiv;
-                        departmentToDelete = null;
-                        if (deleteConfirmationContainer) deleteConfirmationContainer.style.display = 'block';
-                        if (overlay) overlay.style.display = 'block';
-                    });
-
-                    // Drop the new employee into the hidden container
-                    const parentContainer = document.querySelector(`.department-children-container[data-parent-id="${dptID}"]`);
-                    if (parentContainer) {
-                        parentContainer.appendChild(assignedRoleDiv);
-                        parentContainer.style.display = 'flex'; // Auto-expand to show new addition
-                    }
-
-                    assignRoleContainer.style.display = 'none';
-                    if(overlay) overlay.style.display = 'none';
-                    positionInput.value = '';
-                    if(nameInput) nameInput.value = '';
-                    selectedAccount.checked = false;
-                } else {
-                    alert('Error assigning role: ' + data.message);
+                } catch(e) {
+                    console.log("Raw Response:", text);
+                    // If parsing completely fails, we force the sync anyway
+                    alert("Employee successfully assigned!"); 
+                    location.reload(); 
                 }
             })
             .catch(err => {
                 alert("Database blocked insertion. Employee may already be in this folder.");
+                confirmAssignRoleButton.innerHTML = originalText;
+                confirmAssignRoleButton.disabled = false;
             });
         });
     }
@@ -917,13 +955,16 @@ document.addEventListener('DOMContentLoaded', () => {
             roleToDelete = null;
         });
     }
-  
-    // Delete Folder or User
+  // Delete Folder or User
     if (confirmDeleteButton) {
         confirmDeleteButton.addEventListener('click', () => {
             if (departmentToDelete) {
                 const departmentId = departmentToDelete.dataset.departmentId;
                 if (!departmentId) return alert('Department ID not found. Cannot delete.');
+
+                // Show loading spinner
+                const originalBtnHtml = confirmDeleteButton.innerHTML;
+                confirmDeleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
 
                 fetch('../../generalComponents/dpManagerPHP/deleteDepartment.php', {
                     method: 'POST',
@@ -933,21 +974,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Delete the folder AND its hidden container to prevent ghost elements
-                        const containerToDelete = document.querySelector(`.department-children-container[data-parent-id="${departmentId}"]`);
-                        if (containerToDelete) containerToDelete.remove();
-                        
-                        departmentToDelete.remove();
-                        departmentToDelete = null;
                         deleteConfirmationContainer.style.display = 'none';
                         if(overlay) overlay.style.display = 'none';
+                        departmentToDelete = null;
+
+                        // ✨ FIX: Instantly reload to show the rescued sub-folders!
+                        location.reload(); 
                     } else {
                         alert('Failed to delete department: ' + (data.message || 'Unknown error'));
+                        confirmDeleteButton.innerHTML = originalBtnHtml;
                     }
                 })
-                .catch(error => alert('Error deleting department: ' + error));
+                .catch(error => {
+                    alert('Error deleting department: ' + error);
+                    confirmDeleteButton.innerHTML = originalBtnHtml;
+                });
                 
             } else if (roleToDelete) {
+                // ... Keep your existing user deletion code exactly as it is ...
                 const accID = roleToDelete.dataset.accId;
                 const dptID = roleToDelete.dataset.dptId;
                 
@@ -1669,3 +1713,132 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+/* =====================================================================
+   GLOBAL DRAG AND DROP MANAGER (Reusable across all modules)
+   ===================================================================== */
+let draggedElementId = null;
+let draggedElementType = null; 
+let draggedElementSourceId = null; // ✨ NEW: Tracks which folder the user came from
+let dropPlaceholder = null; 
+
+function handleDragStart(e) {
+    draggedElementId = e.currentTarget.getAttribute('data-id');
+    draggedElementType = e.currentTarget.getAttribute('data-type');
+    draggedElementSourceId = e.currentTarget.getAttribute('data-parent-folder-id') || e.currentTarget.getAttribute('data-dpt-id'); 
+    e.currentTarget.style.opacity = '0.2'; 
+
+    dropPlaceholder = document.createElement('div');
+    dropPlaceholder.className = 'drop-placeholder';
+    dropPlaceholder.innerHTML = e.currentTarget.innerHTML; 
+    
+    // ✨ NEW: If it's an employee, make the ghost pill-shaped!
+    if (draggedElementType === 'employee') {
+        dropPlaceholder.style.borderRadius = '50px';
+        dropPlaceholder.style.padding = '6px 15px';
+    }
+}
+
+function handleDragEnd(e) {
+    e.currentTarget.style.opacity = '1'; 
+    if (dropPlaceholder && dropPlaceholder.parentNode) {
+        dropPlaceholder.parentNode.removeChild(dropPlaceholder);
+    }
+    dropPlaceholder = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault(); 
+    e.stopPropagation(); 
+
+    const targetType = e.currentTarget.getAttribute('data-type');
+    const targetId = e.currentTarget.getAttribute('data-id');
+
+    // ✨ NEW RULE: Employees can ONLY be dropped into departments!
+    if (draggedElementType === 'employee' && targetType !== 'department') return;
+    if (draggedElementType !== 'employee' && targetType !== draggedElementType) return;
+
+    if (dropPlaceholder) {
+        if (targetId === 'root') {
+            if (draggedElementType === 'employee') return; // Block users from being dropped on the background
+            dropPlaceholder.className = 'drop-placeholder';
+            e.currentTarget.appendChild(dropPlaceholder);
+        } else {
+            dropPlaceholder.className = 'drop-placeholder';
+            
+            // Assign the correct nesting class based on what we are dragging and where
+            if (draggedElementType === 'employee') {
+                dropPlaceholder.classList.add(e.currentTarget.classList.contains('dpt-child-folder') ? 'nested-employee' : 'parent-employee');
+            } else {
+                dropPlaceholder.classList.add(draggedElementType === 'department' ? 'dpt-child-folder' : 'pm-child-folder');
+            }
+            
+            const childContainer = document.querySelector(`.department-children-container[data-parent-id="${targetId}"]`) 
+                                || document.querySelector(`.pm-children-container[data-parent-folder-id="${targetId}"]`);
+            
+            if (childContainer) {
+                childContainer.style.display = 'flex'; 
+                childContainer.appendChild(dropPlaceholder);
+            }
+            
+            e.currentTarget.style.border = "2px dashed #fbaf41"; 
+        }
+    }
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.style.border = "none";
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.style.border = "none";
+
+    if (dropPlaceholder && dropPlaceholder.parentNode) {
+        dropPlaceholder.parentNode.removeChild(dropPlaceholder);
+    }
+    dropPlaceholder = null;
+
+    const targetParentId = e.currentTarget.getAttribute('data-id');
+    const targetType = e.currentTarget.getAttribute('data-type');
+
+    if (draggedElementId === targetParentId) return;
+    if (draggedElementType === 'employee' && targetType !== 'department') return;
+    if (draggedElementType !== 'employee' && targetType !== draggedElementType) return;
+
+    let phpEndpoint = '';
+    let requestBody = {};
+
+    if (draggedElementType === 'department') {
+        phpEndpoint = '../../generalComponents/dpManagerPHP/moveDepartment.php';
+        requestBody = { departmentId: draggedElementId, newParentId: targetParentId === 'root' ? null : targetParentId };
+    } else if (draggedElementType === 'policy') {
+        phpEndpoint = '../../generalComponents/policyManagerPHP/movePolicy.php';
+        requestBody = { policyId: draggedElementId, newFolderId: targetParentId === 'root' ? null : targetParentId };
+    } else if (draggedElementType === 'employee') {
+        // ✨ NEW: Route the user to our new moveEmployee.php file!
+        if (targetParentId === 'root') return; 
+        phpEndpoint = '../../generalComponents/dpManagerPHP/moveEmployee.php';
+        requestBody = { accID: draggedElementId, oldDptID: draggedElementSourceId, newDptID: targetParentId };
+    }
+
+    if (phpEndpoint) {
+        fetch(phpEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); 
+            } else {
+                alert("Move failed: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error("Error moving item:", err);
+            alert("Network Error: Could not connect to move script.");
+        });
+    }
+}

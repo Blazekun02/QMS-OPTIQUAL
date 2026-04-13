@@ -54,7 +54,7 @@
                     <img src="../QAP Sidebar Images/Not Clicked/Create_Poli.png" alt="Icon 2">
                     <span class="icon-label">Policy Submission</span>
                 </li>
-                <li class="menu-icons">
+                <li class="menu-icons" onclick="showWorkspace()">
                     <img src="../../assets/task manager-notClicked.png" alt="Icon 4">
                     <span class="icon-label">My Workspace</span>
                 </li>

@@ -4,8 +4,7 @@
 const welcomePanel = document.getElementById('Welcome-Panel');
 const policyRepositoryPanel = document.getElementById('policy-repo-content');
 const policySubmissionPanel = document.getElementById('policy-submission-content');
-const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2'); 
-const taskManagerPanel = document.querySelector('.Task-Manager-Panel');
+const workspacePanel = document.querySelector('.Workspace-Panel');
 const informationPanel = document.querySelector('.information');
 
 const notificationOverlay = document.getElementById('popupOverlay');
@@ -20,8 +19,7 @@ function hideAllPanels() {
     if (welcomePanel) welcomePanel.style.display = 'none';
     if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
     if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
-    if (processTrackerPanel) processTrackerPanel.style.display = 'none';
-    if (taskManagerPanel) taskManagerPanel.style.display = 'none';
+    if (workspacePanel) workspacePanel.style.display = 'none';
     if (informationPanel) informationPanel.style.display = 'none';
 }
 
@@ -35,22 +33,20 @@ function showPolicySubmission() {
     if (policySubmissionPanel) policySubmissionPanel.style.display = 'flex';
 }
 
-function showProcessTracker() {
+function showWorkspace() {
     hideAllPanels();
-    if (processTrackerPanel) processTrackerPanel.style.display = 'block';
-}
-
-function showTaskManager() {
-    hideAllPanels();
-    if (taskManagerPanel) taskManagerPanel.style.display = 'flex';
-
-    const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
-    const taskManagerTable = document.querySelector('.task-manager-table');
-    const introductionSection = document.querySelector('.introduction-section');
-
-    if (taskManagerHeaderContainer) taskManagerHeaderContainer.style.display = 'block';
-    if (taskManagerTable) taskManagerTable.style.display = 'table';
-    if (introductionSection) introductionSection.style.display = 'none';
+    if (workspacePanel) workspacePanel.style.display = 'block';
+    
+    // Reset workspace to its default view
+    const workspaceHeaderArea = document.getElementById('workspaceHeaderArea');
+    const workspaceTable = document.getElementById('workspaceTable');
+    const workspaceDocViewer = document.getElementById('workspaceDocViewer');
+    const trackerTimelineUI = document.getElementById('trackerTimelineUI');
+    
+    if (workspaceHeaderArea) workspaceHeaderArea.style.display = 'block';
+    if (workspaceTable) workspaceTable.style.display = 'table';
+    if (workspaceDocViewer) workspaceDocViewer.style.display = 'none';
+    if (trackerTimelineUI) trackerTimelineUI.style.display = 'none';
 }
 
 function showInformation() {

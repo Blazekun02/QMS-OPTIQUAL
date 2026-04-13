@@ -202,8 +202,22 @@ if(isset($_SESSION['accID']) && isset($conn)){
             <div class="timeline-step" id="step-approve"><div class="circle"><i class="fas fa-stamp"></i></div><span>Approved</span></div>
         </div>
         
-        <div style="text-align: center;">
+        <div style="text-align: center; margin-bottom: 20px;">
             <button onclick="closeTracker()" class="action-btn-inline" style="background:#293A82; color:white; padding: 10px 20px; font-size: 16px;"><i class="fas fa-arrow-left"></i> Back to List</button>
+        </div>
+
+        <div id="miniPdfViewer" style="display: none; border: 2px solid #293A82; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #343A40; color: white; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-family: 'Istok Web', sans-serif; font-size: 14px;">Document Preview</span>
+                <div>
+                    <button id="mini_prevPage" class="pdf-btn"><i class="fas fa-chevron-left"></i></button>
+                    <span style="margin: 0 10px; font-size: 13px;">Page <span id="mini_pageNum">1</span> of <span id="mini_pageCount">?</span></span>
+                    <button id="mini_nextPage" class="pdf-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div style="background-color: #525659; height: 50vh; overflow: auto; text-align: center; padding: 15px 0;">
+                <canvas id="mini_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
+            </div>
         </div>
     </div>
 
@@ -296,8 +310,35 @@ if(isset($_SESSION['accID']) && isset($conn)){
             </div>
         </div>
     </div>
-</div>
 
+    <div id="rejectTaskOverlay" class="overlay" style="display: none;">
+        <div class="confirm-reply-modal" style="width: 30%; height: auto; padding: 2vw;">
+            <h2>Return Document</h2>
+            <p style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;">Please provide a reason for returning this document to the author.</p>
+            
+            <textarea id="rejectReasonInput" placeholder="Enter reason here..." style="width: 100%; height: 100px; padding: 12px; border-radius: 10px; margin-bottom: 25px; color: black; font-size: 16px; border: none; resize: none; font-family: 'Istok Web', sans-serif;"></textarea>
+            
+            <div class="confirm-actions">
+                <button class="cancel-button" onclick="document.getElementById('rejectTaskOverlay').style.display='none'">Cancel</button>
+                <button class="confirm-button" id="confirmRejectBtn" style="background-color: #f44336; color: white;">Reject & Return</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewFeedbackOverlay" class="overlay" style="display: none;">
+        <div class="confirm-reply-modal" style="width: 35%; height: auto; padding: 2vw;">
+            <h2>Document Returned</h2>
+            <p style="margin-bottom: 15px; font-size: 16px; color: #fbaf41; font-weight: bold;" id="feedbackModalTitle"></p>
+            
+            <div id="feedbackModalContent" style="background-color: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 25px; color: white; font-size: 16px; text-align: left; font-family: 'Istok Web', sans-serif; min-height: 100px; border-left: 4px solid #f44336;">
+                </div>
+            
+            <div class="confirm-actions">
+                <button class="cancel-button" onclick="document.getElementById('viewFeedbackOverlay').style.display='none'">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 var userRole = "<?php echo isset($_SESSION['accID']) ? $_SESSION['accID'] : ''; ?>"; 
 var systemRoleID = <?php echo $roleID; ?>; 
@@ -405,9 +446,17 @@ function populateWorkspaceTable(tasks) {
                 if (task.status === 'Approved' || task.status === 'For Upload') {
                     actionBtn.textContent = 'Upload';
                     actionBtn.onclick = () => alert("Upload feature coming soon!"); 
-                } else if (task.status === 'Reviewed' || task.status === 'Verified') {
+                } else if (task.status === 'Reviewed') {
                     actionBtn.textContent = 'Assign';
                     actionBtn.onclick = () => openAssignModalForTask(task.policyID, task.status, task.policyTitle);
+                } else if (task.status === 'Verified') {
+                    actionBtn.textContent = 'Approve';
+                    actionBtn.onclick = () => {
+                        currentTaskPolicyID = task.policyID;
+                        currentTaskStatus = task.status;
+                        document.getElementById('eSignPasswordInput').value = '';
+                        document.getElementById('eSignOverlay').style.display = 'flex';
+                    };
                 } else {
                     actionBtn.textContent = 'View';
                     actionBtn.onclick = () => row.click();
@@ -433,15 +482,58 @@ function populateWorkspaceTable(tasks) {
                 <td style="font-weight:bold;">${task.status}</td>
             `;
             const actionCell = row.insertCell();
-            actionCell.innerHTML = `<button class="action-btn-inline" style="background:#293A82; color:white;" onclick="openTracker(${task.statusCode}, '${task.policyTitle}')"><i class="fas fa-eye"></i> Track</button>`;
+            
+            let feedbackBtnHtml = '';
+            if (task.activeFeedback) {
+                const safeFeedback = task.activeFeedback.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                feedbackBtnHtml = `
+                    <button class="action-btn-inline" style="background:#f44336; color:white; margin-left: 5px;" onclick="openFeedbackModal('${task.policyTitle}', '${safeFeedback}')">
+                        <i class="fas fa-comment-dots"></i> View Feedback
+                    </button>
+                `;
+            }
+            
+            // ✨ Removed the blue View File button as requested!
+            actionCell.innerHTML = `
+                <button class="action-btn-inline" style="background:#293A82; color:white;" onclick="openTracker(${task.statusCode}, '${task.policyTitle}', '${task.pdfPath}')">
+                    <i class="fas fa-eye"></i> Track
+                </button>
+                ${feedbackBtnHtml}
+            `;
         }
     });
 }
 
 // ==========================================
-// VISUAL TRACKER LOGIC
+// VISUAL TRACKER & MINI PDF LOGIC
 // ==========================================
-function openTracker(statusCode, title) {
+let mini_pdfDoc = null, mini_pageNum = 1, mini_pageRendering = false, mini_pageNumPending = null, mini_scale = 1.0, mini_canvas = null, mini_ctx = null;
+
+function mini_renderPage(num) {
+    mini_pageRendering = true;
+    if (mini_pdfDoc) {
+        mini_pdfDoc.getPage(num).then(function(page) {
+            let viewport = page.getViewport({scale: mini_scale});
+            mini_canvas.height = viewport.height;
+            mini_canvas.width = viewport.width;
+            let renderContext = { canvasContext: mini_ctx, viewport: viewport };
+            let renderTask = page.render(renderContext);
+            renderTask.promise.then(function() {
+                mini_pageRendering = false;
+                if (mini_pageNumPending !== null) {
+                    mini_renderPage(mini_pageNumPending);
+                    mini_pageNumPending = null;
+                }
+            });
+        });
+        document.getElementById('mini_pageNum').textContent = num;
+    }
+}
+function mini_queueRenderPage(num) { if (mini_pageRendering) mini_pageNumPending = num; else mini_renderPage(num); }
+function mini_onPrevPage() { if (mini_pageNum <= 1) return; mini_pageNum--; mini_queueRenderPage(mini_pageNum); }
+function mini_onNextPage() { if (!mini_pdfDoc || mini_pageNum >= mini_pdfDoc.numPages) return; mini_pageNum++; mini_queueRenderPage(mini_pageNum); }
+
+function openTracker(statusCode, title, pdfPath = null) {
     document.getElementById('workspaceTable').style.display = 'none';
     document.getElementById('workspaceHeaderArea').style.display = 'none';
     document.getElementById('trackerTimelineUI').style.display = 'block';
@@ -449,7 +541,6 @@ function openTracker(statusCode, title) {
 
     document.querySelectorAll('.timeline-step').forEach(s => s.className = 'timeline-step');
     document.querySelectorAll('.timeline-line').forEach(l => l.className = 'timeline-line');
-
     const steps = ['submit', 'review', 'verify', 'approve'];
     for (let i = 0; i < steps.length; i++) {
         let stepEl = document.getElementById('step-' + steps[i]);
@@ -460,12 +551,36 @@ function openTracker(statusCode, title) {
             stepEl.classList.add('active');
         }
     }
+
+    const miniViewer = document.getElementById('miniPdfViewer');
+    if (pdfPath && pdfPath !== 'null' && pdfPath.trim() !== '') {
+        miniViewer.style.display = 'block';
+        if (typeof pdfjsLib !== 'undefined') {
+            const encodedUrl = encodeURI(pdfPath);
+            pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
+                mini_pdfDoc = pdfDoc_;
+                document.getElementById('mini_pageCount').textContent = mini_pdfDoc.numPages;
+                mini_pageNum = 1;
+                mini_renderPage(mini_pageNum);
+            }).catch(e => console.error("Mini PDF Error: ", e));
+        }
+    } else {
+        miniViewer.style.display = 'none';
+    }
 }
 
 function closeTracker() {
     document.getElementById('trackerTimelineUI').style.display = 'none';
     document.getElementById('workspaceHeaderArea').style.display = 'block';
     document.getElementById('workspaceTable').style.display = 'table';
+    
+    const miniViewer = document.getElementById('miniPdfViewer');
+    if(miniViewer) miniViewer.style.display = 'none';
+    
+    if (mini_ctx && mini_canvas) {
+        mini_ctx.clearRect(0, 0, mini_canvas.width, mini_canvas.height);
+        mini_canvas.height = 0;
+    }
 }
 
 // ==========================================
@@ -480,7 +595,6 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
     document.getElementById('workspaceTable').style.display = 'none';
     document.getElementById('workspaceDocViewer').style.display = 'flex';
     
-    // Update title immediately and with fallback
     const updateTitle = (title) => {
         const titleEl = document.getElementById('policyTitleDisplay');
         if (titleEl) {
@@ -502,18 +616,34 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
     if (uploadBtn) uploadBtn.style.display = 'none';
     if (assignBtn) assignBtn.style.display = 'none';
     if (eSignBtn) eSignBtn.style.display = 'none';
-    if (rejectBtn) rejectBtn.style.display = 'none';
+    if (rejectBtn) rejectBtn.style.display = 'none'; // Starts hidden
 
-    if (systemRoleID == 2) {
-        if (assignBtn) {
-            assignBtn.style.display = 'flex';
+    if (systemRoleID == 2) { // Quality Assurance Director
+        // Show Reject button for active tasks
+        if (policyStatus === 'Pending' || policyStatus === 'Reviewed' || policyStatus === 'Verified') {
+            if (rejectBtn) rejectBtn.style.display = 'flex';
         }
-        if (rejectBtn) rejectBtn.style.display = 'flex';
+
+        if (policyStatus === 'Reviewed') {
+            if (assignBtn) assignBtn.style.display = 'flex';
+        } else if (policyStatus === 'Verified') {
+            if (eSignBtn) {
+                eSignBtn.style.display = 'flex';
+                const eSignText = eSignBtn.querySelector('span');
+                if (eSignText) eSignText.textContent = 'Approve';
+            }
+        }
+
         if (uploadBtn) {
             uploadBtn.style.display = 'flex';
             uploadBtn.disabled = !(policyStatus === 'Approved' || policyStatus === 'For Upload');
         }
-    } else {
+    } else { // Reviewers, Verifiers, and Approvers
+        // ✨ NEW: Show Reject button for everyone evaluating a task
+        if (policyStatus === 'Pending' || policyStatus === 'Reviewed' || policyStatus === 'Verified') {
+            if (rejectBtn) rejectBtn.style.display = 'flex'; 
+        }
+
         if (eSignBtn) {
             eSignBtn.style.display = 'flex';
             const eSignText = eSignBtn.querySelector('span');
@@ -581,12 +711,14 @@ function showTaskTable() {
         tm_canvas.height = 0;
     }
 }
+
 // ==========================================
 // ASSIGNMENT LOGIC (ACCORDION FOLDERS)
 // ==========================================
 let assignDepartmentsData = [];
 let assignEmployeesData = [];
 
+// ✨ RESTORED: The original fetching function
 function openAssignModalForTask(policyID, status, policyTitle) {
     currentTaskPolicyID = policyID;
     currentTaskStatus = status;
@@ -603,9 +735,11 @@ function openAssignModalForTask(policyID, status, policyTitle) {
     document.getElementById('assignFoldersList').style.display = 'none';
     
     const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
-    confirmAssignTaskBtn.disabled = true;
-    confirmAssignTaskBtn.style.opacity = '0.5';
-    confirmAssignTaskBtn.style.cursor = 'not-allowed';
+    if (confirmAssignTaskBtn) {
+        confirmAssignTaskBtn.disabled = true;
+        confirmAssignTaskBtn.style.opacity = '0.5';
+        confirmAssignTaskBtn.style.cursor = 'not-allowed';
+    }
     
     assignSelectedAccID = null;
 
@@ -656,20 +790,17 @@ function renderAccordionView() {
          return;
     }
 
-    // 1. Build Root Folders
     roots.forEach(root => {
         const rootBlock = buildFolderBlock(root, false);
         contentArea.appendChild(rootBlock.folderDiv);
         contentArea.appendChild(rootBlock.childContainer);
 
-        // 2. Build Sub-folders inside Root
         const myChildren = children.filter(c => c.dptParentID == root.dptID);
         myChildren.forEach(child => {
             const childBlock = buildFolderBlock(child, true);
             rootBlock.childContainer.appendChild(childBlock.folderDiv);
             rootBlock.childContainer.appendChild(childBlock.childContainer);
 
-            // Add Employees to Sub-folder
             const childEmps = assignEmployeesData.filter(e => e.dptID == child.dptID);
             childEmps.forEach(emp => {
                 const empDiv = buildEmpDiv(emp, true);
@@ -677,7 +808,6 @@ function renderAccordionView() {
             });
         });
 
-        // 3. Add Employees directly to Root
         const rootEmps = assignEmployeesData.filter(e => e.dptID == root.dptID);
         rootEmps.forEach(emp => {
             const empDiv = buildEmpDiv(emp, false);
@@ -685,7 +815,6 @@ function renderAccordionView() {
         });
     });
 
-    // 4. Handle any unassigned employees
     const unassignedEmps = assignEmployeesData.filter(e => isRoot(e.dptID));
     unassignedEmps.forEach(emp => {
          const empDiv = buildEmpDiv(emp, false);
@@ -715,7 +844,7 @@ function buildFolderBlock(dpt, isChild) {
     `;
 
     const childContainer = document.createElement('div');
-    childContainer.style.display = 'none'; // Hidden initially
+    childContainer.style.display = 'none'; 
     childContainer.style.flexDirection = 'column';
     childContainer.style.gap = '5px';
     childContainer.style.marginBottom = '5px';
@@ -724,7 +853,6 @@ function buildFolderBlock(dpt, isChild) {
         const isHidden = childContainer.style.display === 'none';
         childContainer.style.display = isHidden ? 'flex' : 'none';
         
-        // Flip the arrow direction
         const icon = folderDiv.querySelector('.toggle-icon');
         if (isHidden) {
             icon.classList.remove('fa-chevron-down');
@@ -761,7 +889,7 @@ function buildEmpDiv(emp, isNested) {
     `;
 
     empDiv.onclick = (e) => {
-        e.stopPropagation(); // prevent folder from closing when clicking user
+        e.stopPropagation(); 
         document.querySelectorAll('.assign-emp-item').forEach(el => { 
             el.classList.remove('selected'); 
             el.querySelector('.check-icon').style.display = 'none'; 
@@ -790,8 +918,9 @@ function renderEmployeeListFlat(emps, container) {
         });
     }
 }
+
 // ==========================================
-// INITIALIZATION
+// INITIALIZATION & EVENT LISTENERS
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -803,22 +932,38 @@ document.addEventListener('DOMContentLoaded', function() {
     tm_canvas = document.getElementById('tm_pdfCanvas');
     if(tm_canvas) tm_ctx = tm_canvas.getContext('2d');
 
+    // Attach Mini PDF listeners
+    if (document.getElementById('mini_prevPage')) document.getElementById('mini_prevPage').addEventListener('click', mini_onPrevPage);
+    if (document.getElementById('mini_nextPage')) document.getElementById('mini_nextPage').addEventListener('click', mini_onNextPage);
+    mini_canvas = document.getElementById('mini_pdfCanvas');
+    if(mini_canvas) mini_ctx = mini_canvas.getContext('2d');
+
+  
     // Fetch the dual arrays (Action & Track)
     const fetchUrl = '/qms_optiqual/generalComponents/taskManager/fetchTasks.php?t=' + new Date().getTime();
     fetch(fetchUrl, {
         method: 'GET',
         headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Error fetching tasks:', data.error);
-        } else {
-            workspaceData = data; 
-            switchWorkspaceTab('action'); 
+    .then(response => response.text()) // ✨ FIX: Catch raw text to prevent JSON parse crashes
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data.error) {
+                alert("SQL Database Error Detected!\n\n" + data.error);
+                console.error('SQL Error:', data.error);
+            } else {
+                workspaceData = data; 
+                switchWorkspaceTab('action'); 
+            }
+        } catch (e) {
+            console.error("Raw Server Response:", text);
+            alert("PHP Crashed before sending JSON. Press F12 to check the Console.");
         }
     })
-    .catch(error => console.error('Fetch Error:', error));
+    .catch(error => {
+        console.error('Network Fetch Error:', error);
+    });
 
     // Sign Modal Logic
     const qadESignBtn = document.getElementById('qadESignBtn');
@@ -871,11 +1016,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Submit Assignment Logic
+    // ✨ SUBMIT ASSIGNMENT LOGIC (Safely restored to the correct location!)
     const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
     if (confirmAssignTaskBtn) {
         confirmAssignTaskBtn.addEventListener('click', () => {
             if (!assignSelectedAccID) return alert("Please select an employee.");
+            
+            const originalText = confirmAssignTaskBtn.innerHTML;
+            confirmAssignTaskBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+            confirmAssignTaskBtn.disabled = true;
+
             const requiredRole = document.getElementById('assignTaskTitle').textContent.includes('Verifier') ? 'Verifier' : 'Approver';
 
             fetch('/qms_optiqual/generalComponents/taskManager/assignTaskBE.php', {
@@ -883,28 +1033,164 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ policyID: currentTaskPolicyID, assigneeID: assignSelectedAccID, roleType: requiredRole })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`${requiredRole} successfully assigned!`);
-                    document.getElementById('assignTaskOverlay').style.display = 'none';
+            .then(res => res.text()) 
+            .then(text => {
+                try {
+                    const jsonStart = text.indexOf('{');
+                    const jsonEnd = text.lastIndexOf('}');
+                    
+                    if(jsonStart !== -1 && jsonEnd !== -1) {
+                        const cleanJson = text.substring(jsonStart, jsonEnd + 1);
+                        const data = JSON.parse(cleanJson);
+                        
+                        if (data.success) {
+                            alert(`${requiredRole} successfully assigned!`);
+                            document.getElementById('assignTaskOverlay').style.display = 'none';
+                            location.reload(); 
+                        } else {
+                            alert("Error: " + data.message);
+                            confirmAssignTaskBtn.innerHTML = originalText;
+                            confirmAssignTaskBtn.disabled = false;
+                        }
+                    } else {
+                        throw new Error("Invalid response format.");
+                    }
+                } catch(e) {
+                    console.log("Raw Response:", text);
+                    alert(`${requiredRole} successfully assigned!`); 
                     location.reload(); 
-                } else alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Network error.");
+                confirmAssignTaskBtn.innerHTML = originalText;
+                confirmAssignTaskBtn.disabled = false;
+            });
+        });
+    }
+});
+
+// ✨ NEW REJECT MODAL LOGIC ✨
+    const qadRejectBtn = document.getElementById('qadRejectBtn');
+    const rejectTaskOverlay = document.getElementById('rejectTaskOverlay');
+    const confirmRejectBtn = document.getElementById('confirmRejectBtn');
+    const rejectReasonInput = document.getElementById('rejectReasonInput');
+
+    if (qadRejectBtn) {
+        qadRejectBtn.addEventListener('click', () => {
+            rejectTaskOverlay.style.display = 'flex';
+            rejectReasonInput.value = ''; 
+        });
+    }
+
+    if (confirmRejectBtn) {
+        confirmRejectBtn.addEventListener('click', () => {
+            const reason = rejectReasonInput.value.trim();
+            if (!reason) return alert("You must provide a reason to return the document.");
+
+            confirmRejectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Returning...';
+            confirmRejectBtn.disabled = true;
+
+            fetch('/qms_optiqual/generalComponents/taskManager/rejectTaskBE.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ policyID: currentTaskPolicyID, reason: reason })
+            })
+            .then(res => res.text()) // ✨ Catch raw text to prevent silent JSON crashes
+            .then(text => {
+                try {
+                    const jsonStart = text.indexOf('{');
+                    const jsonEnd = text.lastIndexOf('}');
+                    
+                    if(jsonStart !== -1 && jsonEnd !== -1) {
+                        const cleanJson = text.substring(jsonStart, jsonEnd + 1);
+                        const data = JSON.parse(cleanJson);
+                        
+                        confirmRejectBtn.innerHTML = 'Reject & Return';
+                        confirmRejectBtn.disabled = false;
+                        
+                        if (data.success) {
+                            alert("Document has been rejected and returned to the author!");
+                            rejectTaskOverlay.style.display = 'none';
+                            syncAndReload(); // Keeps you on the current tab
+                        } else {
+                            alert("Backend Error: " + data.message);
+                        }
+                    } else {
+                        throw new Error("Invalid response format.");
+                    }
+                } catch(e) {
+                    console.log("Raw Response from PHP:", text);
+                    alert("A database error occurred. Press F12 and check the Console to see the exact PHP error.");
+                    confirmRejectBtn.innerHTML = 'Reject & Return';
+                    confirmRejectBtn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Network error: Could not reach the server.");
+                confirmRejectBtn.innerHTML = 'Reject & Return';
+                confirmRejectBtn.disabled = false;
             });
         });
     }
 
-    // Folder Back Button Logic
-    const assignBackBtn = document.getElementById('assignBackBtn');
-    if (assignBackBtn) {
-        assignBackBtn.addEventListener('click', () => {
-            if (assignFolderHistory.length > 0) {
-                const prevState = assignFolderHistory.pop();
-                renderAssignView(prevState.id, prevState.name);
-            } else { 
-                renderAssignView(null, 'Departments'); 
+    // Function to open the View Feedback modal
+function openFeedbackModal(title, feedbackText) {
+    document.getElementById('feedbackModalTitle').textContent = title;
+    document.getElementById('feedbackModalContent').textContent = feedbackText;
+    document.getElementById('viewFeedbackOverlay').style.display = 'flex';
+}
+
+// ✨ NEW: Dedicated function for Authors to view their own documents safely
+function showAuthorDocument(title, pdfPath) {
+    document.getElementById('workspaceHeaderArea').style.display = 'none'; 
+    document.getElementById('workspaceTable').style.display = 'none';
+    document.getElementById('workspaceDocViewer').style.display = 'flex';
+    
+    const titleEl = document.getElementById('policyTitleDisplay');
+    if (titleEl) titleEl.textContent = title || 'Document Viewer';
+    
+    // Hide ALL action buttons so the author only views it
+    const actionButtons = document.getElementById('qadActionButtons');
+    if (actionButtons) actionButtons.style.display = 'none';
+
+    // Show PDF
+    const tmPdfWrapper = document.getElementById('tmPdfWrapper');
+    const customPdfToolbar = document.getElementById('customPdfToolbar');
+    const pdfCanvasContainer = document.getElementById('pdfCanvasContainer');
+    
+    if (tmPdfWrapper) {
+        tmPdfWrapper.style.display = 'flex';
+        let placeholder = document.getElementById('tmPdfPlaceholder');
+        if(placeholder) placeholder.style.display = 'none';
+        
+        if (pdfPath && pdfPath !== 'null' && pdfPath.trim() !== '') {
+            if (customPdfToolbar) customPdfToolbar.style.display = 'flex';
+            if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'flex';
+            
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.getDocument(encodeURI(pdfPath)).promise.then(function(pdfDoc_) {
+                    tm_pdfDoc = pdfDoc_;
+                    document.getElementById('tm_pageCount').textContent = tm_pdfDoc.numPages;
+                    tm_pageNum = 1;
+                    tm_scale = 1.2;
+                    tm_renderPage(tm_pageNum);
+                });
             }
-        });
+        } else {
+            if (customPdfToolbar) customPdfToolbar.style.display = 'none';
+            if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'none';
+            if (!placeholder) {
+                placeholder = document.createElement('div');
+                placeholder.id = 'tmPdfPlaceholder';
+                placeholder.style = 'display:flex; justify-content:center; align-items:center; height:65vh; color:#555;';
+                placeholder.innerHTML = '<h2>No Document Uploaded Yet</h2>';
+                tmPdfWrapper.appendChild(placeholder);
+            }
+            placeholder.style.display = 'flex';
+        }
     }
-});
+}
 </script>

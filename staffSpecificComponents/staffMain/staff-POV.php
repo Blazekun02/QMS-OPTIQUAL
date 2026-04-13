@@ -66,13 +66,9 @@
                     <img src="../../assets/policy create-notClicked.png" alt="Icon 2">
                     <span class="icon-label">Policy Submission</span>
                 </li>
-                <li class="menu-icons" onclick="showProcessTracker()">
-                    <img src="../../assets/req tracker-notClicked.png" alt="Icon 3">
-                    <span class="icon-label">Process Tracker</span>
-                </li>
-                <li class="menu-icons" onclick="showTaskManager()">
+                <li class="menu-icons" onclick="showWorkspace()">
                     <img src="../../assets/task manager-notClicked.png" alt="Icon 4">
-                    <span class="icon-label">Task Manager</span>
+                    <span class="icon-label">My Workspace</span>
                 </li>
                 <li class="menu-icons" onclick="showInformation()">
                     <img src="../../assets/info - notClicked.png" alt="Icon 5">
@@ -273,22 +269,12 @@
             </div>
         </div>
 
-        <div class="Process-Tracker-Panel2" style ="display: none;">
-            <?php 
-                try {
-                    $ptPath = __DIR__ . '/../../generalComponents/processTracker/processTracker.php';
-                    if (file_exists($ptPath)) { include_once $ptPath; } 
-                    else { echo "<h3 style='color:white; padding:30px; text-align:center;'>Process Tracker module not yet linked.</h3>"; }
-                } catch (Throwable $e) {}
-            ?>
-        </div>
-
-        <div class="Task-Manager-Panel" style="display: none;">
+        <div class="Workspace-Panel" style="display: none;">
             <?php 
                 try {
                     $tmPath = __DIR__ . '/../../generalComponents/taskManager/taskManager.php';
                     if (file_exists($tmPath)) { include_once $tmPath; } 
-                    else { echo "<h3 style='color:white; padding:30px; text-align:center;'>Task Manager module not yet linked.</h3>"; }
+                    else { echo "<h3 style='color:white; padding:30px; text-align:center;'>Workspace module not yet linked.</h3>"; }
                 } catch (Throwable $e) {}
             ?>
         </div>

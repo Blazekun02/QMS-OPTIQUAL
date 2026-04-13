@@ -642,7 +642,7 @@ body {
 /* ======================================================= */
 /* 5. TASK MANAGER (MODULE 4)                              */
 /* ======================================================= */
-.Task-Manager-Panel {
+.Workspace-Panel {
     position: absolute;
     display: none;
     top: 75px;

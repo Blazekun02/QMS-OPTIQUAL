@@ -32,47 +32,26 @@ try {
     $selectCore = "
         SELECT 
             p.policyID, p.title AS policyTitle, a.fullName AS author, 
-            p.dateSubmitted, p.versionNo AS version, ps.policyStatusName AS status, p.contentPath AS pdfPath,
-            rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName
+            p.dateSubmitted, p.versionNo AS version, ps.policyStatusName AS status, p.policyStatusID AS statusCode,
+            rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName,
+            p.contentPath AS pdfPath
+        FROM policytbl p
+        LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+        LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
+        LEFT JOIN accdatatbl rev ON p.reviewedBy = rev.accID
+        LEFT JOIN accdatatbl ver ON p.policyVerifier = ver.accID
+        LEFT JOIN accdatatbl app ON p.policyApprover = app.accID
     ";
 
-    if ($userRole == 2) { 
-        // QAD sees Reviewed, Verified, Approved
-        $query = $selectCore . "
-            FROM policytbl p
-            LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
-            LEFT JOIN accdatatbl rev ON p.reviewedBy = rev.accID
-            LEFT JOIN accdatatbl ver ON p.verifiedBy = ver.accID
-            LEFT JOIN accdatatbl app ON p.approvedBy = app.accID
-            LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
-            WHERE p.policyStatusID IN (2, 3, 4)
-        ";
+    if ($userRole == 2) {
+        $query = $selectCore . " WHERE (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR p.policyStatusID IN (3, 4) ORDER BY p.dateSubmitted ASC";
         $res = $conn->query($query);
-        if($res) { while($row = $res->fetch_assoc()) { $actionRequired[] = $row; } }
-    } else if ($userRole == 3) {
-        // QA Staff sees Pending
-        $query = $selectCore . "
-            FROM policytbl p
-            LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
-            LEFT JOIN accdatatbl rev ON p.reviewedBy = rev.accID
-            LEFT JOIN accdatatbl ver ON p.verifiedBy = ver.accID
-            LEFT JOIN accdatatbl app ON p.approvedBy = app.accID
-            LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
-            WHERE p.policyStatusID = 1
-        ";
-        $res = $conn->query($query);
-        if($res) { while($row = $res->fetch_assoc()) { $actionRequired[] = $row; } }
+        if ($res) {
+            while($row = $res->fetch_assoc()){ $actionRequired[] = $row; }
+        }
     } else {
-        // Regular Staff
-        $stmt = $conn->prepare("
-            SELECT p.policyID, p.title AS policyTitle, a.fullName AS author, t.dateCreated AS dateSubmitted, p.versionNo AS version, tt.taskTypeName AS status, p.contentPath AS pdfPath, rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName 
-            FROM tasktbl t 
-            LEFT JOIN policytbl p ON t.policyAssigned = p.policyID 
-            LEFT JOIN tasktypetbl tt ON t.taskTypeID = tt.tasktypeID 
-            LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID 
-            LEFT JOIN accdatatbl rev ON p.reviewedBy = rev.accID 
-            LEFT JOIN accdatatbl ver ON p.verifiedBy = ver.accID 
-            LEFT JOIN accdatatbl app ON p.approvedBy = app.accID 
+        $stmt = $conn->prepare($selectCore . "
+            JOIN tasktbl t ON p.policyID = t.policyAssigned
             WHERE t.assignedTo = ? ORDER BY t.dateCreated");
         $stmt->bind_param("i", $accID);
         $stmt->execute();
@@ -84,10 +63,12 @@ try {
     // ==========================================
     // 2. FETCH "MY SUBMISSIONS" (Track progress)
     // ==========================================
+    // ✨ THE FIX: Uses your exact database columns (content and remarksOn)
     $trackStmt = $conn->prepare("
         SELECT 
             p.policyID, p.title AS policyTitle, p.dateSubmitted, 
-            ps.policyStatusName AS status, p.policyStatusID AS statusCode, p.contentPath AS pdfPath
+            ps.policyStatusName AS status, p.policyStatusID AS statusCode, p.contentPath AS pdfPath,
+            (SELECT content FROM feedbacktbl f WHERE f.remarksOn = p.policyID ORDER BY f.feedbackID DESC LIMIT 1) AS activeFeedback
         FROM policytbl p
         LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
         WHERE p.policyAuthor = ?
@@ -101,13 +82,12 @@ try {
     }
     $trackStmt->close();
 
-    // RETURN BOTH ARRAYS IN ONE JSON PACKAGE!
     echo json_encode([
         'actionRequired' => $actionRequired,
         'mySubmissions' => $mySubmissions
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    
-} catch (Exception $e) { 
-    echo json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+    ]);
+
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?>

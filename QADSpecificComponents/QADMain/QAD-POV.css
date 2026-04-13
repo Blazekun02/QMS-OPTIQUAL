@@ -1964,3 +1964,167 @@ body {
     0% { transform: rotate(30deg); }
     100% { transform: rotate(-30deg); }
 }
+
+/* ========================================= */
+/* ✨ BRANDED FOLDER STYLING ✨              */
+/* ========================================= */
+
+/* 1. Main Parent Folders */
+.department-item, .pm-folder-item {
+    background-color: #293A82;       /* ✨ Navy Blue Base */
+    border: 1px solid #4963D4;       /* Royal Blue Border */
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease-in-out;
+    color: white;
+}
+
+/* 2. Main Folder Hover State */
+.department-item:hover, .pm-folder-item:hover {
+    background-color: #4963D4;       /* ✨ Brightens to Royal Blue on Hover */
+    border-color: #FBAF41;           /* Pops with the Yellow/Orange Accent Border */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+/* 3. Nested Child Folders */
+.dpt-child-folder, .pm-child-folder {
+    background-color: #4963D4;       /* ✨ Royal Blue Base (Matches the parent's hover state) */
+    border-left: 5px solid #FBAF41;  /* Thick Yellow/Orange Accent Line */
+    border-radius: 0 8px 8px 0;      
+    margin-left: 20px;
+    width: calc(100% - 20px);
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+/* 4. Child Folder Hover State */
+.dpt-child-folder:hover, .pm-child-folder:hover {
+    background-color: #BFE6F8;       /* ✨ Illuminates to Light Blue Hover */
+    color: #293A82;                  /* Navy Blue Text for sharp contrast */
+    border-left: 5px solid #293A82;  /* Switch accent line to Navy */
+}
+
+/* 5. Folder Icons & Triangles */
+.department-item i.fa-folder, .pm-folder-item i.fa-folder {
+    color: #FBAF41 !important;       /* Force folders to be Yellow/Orange */
+}
+
+.folder-toggle-icon {
+    color: #BFE6F8 !important;       /* Light blue for the dropdown triangles */
+}
+
+/* 6. Fix Action Buttons on Hover */
+.dpt-child-folder:hover .expandable-btn, 
+.pm-child-folder:hover .expandable-btn {
+    color: #293A82; /* Keeps the action buttons visible when the background turns light blue */
+}
+
+/* ✨ THE GHOST PLACEHOLDER ✨ */
+.drop-placeholder {
+    border: 2px dashed #fbaf41 !important;
+    background-color: rgba(41, 58, 130, 0.4) !important; /* Semi-transparent Navy */
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #d3d3d3;
+    pointer-events: none; /* CRITICAL: Prevents the ghost from blocking your mouse! */
+}
+
+/* Hide the action buttons inside the ghost so it looks cleaner */
+.drop-placeholder .department-icons, 
+.drop-placeholder .pm-folder-icons {
+    display: none !important; 
+}
+
+/* ========================================= */
+/* ✨ EMPLOYEE (USER) TAG STYLING ✨         */
+/* ========================================= */
+
+/* 1. Base User Pill Design */
+.assigned-role-item {
+    background-color: #E8E2DB;       /* Off-white/Gray Base from your palette */
+    color: #293A82;                  /* Navy Blue Text */
+    border: 2px solid #BFE6F8;       /* Light Blue Border */
+    border-radius: 50px;             /* Pill shape! Unmistakably NOT a folder */
+    padding: 6px 15px;               /* Thinner than folders */
+    margin-top: 4px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13.5px;               /* Smaller text */
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+/* 2. User Hover State */
+.assigned-role-item:hover {
+    background-color: #BFE6F8;       /* Illuminates to Light Blue on hover */
+    border-color: #FBAF41;           /* Yellow/Orange accent border */
+}
+
+/* 3. Users assigned to Main Folders (Level 1) */
+.parent-employee {
+    margin-left: 45px;               /* Indent past the parent folder icon */
+    margin-right: 15px;              /* ✨ NEW: Push the right side in! */
+    width: auto;                     /* ✨ NEW: Let the margins squeeze the box */
+}
+
+/* 4. Users assigned to Child Folders (Level 2) */
+.nested-employee {
+    margin-left: 75px;               /* Deep indent past the child folder */
+    margin-right: 30px;              /* ✨ NEW: Push the right side in even further! */
+    width: auto;                     /* ✨ NEW: Let the margins squeeze the box */
+}
+
+/* Optional: Make the pill slightly thinner to emphasize hierarchy */
+.assigned-role-item {
+    padding: 5px 14px !important;
+    font-size: 13px !important;
+}
+
+/* 5. Adjust Action Buttons inside the User Pill */
+.assigned-role-item .expandable-btn {
+    color: #293A82;
+    font-size: 12px;                 /* Slightly smaller icons to fit the pill */
+}
+
+.assigned-role-item .expandable-btn:hover {
+    color: #FBAF41;                  /* Buttons turn yellow on hover */
+}
+
+/* ========================================= */
+/* ✨ FORCED EMPLOYEE TAG INDENTATION ✨     */
+/* ========================================= */
+
+/* 1. Force the Pill Shape and override the old square borders */
+#departmentListContainer .assigned-role-item {
+    border-radius: 50px !important; 
+    padding: 6px 15px !important;
+}
+
+/* 2. Users inside Main Folders (Level 1) */
+#departmentListContainer .parent-employee {
+    margin-left: 60px !important;    /* Push in from the left */
+    margin-right: 20px !important;   /* Push in from the right */
+    width: auto !important;          /* Let margins dictate width */
+}
+
+/* 3. Users inside Child Folders (Level 2) */
+#departmentListContainer .nested-employee {
+    margin-left: 90px !important;    /* Deep double-tab from the left */
+    margin-right: 40px !important;   /* Deep indent from the right */
+    width: auto !important;          /* Let margins dictate width */
+}

@@ -15,14 +15,19 @@ if (!isset($data['departmentId'])) {
 $departmentId = $data['departmentId'];
 
 try {
-    // First check if there are any foreign key constraints that would prevent deletion
-    $checkConstraints = $conn->query("SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME 
-                                      FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-                                      WHERE REFERENCED_TABLE_NAME = 'dorgtbl' AND REFERENCED_COLUMN_NAME = 'dptID'");
-    
-    $hasConstraints = $checkConstraints->num_rows > 0;
-    
-    // Try to delete the department
+    // ✨ STEP 1: Safely remove all employees assigned to this specific folder
+    $delEmp = $conn->prepare("DELETE FROM empperdeptbl WHERE dptID = ?");
+    $delEmp->bind_param("i", $departmentId);
+    $delEmp->execute();
+    $delEmp->close();
+
+    // ✨ STEP 2: Evacuate Sub-Folders! Move any child folders to the Root level
+    $moveChildren = $conn->prepare("UPDATE dorgtbl SET dptParentID = NULL WHERE dptParentID = ?");
+    $moveChildren->bind_param("i", $departmentId);
+    $moveChildren->execute();
+    $moveChildren->close();
+
+    // ✨ STEP 3: Now that the folder is empty, safely delete it!
     $stmt = $conn->prepare("DELETE FROM dorgtbl WHERE dptID = ?");
     if (!$stmt) {
         ob_end_clean();
@@ -39,14 +44,7 @@ try {
             $response = ['success' => false, 'message' => 'Department not found or already deleted.'];
         }
     } else {
-        // Check the error code
-        $errorCode = $conn->errno;
-        if ($errorCode == 1451) {
-            // Foreign key constraint violation
-            $response = ['success' => false, 'message' => 'Cannot delete: This department is referenced by other records. Remove dependencies first.'];
-        } else {
-            $response = ['success' => false, 'message' => 'Database error: ' . $stmt->error . ' (Code: ' . $errorCode . ')'];
-        }
+        $response = ['success' => false, 'message' => 'Database error: ' . $stmt->error];
     }
 
     $stmt->close();

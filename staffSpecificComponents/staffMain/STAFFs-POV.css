@@ -509,7 +509,7 @@ body {
 /* ======================================================= */
 /* 4. PROCESS TRACKER & TASK MANAGER (MODULE 3 & 4)        */
 /* ======================================================= */
-.Task-Manager-Panel, .Process-Tracker-Panel2 {
+.Workspace-Panel {
     position: absolute;
     display: none;
     top: 75px;
