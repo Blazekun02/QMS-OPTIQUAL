@@ -1238,6 +1238,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const pmFolderInput = document.getElementById('pmFolderNameInput');
     const pmFoldersContainer = document.getElementById('pmFoldersContainer');
 
+    if (pmFoldersContainer) {
+        pmFoldersContainer.setAttribute('data-id', 'root');
+        pmFoldersContainer.setAttribute('data-type', 'category');
+        pmFoldersContainer.addEventListener('dragover', handleDragOver);
+        pmFoldersContainer.addEventListener('dragleave', handleDragLeave);
+        pmFoldersContainer.addEventListener('drop', handleDrop);
+    }
+
     // Modals for Rename & Delete
     const pmRenameModal = document.getElementById('pmRenameFolderModal');
     const pmRenameInput = document.getElementById('pmRenameInput');
@@ -1514,7 +1522,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (parentId !== null) folderDiv.classList.add('pm-child-folder');
         folderDiv.dataset.categoryId = categoryId;
         
-       if (parentId === null) {
+        // ✨ NEW: MAKE FOLDERS DRAGGABLE ✨
+        folderDiv.setAttribute('data-id', categoryId);
+        folderDiv.setAttribute('data-type', 'category');
+        folderDiv.setAttribute('draggable', 'true');
+        folderDiv.addEventListener('dragstart', handleDragStart);
+        folderDiv.addEventListener('dragend', handleDragEnd);
+        folderDiv.addEventListener('dragover', handleDragOver);
+        folderDiv.addEventListener('dragleave', handleDragLeave);
+        folderDiv.addEventListener('drop', handleDrop);
+        
+        let iconsHTML = '';
+        if (parentId === null) {
             iconsHTML = `
                 <div class="expandable-btn add-file-btn"><i class="fas fa-file"></i><span class="btn-text">Add File</span></div>
                 <div class="expandable-btn add-child-btn"><i class="fas fa-folder"></i><span class="btn-text">Add Sub-folder</span></div>
@@ -1536,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // EVENT LISTENERS FOR ICONS (Added stopPropagation!)
+        // EVENT LISTENERS FOR ICONS
         const addChildBtn = folderDiv.querySelector('.add-child-btn');
         if (addChildBtn) {
             addChildBtn.addEventListener('click', (e) => {
@@ -1616,7 +1635,7 @@ document.addEventListener('DOMContentLoaded', () => {
             childContainer.style.display = isHidden ? 'flex' : 'none';
         });
 
-        // INSERT BOTH INTO DOM
+        // ✨ THE FIX: Correctly append folders to the list
         if (parentId === null) {
             pmFoldersContainer.appendChild(folderDiv);
             pmFoldersContainer.appendChild(childContainer);
@@ -1641,6 +1660,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const policyDiv = document.createElement('div');
             policyDiv.classList.add('pm-policy-item');
             policyDiv.dataset.policyId = policyId;
+            
+            // ✨ THE FIX: Added the draggable properties to the right place!
+            policyDiv.setAttribute('data-id', policyId);
+            policyDiv.setAttribute('data-type', 'policy');
+            policyDiv.setAttribute('draggable', 'true');
+            policyDiv.addEventListener('dragstart', handleDragStart);
+            policyDiv.addEventListener('dragend', handleDragEnd);
             
             policyDiv.innerHTML = `
                 <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: #fbaf41;"></i> ${title}</span>
@@ -1914,13 +1940,14 @@ function handleDragOver(e) {
     const targetType = e.currentTarget.getAttribute('data-type');
     const targetId = e.currentTarget.getAttribute('data-id');
 
-    // ✨ NEW RULE: Employees can ONLY be dropped into departments!
+    // ✨ UPDATED RULES: Allow Policies and Categories to drop into Categories
     if (draggedElementType === 'employee' && targetType !== 'department') return;
-    if (draggedElementType !== 'employee' && targetType !== draggedElementType) return;
+    if (draggedElementType === 'department' && targetType !== 'department') return;
+    if ((draggedElementType === 'policy' || draggedElementType === 'category') && targetType !== 'category') return;
 
     if (dropPlaceholder) {
         if (targetId === 'root') {
-            if (draggedElementType === 'employee') return; // Block users from being dropped on the background
+            if (draggedElementType === 'employee' || draggedElementType === 'policy') return; // Can't drop these on root background
             dropPlaceholder.className = 'drop-placeholder';
             e.currentTarget.appendChild(dropPlaceholder);
         } else {
@@ -1929,6 +1956,8 @@ function handleDragOver(e) {
             // Assign the correct nesting class based on what we are dragging and where
             if (draggedElementType === 'employee') {
                 dropPlaceholder.classList.add(e.currentTarget.classList.contains('dpt-child-folder') ? 'nested-employee' : 'parent-employee');
+            } else if (draggedElementType === 'policy') {
+                dropPlaceholder.classList.add('pm-policy-item'); // Policy styling
             } else {
                 dropPlaceholder.classList.add(draggedElementType === 'department' ? 'dpt-child-folder' : 'pm-child-folder');
             }
@@ -1947,6 +1976,9 @@ function handleDragOver(e) {
 }
 
 function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Removes the yellow dashed border when you drag your mouse away from a folder
     e.currentTarget.style.border = "none";
 }
 
@@ -1964,8 +1996,11 @@ function handleDrop(e) {
     const targetType = e.currentTarget.getAttribute('data-type');
 
     if (draggedElementId === targetParentId) return;
+    
+    // Same updated validation rules
     if (draggedElementType === 'employee' && targetType !== 'department') return;
-    if (draggedElementType !== 'employee' && targetType !== draggedElementType) return;
+    if (draggedElementType === 'department' && targetType !== 'department') return;
+    if ((draggedElementType === 'policy' || draggedElementType === 'category') && targetType !== 'category') return;
 
     let phpEndpoint = '';
     let requestBody = {};
@@ -1973,11 +2008,15 @@ function handleDrop(e) {
     if (draggedElementType === 'department') {
         phpEndpoint = '../../generalComponents/dpManagerPHP/moveDepartment.php';
         requestBody = { departmentId: draggedElementId, newParentId: targetParentId === 'root' ? null : targetParentId };
+    } else if (draggedElementType === 'category') {
+        // ✨ NEW: Route for moving folders in Policy Manager
+        phpEndpoint = '../../generalComponents/policyManagerPHP/moveCategory.php';
+        requestBody = { categoryID: draggedElementId, newParentID: targetParentId === 'root' ? null : targetParentId };
     } else if (draggedElementType === 'policy') {
+        // ✨ NEW: Route for moving files in Policy Manager
         phpEndpoint = '../../generalComponents/policyManagerPHP/movePolicy.php';
         requestBody = { policyId: draggedElementId, newFolderId: targetParentId === 'root' ? null : targetParentId };
     } else if (draggedElementType === 'employee') {
-        // ✨ NEW: Route the user to our new moveEmployee.php file!
         if (targetParentId === 'root') return; 
         phpEndpoint = '../../generalComponents/dpManagerPHP/moveEmployee.php';
         requestBody = { accID: draggedElementId, oldDptID: draggedElementSourceId, newDptID: targetParentId };
@@ -1992,6 +2031,7 @@ function handleDrop(e) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                sessionStorage.setItem('internalSync', 'true');
                 location.reload(); 
             } else {
                 alert("Move failed: " + data.message);
