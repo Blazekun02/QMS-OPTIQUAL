@@ -3,10 +3,13 @@
  Only the specific notification box itself gets moved to the front.
 */
 .notif-wrapper {
-    position: fixed; /* Locks it to the screen */
-    top: 75px;       /* Drops it perfectly below the top navbar */
-    right: 150px;    /* Shifts it left to align exactly under the Bell icon */
-    z-index: 99999 !important; /* Forces it above the Sidebar and Ram */
+    position: fixed; 
+    top: 75px;       
+    right: 150px;    
+    z-index: 99999 !important; 
+    width: 250px;
+    background-color: #343A40;
+    padding: 15px;
     
     width: 250px;
     height: auto;
@@ -103,13 +106,14 @@
             $currentUserID = isset($_SESSION['accID']) ? (int)$_SESSION['accID'] : 0;
             
             if (isset($conn)) {
-                $query = "SELECT * FROM notiftbl WHERE notifStatus = 0 AND accID = $currentUserID ORDER BY dateTimeSent DESC";
+                $query = "SELECT * FROM notiftbl WHERE notifStatus = 0 AND receivedBy = " . $currentUserID . " ORDER BY dateTimeSent DESC";
                 $result = $conn->query($query);
 
                 if ($result && $result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
+                        // ✨ ADDED: Bright yellow left border and bold text for UNREAD
                         $msg = htmlspecialchars((string)$row['message']);
-                        echo "<div class='notification-item'><p style='margin:0;'>$msg</p></div>";
+                        echo "<div class='notification-item' style='border-left: 4px solid #fbaf41;'><p style='margin:0; font-weight:bold;'>$msg</p></div>";    
                     }
                 } else {
                     echo "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
@@ -128,13 +132,14 @@
         <?php
         try {
             if (isset($conn)) {
-                $query = "SELECT * FROM notiftbl WHERE notifStatus = 1 AND accID = $currentUserID ORDER BY dateTimeSent DESC";
+                $query = "SELECT * FROM notiftbl WHERE notifStatus = 1 AND receivedBy = $currentUserID ORDER BY dateTimeSent DESC";
                 $result = $conn->query($query);
 
                 if ($result && $result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
+                        // ✨ ADDED: Dimmed gray background and normal text for READ
                         $msg = htmlspecialchars((string)$row['message']);
-                        echo "<div class='notification-item' style='background-color:#555;'><p style='margin:0;'>$msg</p></div>";
+                        echo "<div class='notification-item' style='background-color:#555; border-left: 4px solid transparent;'><p style='margin:0; color:#d3d3d3;'>$msg</p></div>";
                     }
                 } else {
                     echo "<p class='no-notifications'><i class='fas fa-envelope-open' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No read notifications.</p>";
@@ -145,4 +150,16 @@
         }
         ?>
     </div>
+
 </div>
+
+<script>
+    function toggleNotifications() {
+        const notifBox = document.querySelector('.notif-wrapper');
+        if (notifBox.style.display === 'none' || notifBox.style.display === '') {
+            notifBox.style.display = 'block';
+        } else {
+            notifBox.style.display = 'none';
+        }
+    }
+</script>

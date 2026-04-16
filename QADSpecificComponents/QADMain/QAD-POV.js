@@ -138,23 +138,184 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ✨ NEW: Notification Tab Switching Logic ✨
+    const unreadTab = document.querySelector('.notif-tabs .unread-tab');
+    const readTab = document.querySelector('.notif-tabs .read-tab');
+    const unreadList = document.getElementById('notif-unread-list');
+    const readList = document.getElementById('notif-read-list');
+
+    if (unreadTab && readTab && unreadList && readList) {
+        // Set initial state: Show Unread by default when popup opens
+        const showUnread = () => {
+            unreadList.style.display = 'block';
+            readList.style.display = 'none';
+            unreadTab.classList.add('active');
+            readTab.classList.remove('active');
+        };
+
+        const showRead = () => {
+            unreadList.style.display = 'none';
+            readList.style.display = 'block';
+            readTab.classList.add('active');
+            unreadTab.classList.remove('active');
+        };
+
+        unreadTab.addEventListener('click', showUnread);
+        readTab.addEventListener('click', showRead);
+    }
+
+    // Top Bar Buttons
     // Top Bar Buttons
     const notifButton = document.getElementById('notifButton');
     if (notifButton && notificationOverlay) {
-        notifButton.addEventListener('click', () => {
-            notificationOverlay.style.display = notificationOverlay.style.display === 'block' ? 'none' : 'block';
+        notifButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            if (notificationOverlay.style.display === 'block' || notificationOverlay.style.display === 'flex') {
+                // If it's open, close it
+                notificationOverlay.style.display = 'none';
+            } else {
+                // If it's closed, open it and close the sign-out menu
+                notificationOverlay.style.display = 'block';
+                if (signOutOverlay) signOutOverlay.style.display = 'none';
+
+                // ✨ FIX: Reset to the "Unread" tab every time the popup is opened
+                if (unreadTab && readTab && unreadList && readList) {
+                    unreadList.style.display = 'block';
+                    readList.style.display = 'none';
+                    unreadTab.classList.add('active');
+                    readTab.classList.remove('active');
+                }
+                
+                // ✨ Fetch to mark notifications as read when the popup opens!
+                fetch('../../generalComponents/header/markNotifsReadBE.php', {
+                    method: 'POST'
+                })
+                .then(res => res.text()) // Catch raw text to prevent crashes
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success) {
+                            const unreadContainer = document.getElementById('notif-unread-list');
+                            const readContainer = document.getElementById('notif-read-list');
+                            
+                            if (unreadContainer && readContainer) {
+                                // Grab all notification items inside the unread container
+                                const unreadItems = unreadContainer.querySelectorAll('.notification-item');
+                                
+                                if (unreadItems.length > 0) {
+                                    unreadItems.forEach(item => {
+                                        // 1. Change background to dim gray
+                                        item.style.backgroundColor = '#555'; 
+                                        // 2. Remove the yellow border
+                                        item.style.borderLeft = '4px solid transparent';
+                                        
+                                        // 3. Remove bold text and dim it
+                                        const pTag = item.querySelector('p');
+                                        if (pTag) {
+                                            pTag.style.fontWeight = 'normal';
+                                            pTag.style.color = '#d3d3d3';
+                                        }
+                                        
+                                        // 4. Move it to the Read tab
+                                        readContainer.prepend(item);
+                                    });
+                                    
+                                    // 5. Show the empty message in the Unread tab
+                                    unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
+                                    
+                                    // 6. Remove the empty message from the Read tab if it exists
+                                    const noReadMsg = readContainer.querySelector('.no-notifications');
+                                    if (noReadMsg) noReadMsg.remove();
+                                }
+                            }
+                        }
+                    } catch(e) {
+                        console.error("PHP Error detected:", text);
+                    }
+                })
+                .catch(err => console.error("Network Error:", err));
+            }
+        });
+    }
+
+    // ✨ Logic to mark individual notifications as read when clicked
+    if (notificationOverlay) {
+        notificationOverlay.addEventListener('click', (e) => {
+            // Broaden search to ANY element that contains "unread" in its class name
+            const notifItem = e.target.closest('[class*="unread"]'); 
+            
+            if (notifItem) {
+                console.log("Unread notification clicked:", notifItem);
+                
+                // Try to find the ID (checking data-id, id, or value attributes)
+                const notifId = notifItem.getAttribute('data-id') || notifItem.id || notifItem.getAttribute('value');
+                console.log("Extracted Notification ID:", notifId);
+                
+                notifItem.classList.remove('unread');
+                notifItem.classList.add('read');
+                notifItem.style.opacity = '0.6'; // Visual cue to prove the JS fired
+                notifItem.style.backgroundColor = '#555'; // Match read style
+
+                // ✨ MOVE THE ITEM: Transfer it to the Read tab instantly!
+                const readContainer = document.getElementById('notif-read-list');
+                if (readContainer) {
+                    readContainer.prepend(notifItem);
+                    const noReadMsg = readContainer.querySelector('.no-notifications');
+                    if (noReadMsg) noReadMsg.remove();
+                }
+
+                // Check if the Unread tab is now empty
+                const unreadContainer = document.getElementById('notif-unread-list');
+                if (unreadContainer && unreadContainer.querySelectorAll('.notification-item.unread').length === 0) {
+                    unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
+                }
+
+                if (notifId) {
+                    // Send as FormData so PHP can read it easily via $_POST['id']
+                    const formData = new FormData();
+                    formData.append('id', notifId);
+
+                    fetch('../../generalComponents/notificationsPHP/markAsRead.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.text())
+                    .then(text => console.log("Server Response:", text))
+                    .catch(err => console.error("Fetch error:", err));
+                } else {
+                    console.warn("No ID found! Please make sure your HTML has a data-id attribute.");
+                }
+            }
         });
     }
 
     const userButton = document.getElementById('userButton');
     if (userButton && signOutOverlay) {
-        userButton.addEventListener('click', () => {
+        userButton.addEventListener('click', (e) => {
+            e.stopPropagation();
             signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
+            if (notificationOverlay) notificationOverlay.style.display = 'none';
         });
-        signOutOverlay.addEventListener("click", function () {
+        signOutOverlay.addEventListener("click", function (e) {
+            e.stopPropagation();
             window.location.href = "landingPage.html";
         });
     }
+
+    // Close overlays when clicking outside
+    document.addEventListener('click', (e) => {
+        if (notificationOverlay && notificationOverlay.style.display === 'block') {
+            if (!notificationOverlay.contains(e.target)) {
+                notificationOverlay.style.display = 'none';
+            }
+        }
+        if (signOutOverlay && signOutOverlay.style.display === 'block') {
+            if (!signOutOverlay.contains(e.target)) {
+                signOutOverlay.style.display = 'none';
+            }
+        }
+    });
 });
 
 
