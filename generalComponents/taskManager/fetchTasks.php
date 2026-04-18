@@ -1,64 +1,93 @@
 <?php
+if(!session_id()){ session_start(); }
 
-//start session
-if(!session_id()){
-    session_start();
-}
-
-//Include filepaths
 require_once __DIR__ . '/../../filepaths.php';
-
-//Include set message
-require_once genMsg_dir . '/setMessage.php';
-
-
-//Include database connection
 require_once BASE_DIR . '/connect.php';
+
+header('Content-Type: application/json');
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
 try {
     if (!isset($_SESSION['accID'])) {
-        setMessage("Session expired. Please log in again.", "error");
-        header("Location: /qms_optiqual/staffSpecificComponents/staffMain/staff-POV.php");
+        echo json_encode(['error' => 'Session expired']);
         exit;
     }
 
-    //bind the session variable to the query
     $accID = $_SESSION['accID']; 
-
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $dbUsername, $dbPassword);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Query to fetch task data
-    $stmt = $pdo->prepare("
-        SELECT
-            p.title AS policyTitle,
-            a.fullName AS author,
-            t.dateCreated AS dateSubmitted,
-            p.versionNo AS version,
-            tt.taskTypeName AS status,
-            p.contentPath AS pdfPath
-            
-        FROM tasktbl t
-        LEFT JOIN policytbl p ON t.policyAssigned = p.policyID -- Join with policy table
-        LEFT JOIN tasktypetbl tt ON t.taskTypeID = tt.tasktypeID -- Join with tasktypes table
-        LEFT JOIN accdatatbl a ON t.assignedTo = a.accID -- Join with accdata table
-        WHERE t.assignedTo = ?
-        ORDER BY t.dateCreated
-    ");
     
-    // Execute the query with the accID parameter
-    $stmt->execute([$accID]);
-    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $roleStmt = $conn->prepare("SELECT roleID FROM accdatatbl WHERE accID = ?");
+    $roleStmt->bind_param("i", $accID);
+    $roleStmt->execute();
+    $userRole = $roleStmt->get_result()->fetch_assoc()['roleID'] ?? 0;
+    $roleStmt->close();
 
-    // Return data as JSON 
-    if ($tasks) {
-        echo json_encode($tasks, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $actionRequired = [];
+    $mySubmissions = [];
+
+    // ==========================================
+    // 1. FETCH "ACTION REQUIRED" (Tasks to do)
+    // ==========================================
+    $selectCore = "
+        SELECT 
+            p.policyID, p.title AS policyTitle, a.fullName AS author, 
+            p.dateSubmitted, p.versionNo AS version, ps.policyStatusName AS status, p.policyStatusID AS statusCode,
+            rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName,
+            p.contentPath AS pdfPath
+        FROM policytbl p
+        LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+        LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
+        LEFT JOIN accdatatbl rev ON p.reviewedBy = rev.accID
+        LEFT JOIN accdatatbl ver ON p.policyVerifier = ver.accID
+        LEFT JOIN accdatatbl app ON p.policyApprover = app.accID
+    ";
+
+    if ($userRole == 2) {
+        $query = $selectCore . " WHERE (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR p.policyStatusID IN (3, 4) ORDER BY p.dateSubmitted ASC";
+        $res = $conn->query($query);
+        if ($res) {
+            while($row = $res->fetch_assoc()){ $actionRequired[] = $row; }
+        }
     } else {
-        echo json_encode(['message' => 'No tasks found']);
+        $stmt = $conn->prepare($selectCore . "
+            JOIN tasktbl t ON p.policyID = t.policyAssigned
+            WHERE t.assignedTo = ? ORDER BY t.dateCreated");
+        $stmt->bind_param("i", $accID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while($row = $res->fetch_assoc()){ $actionRequired[] = $row; }
+        $stmt->close();
     }
-} catch (PDOException $e) { 
-     // Return a generic error message in production
-     echo json_encode(['error' => 'An error occurred while fetching tasks']);
-}
 
+    // ==========================================
+    // 2. FETCH "MY SUBMISSIONS" (Track progress)
+    // ==========================================
+    // ✨ THE FIX: Uses your exact database columns (content and remarksOn)
+    $trackStmt = $conn->prepare("
+        SELECT 
+            p.policyID, p.title AS policyTitle, p.dateSubmitted, 
+            ps.policyStatusName AS status, p.policyStatusID AS statusCode, p.contentPath AS pdfPath,
+            (SELECT content FROM feedbacktbl f WHERE f.remarksOn = p.policyID ORDER BY f.feedbackID DESC LIMIT 1) AS activeFeedback
+        FROM policytbl p
+        LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+        WHERE p.policyAuthor = ?
+        ORDER BY p.dateSubmitted DESC
+    ");
+    $trackStmt->bind_param("i", $accID);
+    $trackStmt->execute();
+    $trackRes = $trackStmt->get_result();
+    while($trackRow = $trackRes->fetch_assoc()){ 
+        $mySubmissions[] = $trackRow; 
+    }
+    $trackStmt->close();
+
+    echo json_encode([
+        'actionRequired' => $actionRequired,
+        'mySubmissions' => $mySubmissions
+    ]);
+
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+}
 ?>

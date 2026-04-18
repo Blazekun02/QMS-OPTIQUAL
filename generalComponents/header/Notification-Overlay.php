@@ -1,152 +1,147 @@
 <style>
-.overlay {
-    position: fixed;
+/* ✨ FIX: Removed the #popupOverlay styling so we don't accidentally create an invisible wall! 
+ Only the specific notification box itself gets moved to the front.
+*/
+.notif-wrapper {
+    position: fixed; /* Locks it to the screen */
+    top: 75px;       /* Drops it perfectly below the top navbar */
+    right: 150px;    /* Shifts it left to align exactly under the Bell icon */
+    z-index: 99999 !important; /* Forces it above the Sidebar and Ram */
+    
     width: 250px;
-    height: 250px;
-    top: 6%;
-    right: 15%;
+    height: auto;
+    max-height: 350px;
     background-color: #343A40;
     border-radius: 10px;
-    z-index: 9999;
-    padding: 10px;
+    padding: 15px;
+    box-sizing: border-box;
+    font-family: 'Istok Web', sans-serif;
+    color: white;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); 
 }
 
-.overlay-header {
-    color: white;
+.notif-header {
     font-size: 20px;
-    margin-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-weight: bold;
 }
 
 .notif-buttons {
+    display: flex;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-.read-button,
-.unread-button {
-    display: inline-block;
-    background-color: #343A40;
+.notif-btn-toggle {
+    background-color: transparent;
     font-size: 13px;
     border: 2px solid white;
     border-radius: 20px;
     color: white;
     cursor: pointer;
-    padding: 1px 10px;
-    text-align: center;
-    text-decoration: none;
-    margin-right: 5px;
+    padding: 3px 15px;
+    font-family: 'Istok Web', sans-serif;
+    font-weight: bold;
+    transition: 0.2s;
 }
 
-.divider {
+.notif-btn-toggle:hover {
+    background-color: #fbaf41;
+    color: black;
+    border-color: #fbaf41;
+}
+
+.notif-divider {
     width: 100%;
-    height: 0.5px;
-    background-color: white;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
     margin: 10px 0;
 }
 
 .notification-list {
-    max-height: 130px;
+    max-height: 180px;
     overflow-y: auto;
-    margin-left: 10px;
+    padding-right: 5px;
 }
 
-.read-notification-list,
-.unread-notification-list {
-    display: none;
-}
+.notification-list::-webkit-scrollbar { width: 5px; }
+.notification-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 5px; }
+.notification-list::-webkit-scrollbar-thumb { background: #fbaf41; border-radius: 5px; }
 
 .notification-item {
-    min-height: 30px;
-    padding: 5px;
-}
-
-.notification-text {
-    font-size: 16px;
+    background-color: #4963D4;
     color: white;
-    margin: 0;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
-.notification-text:hover {
-    color: #fbaf41;
-}
-
-.notification-item:hover {
-    background-color: #495057;
-    cursor: pointer;
+.no-notifications {
+    color: #d3d3d3;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 20px;
 }
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const readBtn = document.querySelector('.read-button');
-    const unreadBtn = document.querySelector('.unread-button');
-    const readList = document.querySelector('.read-notification-list');
-    const unreadList = document.querySelector('.unread-notification-list');
-
-    // Default state
-    unreadList.style.display = 'block';
-
-    readBtn.addEventListener('click', function () {
-        unreadList.style.display = 'none';
-        readList.style.display = 'block';
-    });
-
-    unreadBtn.addEventListener('click', function () {
-        readList.style.display = 'none';
-        unreadList.style.display = 'block';
-    });
-});
-
-</script>
-
-<?php
-$db_server = "localhost";
-$db_user = "root";
-$db_pass = "";
-$db_name = "qms";
-
-$conn = mysqli_connect($db_server, $db_user, $db_pass, $db_name);
-?>
-
-<div class="overlay" id="overlay">
-    <h2 class="overlay-header">Notifications</h2>
+<div class="notif-wrapper">
+    <h2 class="notif-header">Notifications</h2>
 
     <div class="notif-buttons">
-        <button class="unread-button">Unread</button>
-        <button class="read-button">Read</button>
+        <button class="notif-btn-toggle" onclick="document.getElementById('notif-unread-list').style.display='block'; document.getElementById('notif-read-list').style.display='none';">Unread</button>
+        <button class="notif-btn-toggle" onclick="document.getElementById('notif-unread-list').style.display='none'; document.getElementById('notif-read-list').style.display='block';">Read</button>
     </div>
 
-    <div class="divider"></div>
+    <div class="notif-divider"></div>
 
-    <div class="notification-list unread-notification-list">
+    <div id="notif-unread-list" class="notification-list" style="display: block;">
         <?php
-        $query = "SELECT * FROM notiftbl WHERE notifStatus = 0 ORDER BY dateTimeSent DESC";
-        $result = mysqli_query($conn, $query);
+        try {
+            $currentUserID = isset($_SESSION['accID']) ? (int)$_SESSION['accID'] : 0;
+            
+            if (isset($conn)) {
+                $query = "SELECT * FROM notiftbl WHERE notifStatus = 0 AND accID = $currentUserID ORDER BY dateTimeSent DESC";
+                $result = $conn->query($query);
 
-        if (mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo '<div class="notification-item">';
-                echo '<p class="notification-text">' . $row['message'] . '</p>';
-                echo '</div>';
+                if ($result && $result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        $msg = htmlspecialchars((string)$row['message']);
+                        echo "<div class='notification-item'><p style='margin:0;'>$msg</p></div>";
+                    }
+                } else {
+                    echo "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
+                }
+            } else {
+                echo "<p style='color:red;'>Database connection missing.</p>";
             }
-        } else {
-            echo '<p class="no-notifications">No unread notifications.</p>';
+        } catch (\Throwable $e) {
+            // Safely catches ANY backend error so it doesn't break the HTML
+            echo "<p style='color:red;'>Error loading notifications.</p>";
         }
         ?>
     </div>
 
-    <div class="notification-list read-notification-list">
+    <div id="notif-read-list" class="notification-list" style="display: none;">
         <?php
-        $query = "SELECT * FROM notiftbl WHERE notifStatus = 1 ORDER BY dateTimeSent DESC";
-        $result = mysqli_query($conn, $query);
+        try {
+            if (isset($conn)) {
+                $query = "SELECT * FROM notiftbl WHERE notifStatus = 1 AND accID = $currentUserID ORDER BY dateTimeSent DESC";
+                $result = $conn->query($query);
 
-        if (mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo '<div class="notification-item">';
-                echo '<p class="notification-text">' . $row['message'] . '</p>';
-                echo '</div>';
+                if ($result && $result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        $msg = htmlspecialchars((string)$row['message']);
+                        echo "<div class='notification-item' style='background-color:#555;'><p style='margin:0;'>$msg</p></div>";
+                    }
+                } else {
+                    echo "<p class='no-notifications'><i class='fas fa-envelope-open' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No read notifications.</p>";
+                }
             }
-        } else {
-            echo '<p class="no-notifications">No read notifications.</p>';
+        } catch (\Throwable $e) {
+            echo "<p style='color:red;'>Error loading notifications.</p>";
         }
         ?>
     </div>

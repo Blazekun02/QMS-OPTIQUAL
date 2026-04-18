@@ -3,10 +3,21 @@
     include '../../connect.php';
     if ($conn->connect_error) {
         die("❌ Connection failed: " . $conn->connect_error);
-    } else {
-        echo "<script>alert('✅ Connected successfully');</script>";
     }
 
+    // Fetch user's full name if not already set in session
+    if (!isset($_SESSION['fullName']) && isset($_SESSION['accID'])) {
+        $accID = $_SESSION['accID'];
+        $query = "SELECT fullName FROM accdatatbl WHERE accID = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $accID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $_SESSION['fullName'] = $row['fullName'];
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -19,8 +30,12 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="your-integrity-hash" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+        <script>
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        </script>
 
-        <link rel="stylesheet" href="QAD-POV.css">
+        <link rel="stylesheet" href="QAD-POV.css?v=<?php echo time(); ?>">
     </head>
 
     <body>
@@ -39,13 +54,9 @@
                     <img src="../QAP Sidebar Images/Not Clicked/Create_Poli.png" alt="Icon 2">
                     <span class="icon-label">Policy Submission</span>
                 </li>
-                <li class="menu-icons">
-                    <img src="../QAP Sidebar Images/Not Clicked/Pro_Track.png" alt="Icon 3">
-                    <span class="icon-label">Process Tracker</span>
-                </li>
-                <li class="menu-icons">
-                    <img src="../QAP Sidebar Images/Not Clicked/Task_Manage.png" alt="Icon 4">
-                    <span class="icon-label">Task Manager</span>
+                <li class="menu-icons" onclick="showWorkspace()">
+                    <img src="../../assets/task manager-notClicked.png" alt="Icon 4">
+                    <span class="icon-label">My Workspace</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../QAP Sidebar Images/Not Clicked/Role_Manage.png" alt="Icon 6">
@@ -74,26 +85,29 @@
 
         <div class="blue-line">Copyright © 2024 OPTIQUAL. All rights reserved</div>
         <div class="yellow-line"></div>
-        <img src="../QAP Sidebar Images/Not Clicked/OIP.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
-        <div>
-            <button type="button" class="button user-btn" id="userButton">
-                <i class="fa fa-user-circle" style="font-size:24px"></i>
-                <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'User'; ?>
-            </button>
-            <button type="button" class="button notif-btn" id="notifButton">
-                <i class="fa fa-bell" style="font-size:24px"></i>
-            </button>
+        <div class="top-nav-bar">
+            <img src="../QAP Sidebar Images/Not Clicked/OIP.jpeg" alt="Menu" class="hamburger-icon" id="hamburger-icon">
+            <div class="top-nav-right">
+                <button type="button" class="button notif-btn" id="notifButton">
+                    <i class="fa fa-bell" style="font-size:24px"></i>
+                </button>
+                <div class="user-menu-container">
+                    <button type="button" class="button user-btn" id="userButton">
+                        <i class="fa fa-user-circle" style="font-size:24px"></i>
+                        <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'User'; ?>
+                    </button>
+                    <div class="signOut-overlay" id="signOutOverlay">
+                        <div class="signOut-content">
+                            Sign out
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="popupOverlay" id="popupOverlay" style="display: none;">
             <?php include '../../generalComponents/header/Notification-Overlay.php';?>
             
-        </div>
-
-        <div class="signOut-overlay" id="signOutOverlay">
-            <div class="signOut-content">
-                Sign out
-            </div>
         </div>
 
         <!-- Policy Repository --> 
@@ -170,14 +184,35 @@
 
                 
         </div>
-        <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none; width:100%; height:600px; margin-top:20px;">
-            <div class="pdfViewer-header">
-                <button class="btn" id="closePdfViewer"><i class="fa fa-times"></i></button>
-                <div class="header-pdf_divider"></div>
-                <?php include '../../generalComponents/pdfViewer/pdfViewer.php';?>
+        <div class="Policy_Repo_pdfViewer" id="Policy_Repo_pdfViewer" style="display:none;">
+            
+            <div class="introduction-header" style="border-bottom: 2px solid white; padding-bottom: 15px; margin-bottom: 15px; display: flex; align-items: center;">
+                <button id="closePdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; transition: color 0.2s;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <span class="introduction-title" style="color: white; font-size: 28px; font-weight: bold;">Policy Viewer</span>
             </div>
+
+            <div class="pdf-container-wrapper" style="display: flex; flex-direction: column; flex-grow: 1; background-color: white; border-radius: 8px; overflow: hidden;">
                 
+                <div class="custom-pdf-toolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px; border-radius: 8px 8px 0 0;">
+                    <div class="pdf-tools-left">
+                        <button id="pr_prevPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                        <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="pr_pageNum">1</span> of <span id="pr_pageCount">?</span></span>
+                        <button id="pr_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="pdf-tools-right">
+                        <button id="pr_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
+                        <span id="pr_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
+                        <button id="pr_zoomIn" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="pdf-canvas-container" style="background-color: #525659; height: 68vh; overflow: auto; display: block; text-align: center; padding: 20px 0; border-radius: 0 0 8px 8px;">
+                    <canvas id="pr_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
+                </div>
             </div>
+        </div>
                     
         <!-- POLICY SUBMISSION -->
         <div class="policy-submission-content" id="policy-submission-content" >
@@ -224,10 +259,6 @@
         </div>
         </div>
 
-
-       
-
-
 <!-- Department Manager  -->
 <div class="Department-Manager-Panel" >
         <div class="Department-Manager-Header">
@@ -241,22 +272,22 @@
         </div>
         <div class="DMP-Divider"></div>
 
-        <div class="add-department-button">
-            <button id="addDepartmentButton" style=" white-space:nowrap; margin-left:1em; height:2em; width: 4em; margin-top: 0.9em;">+ Add </button>
-        </div>
-        <div id="departmentListContainer">
-        </div>
+        <div id="departmentListContainer"></div>
+
+        <button class="pm-big-add-btn" id="addDepartmentButton" style="margin-top: 20px;">
+            <i class="fas fa-plus"></i>
+        </button>
 
 
         <div id="overlay"></div>
 
-        <div id="assignNameContainer">
-        <h2>Assign Name</h2>
-        <input type="text" id="departmentNameInput" placeholder="Enter Department Name">
-        <div class="assign-name-buttons">
-            <button id="cancelAssignName">Cancel</button>
-            <button id="confirmAssignName">Confirm</button>
-        </div>
+        <div id="assignNameContainer" class="pm-modal-container" style="display: none;">
+            <h2 style="font-size: 32px; margin-bottom: 20px;">Assign Name</h2>
+            <input type="text" id="departmentNameInput" placeholder="Enter Department Name" style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 25px; box-sizing: border-box;">
+            <div class="pm-modal-buttons">
+                <button id="cancelAssignName" class="cancel-btn">Cancel</button>
+                <button id="confirmAssignName" class="confirm-btn">Confirm</button>
+            </div>
         </div>
 
         <div id="assignRoleContainer" class="popup-container" style="display: none;">
@@ -339,13 +370,9 @@
 </div>
 
 
-    <div class="Process-Tracker-Panel2" style ="display: none;">
-        <?php include '../../generalComponents/processTracker/processTracker.php';?>
-    </div>
-
-    <div class="Task-Manager-Panel" style="display: block;">
-        <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
-    </div>
+<div class="Workspace-Panel" style="display: none;">
+            <?php include '../../generalComponents/taskManager/taskManager.php'; ?>
+        </div>
     
 <!-- Policy Manager -->
 
@@ -423,7 +450,74 @@
         </div>
     </div>
 
-<script src="QAD-POV.js"></script>
+    <!-- Role Manager Panel -->
+
+    <div class="Role-Manager-Panel" style="display:none;">
+    <h1 class="rm-title">Quality Assurance Team Manager</h1>
+    
+    <div class="rm-controls">
+        <div class="rm-search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" placeholder="find employee" id="rmSearchInput">
+        </div>
+        <button class="rm-icon-btn" id="rmAddRoleBtn" title="Add User"><i class="fas fa-user-plus"></i></button>
+        
+        <button class="rm-icon-btn rm-delete-btn" id="rmDeleteRoleBtn" title="Remove Users"><i class="fas fa-trash-alt"></i></button>
+        
+        <button class="rm-icon-btn" id="rmConfirmDeleteBtn" title="Confirm Removal" style="display: none; color: #4CAF50;"><i class="fas fa-check-circle"></i></button>
+        <span id="rmDeleteInstruction" style="display: none; color: #f44336; font-family: 'Istok Web', sans-serif; font-weight: bold; margin-left: 10px; font-size: 16px;">Select users to be removed.</span>
+    </div>
+    <div class="rm-grid-container" id="rmGridContainer"></div>
+</div>
+
+<div id="rmAddUserModal" class="pm-modal-container" style="display: none;">
+    <h2 class="rm-modal-title">Add to Team</h2>
+    
+    <div class="rm-input-group">
+        <label class="rm-input-label">Name</label>
+        <select id="rmUserSelectInput" class="rm-modal-input rm-modal-select">
+            <option value="" disabled selected>Select an employee...</option>
+        </select>
+    </div>
+    
+    <div class="rm-input-group rm-input-group-last">
+        <label class="rm-input-label">Email</label>
+        <input type="email" id="rmUserEmailInput" class="rm-modal-input rm-readonly-input" placeholder="Email will automatically fill..." readonly>
+    </div>
+
+    <div class="pm-modal-buttons">
+        <button id="rmCancelAddUser" class="cancel-btn">Cancel</button>
+        <button id="rmConfirmAddUser" class="confirm-btn">Confirm</button>
+    </div>
+</div>
+
+<div class="Welcome-Panel" id="Welcome-Panel">
+            
+            <div class="welcome-text-container">
+                <h1 class="welcome-title">Welcome to OPTIQUAL</h1>
+                <p class="welcome-subtitle">Quality Assurance Director Dashboard</p>
+            </div>
+
+            <div class="mountain-layer back-mountain"></div>
+            <div class="mountain-layer mid-mountain"></div>
+            <div class="mountain-layer front-mountain"></div>
+
+            <div class="ram-container">
+                <svg viewBox="0 0 120 100" class="ram-svg">
+                    <circle cx="20" cy="45" r="6" fill="#343A40" />
+                    <line x1="45" y1="65" x2="35" y2="90" class="leg back-leg" />
+                    <line x1="75" y1="60" x2="65" y2="85" class="leg back-leg" />
+                    <ellipse cx="50" cy="50" rx="35" ry="22" fill="#343A40" />
+                    <line x1="35" y1="65" x2="45" y2="90" class="leg front-leg" />
+                    <line x1="65" y1="65" x2="75" y2="90" class="leg front-leg" />
+                    <circle cx="85" cy="38" r="14" fill="#343A40" />
+                    <path d="M 85 30 C 105 15, 115 45, 90 50 C 80 52, 75 40, 80 35" fill="none" stroke="#fbaf41" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            
+        </div>
+
+<script src="QAD-POV.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>
