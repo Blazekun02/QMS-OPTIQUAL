@@ -19,7 +19,7 @@ $assignedBy = $_SESSION['accID'];
 // Task Type: 2 = Verification/Review, 3 = Approval
 $taskTypeID = ($roleType === 'Verifier') ? 2 : 3;
 
-// 1. Insert the task into the Verifier's inbox
+// 1. Insert the task into the Verifier's/Approver's inbox
 $stmt = $conn->prepare("INSERT INTO tasktbl (policyAssigned, assignedTo, assignedBy, taskTypeID) VALUES (?, ?, ?, ?)");
 $stmt->bind_param("iiii", $policyID, $assigneeID, $assignedBy, $taskTypeID);
 
@@ -38,19 +38,31 @@ if ($stmt->execute()) {
         $updatePolicy->close();
     }
 
-    // ✨ NEW: Fetch the Assignee's full name from the database!
+    // ✨ NEW: Fetch the exact Policy Title from the database
+    $policyTitle = "a document"; // Fallback
+    $titleStmt = $conn->prepare("SELECT title FROM policytbl WHERE policyID = ?");
+    $titleStmt->bind_param("i", $policyID);
+    $titleStmt->execute();
+    $titleResult = $titleStmt->get_result();
+    if ($titleResult->num_rows > 0) {
+        $policyTitle = $titleResult->fetch_assoc()['title'];
+    }
+    $titleStmt->close();
+
+    // Fetch the Assignee's full name from the database
     $nameStmt = $conn->prepare("SELECT fullName FROM accdatatbl WHERE accID = ?");
     $nameStmt->bind_param("i", $assigneeID);
     $nameStmt->execute();
     $nameResult = $nameStmt->get_result();
-    $assigneeName = "User ID " . $assigneeID; // Fallback just in case
+    $assigneeName = "User ID " . $assigneeID; // Fallback
     if ($nameResult->num_rows > 0) {
         $assigneeName = $nameResult->fetch_assoc()['fullName'];
     }
     $nameStmt->close();
 
     // 2. Insert notification for the RECEIVER (The Employee)
-    $notifMessage = "You have been assigned a new task as a " . $roleType . ".";
+    // ✨ UPGRADED: Now includes the Role AND the Policy Title!
+    $notifMessage = "You have been assigned as a " . $roleType . " for the document: '" . $policyTitle . "'.";
     $notifStmt = $conn->prepare("INSERT INTO notiftbl (receivedBy, message, notifStatus) VALUES (?, ?, 0)");
     if ($notifStmt) {
         $notifStmt->bind_param("is", $assigneeID, $notifMessage);
@@ -59,8 +71,8 @@ if ($stmt->execute()) {
     }
 
     // 3. Insert a confirmation notification for the SENDER (The QAD)
-    // ✨ FIX: It now uses the assignee's name!
-    $qadReceiptMessage = "You successfully assigned a task to " . $assigneeName . ".";
+    // ✨ UPGRADED: Now includes the Policy Title here too!
+    $qadReceiptMessage = "You successfully assigned " . $assigneeName . " to the document: '" . $policyTitle . "'.";
     $receiptStmt = $conn->prepare("INSERT INTO notiftbl (receivedBy, message, notifStatus) VALUES (?, ?, 0)");
     if ($receiptStmt) {
         $receiptStmt->bind_param("is", $assignedBy, $qadReceiptMessage);

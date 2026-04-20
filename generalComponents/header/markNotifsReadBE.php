@@ -1,20 +1,24 @@
 <?php
 ob_start();
 session_start();
-// ✨ THE FIX: Jump back TWO folders to reach the root connect.php
 include '../../connect.php'; 
 
-if (!isset($_SESSION['accID'])) {
+// Catch the JSON sent from JavaScript
+$data = json_decode(file_get_contents("php://input"), true);
+
+if (!isset($_SESSION['accID']) || !isset($data['notifID'])) {
     ob_end_clean();
-    echo json_encode(['success' => false, 'message' => 'No session found.']);
+    echo json_encode(['success' => false, 'message' => 'Missing session or ID.']);
     exit;
 }
 
 $accID = $_SESSION['accID'];
+$notifID = $data['notifID'];
 
-$stmt = $conn->prepare("UPDATE notiftbl SET notifStatus = 1 WHERE receivedBy = ? AND notifStatus = 0");
+// ✨ UPGRADED: Now it only updates the exact Notification ID that was clicked!
+$stmt = $conn->prepare("UPDATE notiftbl SET notifStatus = 1 WHERE receivedBy = ? AND notifID = ?");
 if ($stmt) {
-    $stmt->bind_param("i", $accID);
+    $stmt->bind_param("ii", $accID, $notifID);
     $stmt->execute();
     $stmt->close();
     

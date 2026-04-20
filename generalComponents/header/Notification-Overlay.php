@@ -111,9 +111,10 @@
 
                 if ($result && $result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
-                        // ✨ ADDED: Bright yellow left border and bold text for UNREAD
                         $msg = htmlspecialchars((string)$row['message']);
-                        echo "<div class='notification-item' style='border-left: 4px solid #fbaf41;'><p style='margin:0; font-weight:bold;'>$msg</p></div>";    
+                        // ✨ ADDED: notifID, the 'unread' class, and cursor:pointer
+                        $notifID = $row['notifID'];
+                        echo "<div class='notification-item unread' data-id='$notifID' style='border-left: 4px solid #fbaf41; cursor: pointer;'><p style='margin:0; font-weight:bold;'>$msg</p></div>";    
                     }
                 } else {
                     echo "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";

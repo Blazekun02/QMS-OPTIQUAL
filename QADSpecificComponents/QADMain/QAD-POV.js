@@ -165,80 +165,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Top Bar Buttons
-    // Top Bar Buttons
     const notifButton = document.getElementById('notifButton');
     if (notifButton && notificationOverlay) {
         notifButton.addEventListener('click', (e) => {
             e.stopPropagation();
             
             if (notificationOverlay.style.display === 'block' || notificationOverlay.style.display === 'flex') {
-                // If it's open, close it
                 notificationOverlay.style.display = 'none';
             } else {
-                // If it's closed, open it and close the sign-out menu
                 notificationOverlay.style.display = 'block';
                 if (signOutOverlay) signOutOverlay.style.display = 'none';
 
-                // ✨ FIX: Reset to the "Unread" tab every time the popup is opened
+                // Reset to Unread tab when opening
                 if (unreadTab && readTab && unreadList && readList) {
                     unreadList.style.display = 'block';
                     readList.style.display = 'none';
                     unreadTab.classList.add('active');
                     readTab.classList.remove('active');
                 }
-                
-                // ✨ Fetch to mark notifications as read when the popup opens!
-                fetch('../../generalComponents/header/markNotifsReadBE.php', {
-                    method: 'POST'
-                })
-                .then(res => res.text()) // Catch raw text to prevent crashes
-                .then(text => {
-                    try {
-                        const data = JSON.parse(text);
-                        if (data.success) {
-                            const unreadContainer = document.getElementById('notif-unread-list');
-                            const readContainer = document.getElementById('notif-read-list');
-                            
-                            if (unreadContainer && readContainer) {
-                                // Grab all notification items inside the unread container
-                                const unreadItems = unreadContainer.querySelectorAll('.notification-item');
-                                
-                                if (unreadItems.length > 0) {
-                                    unreadItems.forEach(item => {
-                                        // 1. Change background to dim gray
-                                        item.style.backgroundColor = '#555'; 
-                                        // 2. Remove the yellow border
-                                        item.style.borderLeft = '4px solid transparent';
-                                        
-                                        // 3. Remove bold text and dim it
-                                        const pTag = item.querySelector('p');
-                                        if (pTag) {
-                                            pTag.style.fontWeight = 'normal';
-                                            pTag.style.color = '#d3d3d3';
-                                        }
-                                        
-                                        // 4. Move it to the Read tab
-                                        readContainer.prepend(item);
-                                    });
-                                    
-                                    // 5. Show the empty message in the Unread tab
-                                    unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
-                                    
-                                    // 6. Remove the empty message from the Read tab if it exists
-                                    const noReadMsg = readContainer.querySelector('.no-notifications');
-                                    if (noReadMsg) noReadMsg.remove();
-                                }
-                            }
-                        }
-                    } catch(e) {
-                        console.error("PHP Error detected:", text);
-                    }
-                })
-                .catch(err => console.error("Network Error:", err));
             }
         });
     }
 
+    // ✨ NEW: Logic to mark INDIVIDUAL notifications as read when clicked
+    document.addEventListener('click', (e) => {
+        // Did the user click an unread notification?
+        const notifItem = e.target.closest('.notification-item.unread'); 
+        
+        if (notifItem) {
+            const notifId = notifItem.getAttribute('data-id');
+            
+            if (notifId) {
+                // 1. Instantly change its appearance to "Read"
+                notifItem.classList.remove('unread');
+                notifItem.style.backgroundColor = '#555'; 
+                notifItem.style.borderLeft = '4px solid transparent';
+                notifItem.style.cursor = 'default';
+                
+                const pTag = notifItem.querySelector('p');
+                if (pTag) {
+                    pTag.style.fontWeight = 'normal';
+                    pTag.style.color = '#d3d3d3';
+                }
+
+                // 2. Instantly slide it over to the Read tab
+                const readContainer = document.getElementById('notif-read-list');
+                if (readContainer) {
+                    readContainer.prepend(notifItem);
+                    const noReadMsg = readContainer.querySelector('.no-notifications');
+                    if (noReadMsg) noReadMsg.remove(); // Remove the "empty" text if it exists
+                }
+
+                // 3. Check if the Unread tab is now completely empty
+                const unreadContainer = document.getElementById('notif-unread-list');
+                if (unreadContainer && unreadContainer.querySelectorAll('.notification-item.unread').length === 0) {
+                    unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
+                }
+
+                // 4. Silently tell the database to update this specific ID
+                fetch('../../generalComponents/header/markNotifsReadBE.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notifID: notifId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) console.error("Database Update Failed:", data.message);
+                })
+                .catch(err => console.error("Fetch error:", err));
+            }
+        }
+    });
+    
+
+    // ✨ Logic to mark individual notifications as read when clicked
     // ✨ Logic to mark individual notifications as read when clicked
     if (notificationOverlay) {
         notificationOverlay.addEventListener('click', (e) => {
@@ -394,15 +394,23 @@ function pr_onZoomOut() {
 }
 
 // Folder Accordion Toggle
+// Folder Accordion Toggle
 const parentFolders = document.querySelectorAll('.PR-Parent-Folders');
 parentFolders.forEach(folder => {
     folder.addEventListener('click', () => {
         const parentId = folder.getAttribute('data-id');
-        document.querySelectorAll('.child-folders').forEach(child => child.style.display = 'none');
-        document.querySelectorAll('.Policies-Folder').forEach(policyFolder => policyFolder.style.display = 'none');
+        const childContainer = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
         
-        const childToShow = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
-        if (childToShow) childToShow.style.display = 'flex';
+        if (childContainer) {
+            // Check if it is currently hidden
+            const isHidden = childContainer.style.display === 'none' || childContainer.style.display === '';
+            
+            // Toggle the visibility
+            childContainer.style.display = isHidden ? 'flex' : 'none';
+            
+            // ✨ ADDED: Spin the triangle!
+            folder.classList.toggle('folder-open', isHidden);
+        }
     });
 });
 
@@ -410,10 +418,18 @@ const childFolders = document.querySelectorAll('.PR-Child-Folders');
 childFolders.forEach(childFolder => {
     childFolder.addEventListener('click', () => {
         const childId = childFolder.getAttribute('data-id');
-        document.querySelectorAll('.Policies-Folder').forEach(pf => pf.style.display = 'none');
-        
         const policiesFolderToShow = document.querySelector(`.Policies-Folder[data-pol-id='${childId}']`);
-        if (policiesFolderToShow) policiesFolderToShow.style.display = 'flex';
+        
+        if (policiesFolderToShow) {
+            // Check if it is currently hidden
+            const isHidden = policiesFolderToShow.style.display === 'none' || policiesFolderToShow.style.display === '';
+            
+            // Toggle the visibility
+            policiesFolderToShow.style.display = isHidden ? 'flex' : 'none';
+            
+            // ✨ ADDED: Spin the triangle!
+            childFolder.classList.toggle('folder-open', isHidden);
+        }
     });
 });
 
@@ -738,10 +754,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // ------------------------------------------------
 
+        // ✨ ADDED: Group the triangle icon and name together so they look perfect
+        const leftWrapper = document.createElement('div');
+        leftWrapper.style.display = 'flex';
+        leftWrapper.style.alignItems = 'center';
+        leftWrapper.style.flexGrow = '1';
+
+        const toggleIcon = document.createElement('i');
+        toggleIcon.className = 'fas fa-caret-right folder-toggle-icon';
+        
         const nameSpan = document.createElement('span');
         nameSpan.textContent = name;
         nameSpan.id = `department-name-${id ? id : Date.now()}`; 
-        departmentDiv.appendChild(nameSpan);
+        
+        leftWrapper.appendChild(toggleIcon);
+        leftWrapper.appendChild(nameSpan);
+        departmentDiv.appendChild(leftWrapper);
   
         const iconsDiv = document.createElement('div');
         iconsDiv.classList.add('department-icons');
@@ -803,6 +831,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (container) {
                 const isHidden = container.style.display === 'none';
                 container.style.display = isHidden ? 'flex' : 'none';
+                
+                // ✨ ADDED: This line spins the triangle down when open, and back up when closed!
+                departmentDiv.classList.toggle('folder-open', isHidden);
             }
         });
 
@@ -1516,13 +1547,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // =====================================================================
 
     // --- RENDER FOLDER FUNCTION ---
+    // --- RENDER FOLDER FUNCTION ---
     function renderPMFolder(name, categoryId, parentId) {
         const folderDiv = document.createElement('div');
         folderDiv.className = 'pm-folder-item';
         if (parentId !== null) folderDiv.classList.add('pm-child-folder');
         folderDiv.dataset.categoryId = categoryId;
         
-        // ✨ NEW: MAKE FOLDERS DRAGGABLE ✨
+        // MAKE FOLDERS DRAGGABLE
         folderDiv.setAttribute('data-id', categoryId);
         folderDiv.setAttribute('data-type', 'category');
         folderDiv.setAttribute('draggable', 'true');
@@ -1548,8 +1580,12 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
+        // ✨ ADDED: Inserted the triangle icon right before the name!
         folderDiv.innerHTML = `
-            <p class="pm-folder-name">${name}</p>
+            <div style="display: flex; align-items: center;">
+                <i class="fas fa-caret-right folder-toggle-icon"></i>
+                <p class="pm-folder-name">${name}</p>
+            </div>
             <div class="pm-folder-icons">
                 ${iconsHTML}
             </div>
@@ -1633,9 +1669,12 @@ document.addEventListener('DOMContentLoaded', () => {
         folderDiv.addEventListener('click', () => {
             const isHidden = childContainer.style.display === 'none';
             childContainer.style.display = isHidden ? 'flex' : 'none';
+            
+            // ✨ ADDED: This line spins the triangle!
+            folderDiv.classList.toggle('folder-open', isHidden);
         });
 
-        // ✨ THE FIX: Correctly append folders to the list
+        // CORRECTLY APPEND FOLDERS TO LIST
         if (parentId === null) {
             pmFoldersContainer.appendChild(folderDiv);
             pmFoldersContainer.appendChild(childContainer);

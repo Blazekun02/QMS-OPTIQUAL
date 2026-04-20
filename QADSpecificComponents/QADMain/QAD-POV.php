@@ -134,7 +134,7 @@
                             echo '<div class="Parent-Block">'; 
                         
                             echo '<div class="PR-Parent-Folders" data-id="' . $row['categoryID'] . '">';
-                            echo '<p class="PR-Parent-Folder-Name">' . $row['categoryName'] . '</p>';
+                            echo '<p class="PR-Parent-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $row['categoryName'] . '</p>';
                             echo '</div>';
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
@@ -157,7 +157,7 @@
                             if (mysqli_num_rows($resultCF) > 0) {
                                 while ($rowCF = mysqli_fetch_assoc($resultCF)) {
                                     echo '<div class="PR-Child-Folders" data-id="' . $rowCF['categoryID'] . '">';
-                                    echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
+                                    echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
                                     $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 5";
@@ -453,7 +453,7 @@
     <!-- Role Manager Panel -->
 
     <div class="Role-Manager-Panel" style="display:none;">
-    <h1 class="rm-title">Quality Assurance Team Manager</h1>
+    <h1 class="rm-title">MANAGE QUALITY ASSURANCE TEAM </h1>
     
     <div class="rm-controls">
         <div class="rm-search-container">
