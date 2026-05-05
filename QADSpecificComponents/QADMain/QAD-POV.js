@@ -187,108 +187,84 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ✨ NEW: Logic to mark INDIVIDUAL notifications as read when clicked
+   // =====================================================================
+    // ✨ UNIFIED NOTIFICATION ROUTER & READ STATUS LOGIC
+    // =====================================================================
     document.addEventListener('click', (e) => {
-        // Did the user click an unread notification?
-        const notifItem = e.target.closest('.notification-item.unread'); 
+        const notifItem = e.target.closest('.notification-item'); 
         
         if (notifItem) {
-            const notifId = notifItem.getAttribute('data-id');
-            
-            if (notifId) {
-                // 1. Instantly change its appearance to "Read"
+            const notifId = notifItem.getAttribute('data-id') || notifItem.id || notifItem.getAttribute('value');
+            const pTag = notifItem.querySelector('p');
+            const msgText = pTag ? pTag.innerText.toLowerCase() : '';
+
+           // 1. THE ROUTER: Where should this notification take us?
+            if (msgText.includes('assigned') || msgText.includes('task') || 
+                msgText.includes('reviewed') || msgText.includes('verified') || msgText.includes('approved')) {
+                
+                // Teleport to the Workspace module
+                if (typeof showWorkspace === 'function') showWorkspace();
+
+                // ✨ Automatically switch to the "My Submissions" tab
+                // (Note: Change 'toggleButton' if your Submissions tab has a different ID in workspace.php)
+                setTimeout(() => {
+                    const submissionsTab = document.getElementById('toggleButton'); 
+                    if (submissionsTab) submissionsTab.click();
+                }, 100); // 100ms delay ensures the Workspace panel renders before clicking
+                
+            } else if (msgText.includes('document') || msgText.includes('policy') || msgText.includes('removed') || msgText.includes('moved') || msgText.includes('folder')) {
+                // If it's a repository action, go to the Policy Repository!
+                if (typeof showPolicyRepository === 'function') showPolicyRepository();
+            }
+
+            // 2. Close the notification menu so they can see the new screen
+            const notificationOverlay = document.getElementById('popupOverlay');
+            if (notificationOverlay) notificationOverlay.style.display = 'none';
+
+            // 3. If it was UNREAD, do the visual swap and tell the database
+            if (notifItem.classList.contains('unread') && notifId) {
+                
+                // Visually change to "Read" immediately
                 notifItem.classList.remove('unread');
                 notifItem.style.backgroundColor = '#555'; 
                 notifItem.style.borderLeft = '4px solid transparent';
                 notifItem.style.cursor = 'default';
                 
-                const pTag = notifItem.querySelector('p');
                 if (pTag) {
                     pTag.style.fontWeight = 'normal';
                     pTag.style.color = '#d3d3d3';
                 }
 
-                // 2. Instantly slide it over to the Read tab
+                // Slide it over to the Read tab container
                 const readContainer = document.getElementById('notif-read-list');
                 if (readContainer) {
                     readContainer.prepend(notifItem);
                     const noReadMsg = readContainer.querySelector('.no-notifications');
-                    if (noReadMsg) noReadMsg.remove(); // Remove the "empty" text if it exists
+                    if (noReadMsg) noReadMsg.remove(); 
                 }
 
-                // 3. Check if the Unread tab is now completely empty
+                // Check if Unread tab is empty
                 const unreadContainer = document.getElementById('notif-unread-list');
                 if (unreadContainer && unreadContainer.querySelectorAll('.notification-item.unread').length === 0) {
                     unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
                 }
 
-                // 4. Silently tell the database to update this specific ID
-                fetch('../../generalComponents/header/markNotifsReadBE.php', {
+                // 4. THE CRITICAL STEP: Tell the database it has been read!
+                // Using the absolute path guarantees it will find the PHP file from any folder
+                fetch('/qms_optiqual/generalComponents/header/markNotifsReadBE.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ notifID: notifId })
                 })
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
-                    if (!data.success) console.error("Database Update Failed:", data.message);
+                    if (!data.success) console.error("Database failed to mark as read:", data.message);
                 })
                 .catch(err => console.error("Fetch error:", err));
             }
         }
     });
-    
 
-    // ✨ Logic to mark individual notifications as read when clicked
-    // ✨ Logic to mark individual notifications as read when clicked
-    if (notificationOverlay) {
-        notificationOverlay.addEventListener('click', (e) => {
-            // Broaden search to ANY element that contains "unread" in its class name
-            const notifItem = e.target.closest('[class*="unread"]'); 
-            
-            if (notifItem) {
-                console.log("Unread notification clicked:", notifItem);
-                
-                // Try to find the ID (checking data-id, id, or value attributes)
-                const notifId = notifItem.getAttribute('data-id') || notifItem.id || notifItem.getAttribute('value');
-                console.log("Extracted Notification ID:", notifId);
-                
-                notifItem.classList.remove('unread');
-                notifItem.classList.add('read');
-                notifItem.style.opacity = '0.6'; // Visual cue to prove the JS fired
-                notifItem.style.backgroundColor = '#555'; // Match read style
-
-                // ✨ MOVE THE ITEM: Transfer it to the Read tab instantly!
-                const readContainer = document.getElementById('notif-read-list');
-                if (readContainer) {
-                    readContainer.prepend(notifItem);
-                    const noReadMsg = readContainer.querySelector('.no-notifications');
-                    if (noReadMsg) noReadMsg.remove();
-                }
-
-                // Check if the Unread tab is now empty
-                const unreadContainer = document.getElementById('notif-unread-list');
-                if (unreadContainer && unreadContainer.querySelectorAll('.notification-item.unread').length === 0) {
-                    unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
-                }
-
-                if (notifId) {
-                    // Send as FormData so PHP can read it easily via $_POST['id']
-                    const formData = new FormData();
-                    formData.append('id', notifId);
-
-                    fetch('../../generalComponents/notificationsPHP/markAsRead.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(res => res.text())
-                    .then(text => console.log("Server Response:", text))
-                    .catch(err => console.error("Fetch error:", err));
-                } else {
-                    console.warn("No ID found! Please make sure your HTML has a data-id attribute.");
-                }
-            }
-        });
-    }
 
     const userButton = document.getElementById('userButton');
     if (userButton && signOutOverlay) {

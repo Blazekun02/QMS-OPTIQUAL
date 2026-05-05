@@ -2,7 +2,7 @@
 document.getElementById("backButton").addEventListener("click", function () {
     window.location.href = "../../auth/landing/landingPage.php";
 });
-  
+
 document.getElementById("submitButton").addEventListener("click", function () {
     const agreeCheckbox = document.getElementById("agree");
     const messageBox = document.getElementById("messageBox");
@@ -16,7 +16,7 @@ document.getElementById("submitButton").addEventListener("click", function () {
         }, 2000);
     }
 });
-  
+
 document.getElementById("messageBox").addEventListener("click", function () {
     this.style.display = "none";
 });

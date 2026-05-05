@@ -76,6 +76,40 @@ if ($updatePolicy->execute()) {
     $completeTask->bind_param("ii", $policyID, $accID);
     $completeTask->execute();
     
+    // ====================================================================
+    // ✨ UNIVERSAL STATUS NOTIFICATION BLOCK ✨
+    // ====================================================================
+    
+    // 1. Figure out what action just happened based on the new status
+    $actionWord = "Reviewed"; 
+    if ($newStatus == 3) $actionWord = "Verified";
+    if ($newStatus == 4) $actionWord = "Approved";
+    
+    // 2. Fetch the original Author's ID and the Policy Title
+    $authorQuery = $conn->prepare("SELECT policyAuthor, title FROM policytbl WHERE policyID = ?");
+    $authorQuery->bind_param("i", $policyID); 
+    $authorQuery->execute();
+    $authorResult = $authorQuery->get_result();
+    
+    if ($authorResult->num_rows > 0) {
+        $row = $authorResult->fetch_assoc();
+        $authorID = $row['policyAuthor'];
+        
+        // Only send a notification if the author isn't the one who just clicked sign
+        if ($authorID != $accID) {
+            $shortTitle = substr($row['title'], 0, 20); 
+            $message = "Your policy '" . $shortTitle . "...' was " . $actionWord . "!";
+            
+            // Send the notification directly to the Author
+            $notifStmt = $conn->prepare("INSERT INTO notiftbl (receivedBy, message, notifStatus, dateTimeSent) VALUES (?, ?, 0, NOW())");
+            $notifStmt->bind_param("is", $authorID, $message);
+            $notifStmt->execute();
+            $notifStmt->close();
+        }
+    }
+    $authorQuery->close();
+    // ====================================================================
+    
     echo json_encode([
         'success' => true, 
         'signatureHash' => $digitalSignatureHash,

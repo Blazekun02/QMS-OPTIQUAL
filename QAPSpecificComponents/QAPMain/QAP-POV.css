@@ -11,14 +11,13 @@
     3.  POLICY SUBMISSION (MODULE 2)
         3.1. Main Layout
         3.2. Modals (Submit, Confirm)
-    4.  PROCESS TRACKER (MODULE 3) - Placeholder
-    5.  TASK MANAGER (MODULE 4) - Placeholder
-    6.  MANAGE ROLES (MODULE 5)
-        6.1. Main Panel & Controls
-        6.2. User Grid & Cards
-        6.3. Modal (Add to Team)
-        6.4. Delete Mode
-    7.  WELCOME DASHBOARD (ANIMATED)
+    4.  WORKSPACE (MODULE 3 & 4 MERGED)
+    5.  MANAGE ROLES (MODULE 5)
+        5.1. Main Panel & Controls
+        5.2. User Grid & Cards
+        5.3. Modal (Add to Team)
+        5.4. Delete Mode
+    6.  WELCOME DASHBOARD (ANIMATED)
 ====================================================================================================
 */
 
@@ -117,11 +116,11 @@ body {
 .Sidebar-Menu {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* ✨ Ensures the text aligns perfectly left when expanded */
     width: 100%;
     height: 100%;
-    padding-left: 15px;
-    padding-top: 20px;
+    padding-left: 0; /* ✨ Removed static padding from the container */
+    padding-top: 30px;
 }
 
 .Sidebar-Menu li {
@@ -130,7 +129,9 @@ body {
     color: white;
     align-items: center;
     width: 100%;
-    margin-bottom: 25px; /* Added spacing between icons */
+    margin-bottom: 45px; /* ✨ Increased from 25px to 45px to stretch out the 5 icons! */
+    padding-left: 17px; /* ✨ Mathematically centers a 0.35in icon perfectly inside a 0.7in sidebar */
+    box-sizing: border-box;
 }
 
 .Sidebar-Menu li:hover .icon-label {
@@ -272,7 +273,7 @@ body {
 }
 
 .PR-Search-Container {
-    display: flex; /* Changed from absolute to flex */
+    display: flex; 
     align-items: center;
     border: 2px solid gray;
     margin-bottom: 10px;
@@ -464,7 +465,7 @@ body {
 /* Modals */
 .submit-overlay, .confirm-dl {
     display: none;
-    position: fixed; /* Fix it to screen instead of absolute */
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100vw;
@@ -537,9 +538,9 @@ body {
 
 
 /* ======================================================= */
-/* 4. PROCESS TRACKER & TASK MANAGER (MODULE 3 & 4)        */
+/* 4. WORKSPACE (MODULE 3 & 4 MERGED)                      */
 /* ======================================================= */
-.Task-Manager-Panel, .Process-Tracker-Panel2 {
+.Workspace-Panel {
     position: absolute;
     display: none;
     top: 75px;
@@ -550,7 +551,7 @@ body {
 }
 
 /* ======================================================= */
-/* 6. MANAGE ROLES (MODULE 5)                              */
+/* 5. MANAGE ROLES (MODULE 5)                              */
 /* ======================================================= */
 .Role-Manager-Panel {
     position: absolute;
@@ -725,7 +726,7 @@ body {
 }
 
 /* ======================================================= */
-/* 7. WELCOME DASHBOARD (ANIMATED)                         */
+/* 6. WELCOME DASHBOARD (ANIMATED)                         */
 /* ======================================================= */
 .Welcome-Panel {
     position: absolute;

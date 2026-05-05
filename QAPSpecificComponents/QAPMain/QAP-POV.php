@@ -66,14 +66,12 @@
                     <img src="../../assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
                     <span class="icon-label">Policy Submission</span>
                 </li>
+                
                 <li class="menu-icons">
-                    <img src="../../assets/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
-                    <span class="icon-label">Process Tracker</span>
+                    <img src="../../assets/task manager-notClicked.png" alt="Icon 3" onclick="showWorkspace()">
+                    <span class="icon-label">My Workspace</span>
                 </li>
-                <li class="menu-icons">
-                    <img src="../../assets/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
-                    <span class="icon-label">Task Manager</span>
-                </li>
+                
                 <li class="menu-icons">
                     <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6" onclick="showRoleManager()">
                     <span class="icon-label">Manage Roles</span>
@@ -277,24 +275,18 @@
             </div>
         </div>
 
-        <div class="Process-Tracker-Panel2" style ="display: none;">
+        <div class="Workspace-Panel" style="display: none;">
             <?php 
-                $ptPath = __DIR__ . '/../../generalComponents/processTracker/processTracker.php';
-                if (file_exists($ptPath)) {
-                    include_once $ptPath;
-                } else {
-                    echo "<h3 style='color:white; padding:30px; text-align:center;'>Process Tracker module not yet linked.</h3>";
-                }
-            ?>
-        </div>
-
-        <div class="Task-Manager-Panel" style="display: none;">
-            <?php 
+                // Checks for a dedicated Workspace folder first, then falls back to TaskManager
+                $workspacePath = __DIR__ . '/../../generalComponents/Workspace/workspace.php';
                 $tmPath = __DIR__ . '/../../generalComponents/taskManager/taskManager.php';
-                if (file_exists($tmPath)) {
+                
+                if (file_exists($workspacePath)) {
+                    include_once $workspacePath;
+                } else if (file_exists($tmPath)) {
                     include_once $tmPath;
                 } else {
-                    echo "<h3 style='color:white; padding:30px; text-align:center;'>Task Manager module not yet linked.</h3>";
+                    echo "<h3 style='color:white; padding:30px; text-align:center;'>Workspace module not yet linked.</h3>";
                 }
             ?>
         </div>
