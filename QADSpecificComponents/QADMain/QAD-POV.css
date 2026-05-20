@@ -751,8 +751,16 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
+    /* ✨ FIX: Replaced pointer with default, and added user-select: none to kill the text line! */
+    cursor: default; 
+    user-select: none; 
+    -webkit-user-select: none; /* For Safari */
     transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* ✨ NEW: Only turn the mouse into a clickable hand when Delete Mode is ON */
+.delete-mode-active .rm-user-card {
+    cursor: pointer;
 }
 
 .rm-user-card:hover {
@@ -2127,4 +2135,17 @@ body {
     margin-left: 90px !important;    /* Deep double-tab from the left */
     margin-right: 40px !important;   /* Deep indent from the right */
     width: auto !important;          /* Let margins dictate width */
+}
+
+/* ✨ FOLDER TOGGLE TRIANGLES ✨ */
+.folder-toggle-icon {
+    margin-right: 10px;
+    font-size: 1.2em;
+    color: #FBAF41; /* Optiqual Yellow so it pops! */
+    transition: transform 0.3s ease; /* Makes the rotation smooth */
+}
+
+/* When this class is added by JS, the triangle points down! */
+.folder-open .folder-toggle-icon {
+    transform: rotate(90deg);
 }

@@ -15,13 +15,14 @@ require_once genMsg_dir . '/message_box.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Asia Pacific College</title>
-    <link rel="stylesheet" href="signUp.css">
+    <link rel="stylesheet" href="signup.css?v=1.1">">
 </head>
 <body>
 <div class="signUp-overlay">
     <div class="form-container" id="signUpForm">
         <img src="../../assets/logos/logo.png" alt="Asia Pacific College Logo">
-        <h2>Asia Pacific College<br></h2>
+        <h2>Asia Pacific College
+</h2>
         <h3>Sign Up</h3>
 
 
@@ -31,7 +32,7 @@ require_once genMsg_dir . '/message_box.php'; ?>
             <input type="email" id="email" name="email" placeholder="Email" required>
             <input type="password" id="password" name="password" placeholder="Password" required>
             <input type="password" id= "confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
-            
+
             <!-- Show Password Checkbox -->
             <p><input type="checkbox" id="showPassword"> Show Password</p>
 
@@ -61,3 +62,4 @@ require_once genMsg_dir . '/message_box.php'; ?>
     <script src="signup.js"></script>
 </body>
 </html>
+ 

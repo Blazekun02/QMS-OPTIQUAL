@@ -6,19 +6,22 @@ require_once '../../connect.php';
 $data = json_decode(file_get_contents('php://input'), true);
 $departmentName = trim($data['departmentName'] ?? '');
 
-
-
 if ($departmentName === '') {
     echo json_encode(['success' => false, 'message' => 'Department name is required.']);
     exit;
 }
 
-
 $stmt = $conn->prepare("INSERT INTO dorgtbl (dptName) VALUES (?)");
 if ($stmt) {
     $stmt->bind_param("s", $departmentName);
+    
     if ($stmt->execute()) {
-        echo json_encode(['success' => true]);
+        // ✨ THE FIX: Grab the newly created ID from the database and send it back!
+        $newId = $stmt->insert_id; 
+        echo json_encode([
+            'success' => true, 
+            'departmentId' => $newId // The JavaScript is specifically looking for this!
+        ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
     }

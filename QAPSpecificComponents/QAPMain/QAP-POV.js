@@ -1,15 +1,6 @@
 /* =====================================================================
-   0. GLOBAL VARIABLES & DOM ELEMENTS
-   ===================================================================== */
-// Main Panels
-const welcomePanel = document.getElementById('Welcome-Panel');
-const policyRepositoryPanel = document.getElementById('policy-repo-content');
-const policySubmissionPanel = document.getElementById('policy-submission-content');
-const processTrackerPanel = document.querySelector('.Process-Tracker-Panel2'); 
-const taskManagerPanel = document.querySelector('.Task-Manager-Panel');
-const roleManagerPanel = document.querySelector('.Role-Manager-Panel');
-
-// Overlays & Modals
+   0. OVERLAYS & MODALS (Global)
+   ==================================================================== */
 const notificationOverlay = document.getElementById('popupOverlay');
 const signOutOverlay = document.getElementById('signOutOverlay');
 const submitOverlay = document.getElementById('submitOverlay');
@@ -17,58 +8,98 @@ const cfOverlay = document.getElementById('confirm-dl');
 
 
 /* =====================================================================
-   1. PANEL SWITCHING LOGIC (Sidebar Navigation)
-   ===================================================================== */
+   1. BULLETPROOF PANEL SWITCHING LOGIC (WITH STATE MEMORY)
+   ==================================================================== */
+
+// 👉 ✨ A custom reload function that leaves a "breadcrumb" for the script
+function syncAndReload() {
+    sessionStorage.setItem('internalSync', 'true');
+    window.location.reload();
+}
+
+// This helper function guarantees we never get a "null" style error!
+function safeHide(selector) {
+    const el = document.querySelector(selector);
+    if (el) el.style.display = 'none';
+}
+
 function hideAllPanels() {
-    if (welcomePanel) welcomePanel.style.display = 'none';
-    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
-    if (policySubmissionPanel) policySubmissionPanel.style.display = 'none';
-    if (processTrackerPanel) processTrackerPanel.style.display = 'none';
-    if (taskManagerPanel) taskManagerPanel.style.display = 'none';
-    if (roleManagerPanel) roleManagerPanel.style.display = 'none';
+    safeHide('#Welcome-Panel');
+    safeHide('#policy-repo-content');
+    safeHide('#policy-submission-content');
+    safeHide('.Workspace-Panel');
+    safeHide('.Role-Manager-Panel');
+}
+
+function showWorkspace() {
+    hideAllPanels();
+    const panel = document.querySelector('.Workspace-Panel');
+    if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'workspace'); 
 }
 
 function showPolicyRepository() {
     hideAllPanels();
-    if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+    const panel = document.querySelector('#policy-repo-content');
+    if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'repository'); 
 }
 
 function showPolicySubmission() {
     hideAllPanels();
-    if (policySubmissionPanel) policySubmissionPanel.style.display = 'flex';
-}
-
-function showProcessTracker() {
-    hideAllPanels();
-    if (processTrackerPanel) processTrackerPanel.style.display = 'block';
-}
-
-function showTaskManager() {
-    hideAllPanels();
-    if (taskManagerPanel) taskManagerPanel.style.display = 'flex';
-
-    const taskManagerHeaderContainer = document.querySelector('.task-manager-header-container');
-    const taskManagerTable = document.querySelector('.task-manager-table');
-    const introductionSection = document.querySelector('.introduction-section');
-
-    if (taskManagerHeaderContainer) taskManagerHeaderContainer.style.display = 'block';
-    if (taskManagerTable) taskManagerTable.style.display = 'table';
-    if (introductionSection) introductionSection.style.display = 'none';
+    const panel = document.querySelector('#policy-submission-content');
+    if (panel) panel.style.display = 'flex';
+    localStorage.setItem('activePanel', 'submission'); 
 }
 
 function showRoleManager() {
     hideAllPanels();
-    if (roleManagerPanel) roleManagerPanel.style.display = 'block';
+    const panel = document.querySelector('.Role-Manager-Panel');
+    if (panel) panel.style.display = 'block';
+    localStorage.setItem('activePanel', 'role'); 
 }
 
 function showInformation() {
+    hideAllPanels();
     alert("Information Module - Coming Soon");
+    localStorage.setItem('activePanel', 'information'); 
 }
+
+// Attach Event Listeners to Sidebar Icons & Check Memory
+document.addEventListener('DOMContentLoaded', () => {
+    // Map the sidebar icons to their respective functions
+    const icons = document.querySelectorAll('.menu-icons');
+    if (icons[0]) icons[0].addEventListener('click', showPolicyRepository);
+    if (icons[1]) icons[1].addEventListener('click', showPolicySubmission);
+    if (icons[2]) icons[2].addEventListener('click', showWorkspace);
+    if (icons[3]) icons[3].addEventListener('click', showRoleManager);
+    if (icons[4]) icons[4].addEventListener('click', showInformation);
+
+    // 👉 ✨ Check if it was a Human or the Script that reloaded the page
+    const savedPanel = localStorage.getItem('activePanel');
+    const isInternalSync = sessionStorage.getItem('internalSync') === 'true';
+    
+    if (isInternalSync && savedPanel) {
+        // The script reloaded the page. Restore the panel!
+        sessionStorage.removeItem('internalSync'); 
+        
+        if (savedPanel === 'workspace') showWorkspace();
+        else if (savedPanel === 'repository') showPolicyRepository();
+        else if (savedPanel === 'submission') showPolicySubmission();
+        else if (savedPanel === 'role') showRoleManager();
+        else if (savedPanel === 'information') showInformation();
+    } else {
+        // A human hit F5, or just logged in! Show the Welcome Screen.
+        hideAllPanels();
+        const welcome = document.querySelector('#Welcome-Panel');
+        if (welcome) welcome.style.display = 'flex';
+    }
+});
 
 
 /* =====================================================================
    2. TOP BAR & SIDEBAR TOGGLE
-   ===================================================================== */
+   ==================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('.Sidebar');
     const hamburgerIcon = document.getElementById('hamburger-icon');
@@ -90,28 +121,142 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ✨ NEW: Notification Tab Switching Logic ✨
+    const unreadTab = document.querySelector('.notif-tabs .unread-tab');
+    const readTab = document.querySelector('.notif-tabs .read-tab');
+    const unreadList = document.getElementById('notif-unread-list');
+    const readList = document.getElementById('notif-read-list');
+
+    if (unreadTab && readTab && unreadList && readList) {
+        const showUnread = () => {
+            unreadList.style.display = 'block';
+            readList.style.display = 'none';
+            unreadTab.classList.add('active');
+            readTab.classList.remove('active');
+        };
+
+        const showRead = () => {
+            unreadList.style.display = 'none';
+            readList.style.display = 'block';
+            readTab.classList.add('active');
+            unreadTab.classList.remove('active');
+        };
+
+        unreadTab.addEventListener('click', showUnread);
+        readTab.addEventListener('click', showRead);
+    }
+
+    // Top Bar Buttons
     const notifButton = document.getElementById('notifButton');
     if (notifButton && notificationOverlay) {
-        notifButton.addEventListener('click', () => {
-            notificationOverlay.style.display = notificationOverlay.style.display === 'block' ? 'none' : 'block';
+        notifButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            if (notificationOverlay.style.display === 'block' || notificationOverlay.style.display === 'flex') {
+                notificationOverlay.style.display = 'none';
+            } else {
+                notificationOverlay.style.display = 'block';
+                if (signOutOverlay) signOutOverlay.style.display = 'none';
+
+                // Reset to Unread tab when opening
+                if (unreadTab && readTab && unreadList && readList) {
+                    unreadList.style.display = 'block';
+                    readList.style.display = 'none';
+                    unreadTab.classList.add('active');
+                    readTab.classList.remove('active');
+                }
+            }
         });
     }
 
+    // ✨ NEW: Logic to mark notifications as read AND navigate to the correct screen!
+    document.addEventListener('click', (e) => {
+        const notifItem = e.target.closest('.notification-item'); 
+        
+        if (notifItem) {
+            const notifId = notifItem.getAttribute('data-id') || notifItem.id || notifItem.getAttribute('value');
+            const pTag = notifItem.querySelector('p');
+            const msgText = pTag ? pTag.innerText.toLowerCase() : '';
+
+            // 1. THE ROUTER: Where should this notification take us?
+            if (msgText.includes('assigned') || msgText.includes('task')) {
+                if (typeof showWorkspace === 'function') showWorkspace();
+            } else if (msgText.includes('document') || msgText.includes('policy') || msgText.includes('removed') || msgText.includes('moved')) {
+                if (typeof showPolicyRepository === 'function') showPolicyRepository();
+            } 
+
+            // 2. Close the notification menu so they can see the new screen
+            if (notificationOverlay) notificationOverlay.style.display = 'none';
+
+            // 3. If it was UNREAD, do the visual swap and tell the database
+            if (notifItem.classList.contains('unread') && notifId) {
+                // Change appearance to "Read"
+                notifItem.classList.remove('unread');
+                notifItem.style.backgroundColor = '#555'; 
+                notifItem.style.borderLeft = '4px solid transparent';
+                notifItem.style.cursor = 'default';
+                
+                if (pTag) {
+                    pTag.style.fontWeight = 'normal';
+                    pTag.style.color = '#d3d3d3';
+                }
+
+                // Slide it over to the Read tab
+                const readContainer = document.getElementById('notif-read-list');
+                if (readContainer) {
+                    readContainer.prepend(notifItem);
+                    const noReadMsg = readContainer.querySelector('.no-notifications');
+                    if (noReadMsg) noReadMsg.remove(); 
+                }
+
+                // Check if the Unread tab is now completely empty
+                const unreadContainer = document.getElementById('notif-unread-list');
+                if (unreadContainer && unreadContainer.querySelectorAll('.notification-item.unread').length === 0) {
+                    unreadContainer.innerHTML = "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
+                }
+
+                // ✨ Use the absolute path to permanently fix the background crash!
+                fetch('/qms_optiqual/generalComponents/header/markNotifsReadBE.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notifID: notifId })
+                }).catch(err => console.error("Fetch error:", err));
+            }
+        }
+    });
+
     const userButton = document.getElementById('userButton');
     if (userButton && signOutOverlay) {
-        userButton.addEventListener('click', () => {
+        userButton.addEventListener('click', (e) => {
+            e.stopPropagation();
             signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
+            if (notificationOverlay) notificationOverlay.style.display = 'none';
         });
-        signOutOverlay.addEventListener("click", function () {
+        signOutOverlay.addEventListener("click", function (e) {
+            e.stopPropagation();
             window.location.href = "landingPage.html";
         });
     }
+
+    // Close overlays when clicking outside
+    document.addEventListener('click', (e) => {
+        if (notificationOverlay && notificationOverlay.style.display === 'block') {
+            if (!notificationOverlay.contains(e.target) && !e.target.closest('#notifButton')) {
+                notificationOverlay.style.display = 'none';
+            }
+        }
+        if (signOutOverlay && signOutOverlay.style.display === 'block') {
+            if (!signOutOverlay.contains(e.target) && !e.target.closest('#userButton')) {
+                signOutOverlay.style.display = 'none';
+            }
+        }
+    });
 });
 
 
 /* =====================================================================
    3. POLICY REPOSITORY & PDF VIEWER
-   ===================================================================== */
+   ==================================================================== */
 
 // ✨ POLICY REPO PDF ENGINE VARIABLES (Prefixed with pr_) ✨
 var pr_pdfDoc = null,
@@ -264,6 +409,7 @@ document.querySelectorAll('.PR-Policies').forEach(policy => {
     policy.addEventListener('click', function () {
         const filePath = policy.getAttribute('data-file'); 
         const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+        const policyRepositoryPanel = document.getElementById('policy-repo-content');
         
         if(pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
         if(policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
@@ -304,6 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const closePdfViewerButton = document.getElementById('closePdfViewer');
     const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+    const policyRepositoryPanel = document.getElementById('policy-repo-content');
+    
     if (closePdfViewerButton) {
         closePdfViewerButton.addEventListener('click', () => {
             if (pdfViewerContainer) pdfViewerContainer.style.display = 'none';
@@ -320,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* =====================================================================
    4. POLICY SUBMISSION LOGIC
-   ===================================================================== */
+   ==================================================================== */
 const dlBtn = document.querySelector('.policy-submission-buttons button:first-child');
 if (dlBtn && cfOverlay) {
     dlBtn.addEventListener('click', () => {
@@ -361,7 +509,7 @@ if (cancelBtn) {
 
 /* =====================================================================
    6. ROLE MANAGER SCRIPT
-   ===================================================================== */
+   ==================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
     const rmGridContainer = document.getElementById('rmGridContainer');
     const rmAddRoleBtn = document.getElementById('rmAddRoleBtn');

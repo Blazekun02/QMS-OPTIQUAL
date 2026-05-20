@@ -1,34 +1,39 @@
 <?php
-ob_start(); 
+ob_start();
 session_start();
-include __DIR__ . '/../../connect.php'; 
+include __DIR__ . '/../../connect.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['categoryID'])) {
-    ob_end_clean(); 
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Missing category ID']);
+if (!isset($data['policyId']) || !array_key_exists('newFolderId', $data)) {
+    ob_end_clean();
+    echo json_encode(['success' => false, 'message' => 'Missing data inputs.']);
     exit;
 }
 
-$categoryID = $data['categoryID'];
+$policyID = $data['policyId'];
+$newFolderID = $data['newFolderId'];
 $currentUserID = isset($_SESSION['accID']) ? $_SESSION['accID'] : 0;
 
-$nameQuery = $conn->prepare("SELECT categoryName FROM categorytbl WHERE categoryID = ?");
-$nameQuery->bind_param("i", $categoryID);
-$nameQuery->execute();
-$nameResult = $nameQuery->get_result();
-$categoryName = $nameResult->num_rows > 0 ? $nameResult->fetch_assoc()['categoryName'] : "A folder";
-$nameQuery->close();
+$titleQuery = $conn->prepare("SELECT title FROM policytbl WHERE policyID = ?");
+$titleQuery->bind_param("i", $policyID);
+$titleQuery->execute();
+$titleResult = $titleQuery->get_result();
+$policyTitle = $titleResult->num_rows > 0 ? $titleResult->fetch_assoc()['title'] : "A document";
+$titleQuery->close();
 
-$stmt = $conn->prepare("DELETE FROM categorytbl WHERE categoryID = ?");
-$stmt->bind_param("i", $categoryID);
+if ($newFolderID === null) {
+    $stmt = $conn->prepare("UPDATE policytbl SET categoryID = NULL WHERE policyID = ?");
+    $stmt->bind_param("i", $policyID);
+} else {
+    $stmt = $conn->prepare("UPDATE policytbl SET categoryID = ? WHERE policyID = ?");
+    $stmt->bind_param("ii", $newFolderID, $policyID);
+}
 
 if ($stmt->execute()) {
     // ✨ NOTIFICATION SYSTEM
-    $safeName = substr($categoryName, 0, 20);
-    $message = "Folder deleted: " . $safeName;
+    $safeTitle = substr($policyTitle, 0, 25);
+    $message = "Document moved: " . $safeTitle;
 
     // ✨ THE FIX: Search the main accounts table for Directors (Role 2) and QA Staff (Role 3)
     $notifyQuery = "SELECT accID FROM accdatatbl WHERE roleID IN (2, 3) AND accID != ?";
@@ -49,12 +54,12 @@ if ($stmt->execute()) {
 
     $response = ['success' => true];
 } else {
-    $response = ['success' => false, 'message' => 'Cannot delete folder. It may contain child folders or policies.'];
+    $response = ['success' => false, 'message' => $stmt->error];
 }
 
 $stmt->close();
 $conn->close();
-ob_end_clean(); 
+ob_end_clean();
 header('Content-Type: application/json');
 echo json_encode($response);
 ?>

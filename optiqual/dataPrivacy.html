@@ -4,158 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Privacy Agreement</title>
-
-  <style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial;
-        background-color: #fbaf41;
-        background-image: url('../assets/bg/bgImage.jpg');
-        background-attachment: fixed;
-        background-size: cover;
-        background-position: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-
-    .dataPriv-overlay {
-            display: flex;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 10;
-            justify-content: center;
-            align-items: center;
-        }
-
-    .dataPrivy-container {
-        position: relative;
-        width: 300px;
-        background-color: #293A82;
-        border-radius: 10px;
-        padding: 25px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        height: 250px;
-        box-shadow: 0 3em 7em rgba(0, 0, 0, 0.5);
-        border: 0.1em solid #1D2951;
-    }
-
-    .messageBox {
-        display: none;
-        position: fixed;
-        top: 48%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: #fbaf41;
-        color: black;
-        padding: 30px 10px;
-        font-size: 14px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        text-align: center;
-    }
-
-    .label {
-        width: 100%;
-        background-color: white;
-        color: black;
-        font-size: 14px;
-        padding: 15px 0;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .submit-button {
-        position: absolute;
-        top: 85%;
-        left: 34%;
-        background-color: #fbaf41;
-        color: white;
-        width: 100px;
-        height: 30px;
-        font-size: 16px;
-        border: none;
-        border-radius: 20px;
-        transform: translateY(-50%);
-    }
-
-    .back-button {
-        position: absolute;
-        top: 11%;
-        left: 3%;
-        background-color: #fbaf41;
-        color: white;
-        width: 25px;
-        height: 25px;
-        font-size: 10px;
-        border: none;
-        border-radius: 20px;
-        transform: translateY(-50%);
-    }
-
-    .button:hover {
-        background-color: #db8804;
-        color:black;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="dataPrivacy.css?v=1.1">
 </head>
 <body>
 
 <div class="dataPriv-overlay">
-<div class="dataPrivy-container">
-  <h1 style="color: white; font-size:20px; text-align: center; margin-top:0px;"> Data Privacy Agreement</h1>
-  <div class="label">
-    This document is composed of Asia Pacific College’s (APC) policies and procedures on proper collection, processing, and management of employee and student personal information in accordance with Republic Act 10173, or the Data Privacy Act (DPA) of 2012.
-  </div>
-  <p style="text-align: left; color: white;">
-    <input type="checkbox" id="agree" value="Agree;">
-    <label for="agree"> I agree</label><br>
-  </p>
+  <div class="dataPrivy-container">
+      <button type="button" class="back-button" id="backButton">
+          <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      
+      <div class="header-group">
+          <img src="../../assets/logos/logo.png" alt="APC Logo" class="apc-logo">
+          <h1>Data Privacy Agreement</h1>
+      </div>
+        
+        <div class="label">
+            This document is composed of Asia Pacific College's (APC) policies and procedures on proper collection, processing, and management of employee and student personal information in accordance with Republic Act 10173, or the Data Privacy Act (DPA) of 2012.
+        </div>
+        
+        <div class="agree-container">
+            <input type="checkbox" id="agree" value="Agree;">
+            <label for="agree">I agree</label>
+        </div>
 
-  <div>
-    <button type="button" class="button submit-button" id="submitButton">Submit</button>
-    <button type="button" class="button back-button" id="backButton"> < </button>
-  </div>
+        <button type="button" class="submit-button" id="submitButton">Submit</button>
 
-  <div id="messageBox" class="messageBox">
-    Please agree to the Data Privacy<br>
-    Agreement to proceed.
-  </div>
-
+        <div id="messageBox" class="messageBox">
+            Please agree to the Data Privacy Agreement to proceed.
+        </div>
+    </div>
 </div>
-</div>
 
-<script>
-  document.getElementById("backButton").addEventListener("click", function () {
-      window.location.href = "landingPage.html"; /* Fixed navigation */
-  });
-
-  document.getElementById("submitButton").addEventListener("click", function () {
-      const agreeCheckbox = document.getElementById("agree");
-      const messageBox = document.getElementById("messageBox");
-
-      if (agreeCheckbox.checked) {
-          window.location.href = "signIn.html"; /* Ensure this file exists */
-      } else {
-          messageBox.style.display = "block";
-          setTimeout(() => {
-              messageBox.style.display = "none";
-          }, 2000);
-      }
-  });
-
-  document.getElementById("messageBox").addEventListener("click", function () {
-      this.style.display = "none";
-  });
-</script>
+<script src="dataPrivacy.js"></script>
 </body>
+
 </html>

@@ -1,3 +1,4 @@
+/* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -6,143 +7,155 @@
 
 body {
     font-family: 'Istok Web', sans-serif;
-    background-color: #fbaf41;
-    background-image: url('../../assets/bg/bgImage.jpg');
-    background-attachment: fixed;
+    background: #fbaf41 url('../../assets/bg/bgImage.jpg') no-repeat center center fixed;
     background-size: cover;
-    background-position: center;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-
+    min-height: 100vh;
 }
 
 .logIn-overlay {
-    display: flex;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 10;
+    display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 10;
 }
 
-
+/* Adaptive Larger Container */
 .login-container {
     background-color: white;
-    padding: 20px;
-    width: 350px;
-    border-radius: 1em;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 1);
-    text-align: center;
-    border: 0.1em solid #293A82;
-    position:absolute
+    padding: 40px;
+    width: 90%;
+    max-width: 450px; /* Larger box as requested */
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    border: 1px solid #293A82;
+    text-align: left;
 }
+
+/* Header Section */
 .login-container img {
     width: 50px;
-    margin-bottom: 20px;
-    margin-right: 250px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .login-container h1 {
-    color: black;
-    margin-top:-2.5em;
-    margin-left: 2em;
-    margin-bottom: 0;
-    font-size: 1.5em;
-    font-family: Istok Web;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 1.4rem;
+    margin-left: 10px;
+    width: calc(100% - 65px);
+    line-height: 1.2;
 }
+
 .login-container h2 {
-    color: black;
-    margin-top: 0.6em;
-    margin-left:-11.2em;
-    margin-bottom:10px;
-    font-size: 22px;
-    font-family: Istok Web;
+    margin-top: 25px;
+    margin-bottom: 20px;
+    font-size: 1.6rem;
 }
 
-.login-container label {
-    color: black;
-    font-size: 12px;
-    display: block;
-    margin-top: 10px;
-    text-align: left;
+/* Form Layout */
+form {
+    display: flex;
+    flex-direction: column;
 }
 
-.login-container input {
+/* Input Styles */
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100% !important;
+    padding: 12px;
+    margin-bottom: 5px; /* Small gap between email and pass */
+    border: none;
+    border-bottom: 1.5px solid #293A82;
+    background-color: #f0f4ff;
+    font-size: 14px;
+    outline: none;
+}
+
+/* FIXED: Eye Icon Positioning inside the field */
+.password-wrapper {
+    position: relative; /* Context for the absolute icon */
     width: 100%;
-    padding: 5px;
-    margin: 8px 0;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 12px;
-
+    margin-bottom: 5px;
 }
 
-a {
+/* Extra right padding for password so dots don't hide under the eye */
+.password-wrapper input {
+    position: relative;
+    z-index: 1;
+    padding-right: 45px !important;
+}
+
+.field-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 999;
+
+    width: 30px;       /* ADD THIS */
+    height: 30px;      /* ADD THIS */
+    display: flex;     /* ADD THIS */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Links */
+#forgotPass {
+    display: inline-block;
+    font-size: 11px; /* Smaller as requested */
     color: #293A82;
     text-decoration: underline;
-    font-size: 0.7em;
-    margin-top: -0.1em;
-    text-align: left;
-    margin-right: 19em;
-
+    margin-top: 2px;
+    margin-bottom: 25px;
+    align-self: flex-start; /* Aligned to the left below pass */
 }
 
-#forgotPass {
-    display: block;
-}
-
+/* Adaptive Buttons */
 .button-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; /* Right-aligned buttons */
     gap: 10px;
-    margin-top: 1em;
+    width: 100%;
+    margin-bottom: 25px;
 }
 
 .button {
-    width: 90px;
-    height: 30px;
-    font-size: 12px;
+    padding: 10px 25px;
     border: none;
+    border-radius: 4px;
+    background-color: #0056b3;
+    color: white;
+    font-weight: bold;
     cursor: pointer;
-    padding: 8px 15px;
-    margin-bottom: 0.5em;
-    
-   
-}
-
-.back-button {
-    background-color: #0056b3;
-    color: white;
-    margin-left:-8.5em;
-}
-
-.signIn-button {
-    background-color: #0056b3;
-    color: white;
-    margin-right: 5em;
+    font-size: 14px;
+    transition: background 0.2s;
 }
 
 .button:hover {
-    background-color:  #0A185F;
+    background-color: #0A185F;
 }
 
-p {
-    font-size: 2vh;
-    text-align: left;
-    margin: 2vh 11vw;
-    white-space: nowrap;
+/* Footer: Centered and Smaller */
+.login-container b {
+    display: block;
+    text-align: center; /* Centered as requested */
+    font-weight: normal;
+    font-size: 11px; /* Smaller as requested */
+    color: #333;
 }
 
-b{
-    font-size: 0.7em;
-    text-align: center;
-    white-space: nowrap;
-    display:inline;
-    margin-left: 6.5em;
+.login-container b a {
+    margin-left: 5px;
+    color: #0056b3;
+    text-decoration: underline;
+    font-size: 11px;
 }
+ 

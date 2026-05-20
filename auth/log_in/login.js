@@ -1,13 +1,24 @@
-// Show Password Functionality
-document.getElementById("showPassword").addEventListener("change", function () {
-    const passwordField = document.getElementById("password");
+$(document).ready(function() {
 
-    // Toggle the type attribute between 'password' and 'text'
-    const type = this.checked ? "text" : "password";
-    passwordField.type = type;
+    // Eye Button Logic
+    $("#togglePassword").on('click', function() {
+        // Toggle the icon class
+        $(this).toggleClass("fa-eye fa-eye-slash");
+
+        // Toggle input type
+        var input = $("#password");
+        if (input.attr("type") === "password") {
+            input.attr("type", "text");
+        } else {
+            input.attr("type", "password");
+        }
+    });
+
+    // Back Button Logic
+    $("#backButton").on('click', function() {
+        console.log("Back button clicked"); // Check your console (F12) to see if this triggers
+        window.location.href = "/QMS-OPTIQUAL/auth/landing/landingPage.php";
+    });
+
 });
-
-document.getElementById("backButton").addEventListener("click", function () {
-    window.location.href = "/qms_optiqual/auth/landing/landingPage.php";
-});
-
+ 

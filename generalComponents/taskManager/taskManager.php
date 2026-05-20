@@ -621,7 +621,7 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
     if (systemRoleID == 2) { // Quality Assurance Director
         // Show Reject button for active tasks
         if (policyStatus === 'Pending' || policyStatus === 'Reviewed' || policyStatus === 'Verified') {
-            if (rejectBtn) rejectBtn.style.display = 'flex';
+                    if (rejectBtn) rejectBtn.style.display = 'flex'; // QAD can reject at any stage
         }
 
         if (policyStatus === 'Reviewed') {
@@ -634,12 +634,12 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
             }
         }
 
-        if (uploadBtn) {
-            uploadBtn.style.display = 'flex';
-            uploadBtn.disabled = !(policyStatus === 'Approved' || policyStatus === 'For Upload');
-        }
+                // The QAD can "Upload" (publish) an Approved policy
+                if (policyStatus === 'Approved' && uploadBtn) {
+                    uploadBtn.style.display = 'flex'; // Show the upload button
+                    uploadBtn.disabled = false; // Enable it for approved policies
+                } else if (uploadBtn) uploadBtn.style.display = 'none'; // Hide if not approved
     } else { // Reviewers, Verifiers, and Approvers
-        // ✨ NEW: Show Reject button for everyone evaluating a task
         if (policyStatus === 'Pending' || policyStatus === 'Reviewed' || policyStatus === 'Verified') {
             if (rejectBtn) rejectBtn.style.display = 'flex'; 
         }
@@ -705,6 +705,7 @@ function showTaskTable() {
     document.getElementById('workspaceDocViewer').style.display = 'none';
     document.getElementById('workspaceHeaderArea').style.display = 'block';
     document.getElementById('workspaceTable').style.display = 'table';
+    fetchTasksAndPopulate(); // Re-fetch tasks to reflect changes
     
     if (tm_ctx && tm_canvas) {
         tm_ctx.clearRect(0, 0, tm_canvas.width, tm_canvas.height);
@@ -923,47 +924,50 @@ function renderEmployeeListFlat(emps, container) {
 // INITIALIZATION & EVENT LISTENERS
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
-    
     // Attach PDF listeners
     if (document.getElementById('tm_prevPage')) document.getElementById('tm_prevPage').addEventListener('click', tm_onPrevPage);
     if (document.getElementById('tm_nextPage')) document.getElementById('tm_nextPage').addEventListener('click', tm_onNextPage);
     if (document.getElementById('tm_zoomIn')) document.getElementById('tm_zoomIn').addEventListener('click', tm_onZoomIn);
     if (document.getElementById('tm_zoomOut')) document.getElementById('tm_zoomOut').addEventListener('click', tm_onZoomOut);
     tm_canvas = document.getElementById('tm_pdfCanvas');
-    if(tm_canvas) tm_ctx = tm_canvas.getContext('2d');
+    if (tm_canvas) tm_ctx = tm_canvas.getContext('2d');
 
     // Attach Mini PDF listeners
     if (document.getElementById('mini_prevPage')) document.getElementById('mini_prevPage').addEventListener('click', mini_onPrevPage);
     if (document.getElementById('mini_nextPage')) document.getElementById('mini_nextPage').addEventListener('click', mini_onNextPage);
     mini_canvas = document.getElementById('mini_pdfCanvas');
-    if(mini_canvas) mini_ctx = mini_canvas.getContext('2d');
+    if (mini_canvas) mini_ctx = mini_canvas.getContext('2d');
 
-  
-    // Fetch the dual arrays (Action & Track)
-    const fetchUrl = '/qms_optiqual/generalComponents/taskManager/fetchTasks.php?t=' + new Date().getTime();
-    fetch(fetchUrl, {
-        method: 'GET',
-        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
-    })
-    .then(response => response.text()) // ✨ FIX: Catch raw text to prevent JSON parse crashes
-    .then(text => {
-        try {
-            const data = JSON.parse(text);
-            if (data.error) {
-                alert("SQL Database Error Detected!\n\n" + data.error);
-                console.error('SQL Error:', data.error);
-            } else {
-                workspaceData = data; 
-                switchWorkspaceTab('action'); 
+    // Function to fetch tasks and populate the table
+    function fetchTasksAndPopulate() {
+        const fetchUrl = '/qms_optiqual/generalComponents/taskManager/fetchTasks.php?t=' + new Date().getTime();
+        fetch(fetchUrl, {
+            method: 'GET',
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        })
+        .then(response => response.text()) // Catch raw text to prevent JSON parse crashes
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
+                if (data.error) {
+                    alert("SQL Database Error Detected!\n\n" + data.error);
+                    console.error('SQL Error:', data.error);
+                } else {
+                    workspaceData = data; 
+                    switchWorkspaceTab('action'); 
+                }
+            } catch (e) {
+                console.error("Raw Server Response:", text);
+                alert("PHP Crashed before sending JSON. Press F12 to check the Console.");
             }
-        } catch (e) {
-            console.error("Raw Server Response:", text);
-            alert("PHP Crashed before sending JSON. Press F12 to check the Console.");
-        }
-    })
-    .catch(error => {
-        console.error('Network Fetch Error:', error);
-    });
+        })
+        .catch(error => {
+            console.error('Network Fetch Error:', error);
+        });
+    }
+
+    // Initial fetch when the script loads
+    fetchTasksAndPopulate();
 
     // Sign Modal Logic
     const qadESignBtn = document.getElementById('qadESignBtn');
@@ -1000,6 +1004,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     eSignOverlay.style.display = 'none';
                     location.reload(); 
                 } else alert(data.message);
+            });
+        });
+    }
+
+    const qadUploadBtn = document.getElementById('qadUploadBtn');
+    if (qadUploadBtn) {
+        qadUploadBtn.addEventListener('click', () => {
+            if (!currentTaskPolicyID) return alert('No policy selected to upload.');
+
+            qadUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            qadUploadBtn.disabled = true;
+
+            fetch('/qms_optiqual/generalComponents/taskManager/uploadPolicyBE.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ policyID: currentTaskPolicyID })
+            })
+            .then(res => res.json())
+            .then(data => {
+                qadUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+                qadUploadBtn.disabled = false;
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Upload failed: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                qadUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+                qadUploadBtn.disabled = false;
+                alert('Network error: could not upload policy.');
             });
         });
     }

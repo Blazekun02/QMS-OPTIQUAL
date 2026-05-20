@@ -66,14 +66,12 @@
                     <img src="../../assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
                     <span class="icon-label">Policy Submission</span>
                 </li>
+                
                 <li class="menu-icons">
-                    <img src="../../assets/req tracker-notClicked.png" alt="Icon 3" onclick="showProcessTracker()">
-                    <span class="icon-label">Process Tracker</span>
+                    <img src="../../assets/task manager-notClicked.png" alt="Icon 3" onclick="showWorkspace()">
+                    <span class="icon-label">My Workspace</span>
                 </li>
-                <li class="menu-icons">
-                    <img src="../../assets/task manager-notClicked.png" alt="Icon 4" onclick="showTaskManager()">
-                    <span class="icon-label">Task Manager</span>
-                </li>
+                
                 <li class="menu-icons">
                     <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6" onclick="showRoleManager()">
                     <span class="icon-label">Manage Roles</span>
@@ -164,7 +162,7 @@
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 5";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 4";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -183,7 +181,7 @@
                                     echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 5";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 4";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -277,41 +275,31 @@
             </div>
         </div>
 
-        <div class="Process-Tracker-Panel2" style ="display: none;">
+        <div class="Workspace-Panel" style="display: none;">
             <?php 
-                $ptPath = __DIR__ . '/../../generalComponents/processTracker/processTracker.php';
-                if (file_exists($ptPath)) {
-                    include_once $ptPath;
-                } else {
-                    echo "<h3 style='color:white; padding:30px; text-align:center;'>Process Tracker module not yet linked.</h3>";
-                }
-            ?>
-        </div>
-
-        <div class="Task-Manager-Panel" style="display: none;">
-            <?php 
+                // Checks for a dedicated Workspace folder first, then falls back to TaskManager
+                $workspacePath = __DIR__ . '/../../generalComponents/Workspace/workspace.php';
                 $tmPath = __DIR__ . '/../../generalComponents/taskManager/taskManager.php';
-                if (file_exists($tmPath)) {
+                
+                if (file_exists($workspacePath)) {
+                    include_once $workspacePath;
+                } else if (file_exists($tmPath)) {
                     include_once $tmPath;
                 } else {
-                    echo "<h3 style='color:white; padding:30px; text-align:center;'>Task Manager module not yet linked.</h3>";
+                    echo "<h3 style='color:white; padding:30px; text-align:center;'>Workspace module not yet linked.</h3>";
                 }
             ?>
         </div>
 
         <div class="Role-Manager-Panel" style="display:none;">
-            <h1 class="rm-title">Quality Assurance Team Manager</h1>
+            <h1 class="rm-title">Quality Assurance Team Directory</h1>
             
             <div class="rm-controls">
                 <div class="rm-search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" placeholder="find employee" id="rmSearchInput">
                 </div>
-                <button class="rm-icon-btn" id="rmAddRoleBtn" title="Add User"><i class="fas fa-user-plus"></i></button>
-                <button class="rm-icon-btn rm-delete-btn" id="rmDeleteRoleBtn" title="Remove Users"><i class="fas fa-trash-alt"></i></button>
-                <button class="rm-icon-btn" id="rmConfirmDeleteBtn" title="Confirm Removal" style="display: none; color: #4CAF50;"><i class="fas fa-check-circle"></i></button>
-                <span id="rmDeleteInstruction" style="display: none; color: #f44336; font-family: 'Istok Web', sans-serif; font-weight: bold; margin-left: 10px; font-size: 16px;">Select users to be removed.</span>
-            </div>
+                </div>
             <div class="rm-grid-container" id="rmGridContainer"></div>
         </div>
 

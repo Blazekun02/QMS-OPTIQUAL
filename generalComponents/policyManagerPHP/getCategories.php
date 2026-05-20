@@ -14,7 +14,8 @@ if ($resultCat) {
 }
 
 // 2. Fetch all Uploaded policies that are inside a folder
-$queryPol = "SELECT policyID, title, categoryID FROM policytbl WHERE categoryID IS NOT NULL AND policyStatusID = 5";
+// ✨ THE FIX: Changed policyStatusID from 5 to 4 so it matches your "Approved" status!
+$queryPol = "SELECT policyID, title, categoryID FROM policytbl WHERE categoryID IS NOT NULL AND policyStatusID = 4";
 $resultPol = mysqli_query($conn, $queryPol);
 $policies = [];
 if ($resultPol) {
