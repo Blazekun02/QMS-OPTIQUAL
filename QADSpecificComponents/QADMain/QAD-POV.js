@@ -30,6 +30,8 @@ function hideAllPanels() {
     safeHide('.Policy-Manager-Panel');
     safeHide('.Role-Manager-Panel');
     safeHide('.Workspace-Panel');
+    safeHide('#Policy_Repo_pdfViewer'); 
+    safeHide('#Reports-Panel');
 }
 
 function showWorkspace() {
@@ -78,6 +80,25 @@ function showReports() {
     hideAllPanels();
     console.warn('Reports panel is not yet implemented.');
     localStorage.setItem('activePanel', 'reports'); 
+}
+
+// ==========================================
+// ✨ SHOW REPORTS DASHBOARD
+// ==========================================
+function showReports() {
+    hideAllPanels(); // Hide everything else
+    
+    const reportsPanel = document.getElementById('Reports-Panel');
+    if (reportsPanel) {
+        reportsPanel.style.display = 'block'; // Show the reports container
+        
+        // ✨ THE FIX: Wait 50ms for the CSS to "settle" before drawing!
+        setTimeout(() => {
+            if (typeof window.renderReports === 'function') {
+                window.renderReports(); 
+            }
+        }, 50);
+    }
 }
 
 // Attach Event Listeners to Sidebar Icons
@@ -324,6 +345,61 @@ function pr_renderPage(num) {
 
             renderTask.promise.then(function() {
                 pr_pageRendering = false;
+                
+                // =========================================================
+                // ✨ SECURITY PART 1: DIAGONAL TEXT WATERMARK
+                // =========================================================
+                pr_ctx.save();
+                // Move to the center of the canvas
+                pr_ctx.translate(pr_canvas.width / 2, pr_canvas.height / 2);
+                // Rotate to a diagonal angle
+                pr_ctx.rotate(-Math.PI / 4); 
+                
+                // Draw main watermark text
+                pr_ctx.font = "bold 60px 'Istok Web', Arial, sans-serif";
+                pr_ctx.fillStyle = "rgba(180, 180, 180, 0.4)"; // Semi-transparent gray
+                pr_ctx.textAlign = "center";
+                pr_ctx.textBaseline = "middle";
+                pr_ctx.fillText("OFFICIAL OPTIQUAL DOCUMENT", 0, 0);
+                
+                // Draw a timestamp underneath it
+                pr_ctx.font = "bold 25px 'Istok Web', Arial, sans-serif";
+                // We use window.pr_currentUploadDate which we grabbed when they clicked!
+                pr_ctx.fillText("Date Uploaded: " + (window.pr_currentUploadDate), 0, 60);
+                
+                // Add confidential warning
+                pr_ctx.font = "18px 'Istok Web', Arial, sans-serif";
+                pr_ctx.fillText("DO NOT DISTRIBUTE OR REPRODUCE", 0, 100);
+                pr_ctx.restore();
+
+                // =========================================================
+                // ✨ SECURITY PART 2: BOTTOM-RIGHT IMAGE WATERMARK
+                // =========================================================
+                const watermarkImg = new Image();
+                watermarkImg.src = '../../assets/YONG.jpg'; 
+
+                watermarkImg.onload = function() {
+                    pr_ctx.save();
+                    
+                    // Transparency for the image
+                    pr_ctx.globalAlpha = 0.3; 
+                    
+                    // Image Size
+                    const imgWidth = 150; 
+                    const imgHeight = 150; 
+                    
+                    // Calculate the BOTTOM-RIGHT position
+                    const margin = 30;
+                    const xPos = pr_canvas.width - imgWidth - margin;
+                    const yPos = pr_canvas.height - imgHeight - margin;
+                    
+                    // Draw the Image
+                    pr_ctx.drawImage(watermarkImg, xPos, yPos, imgWidth, imgHeight);
+                    
+                    pr_ctx.restore();
+                };
+                // =========================================================
+
                 if (pr_pageNumPending !== null) {
                     pr_renderPage(pr_pageNumPending);
                     pr_pageNumPending = null;
@@ -468,19 +544,33 @@ document.querySelectorAll('.PR-Policies').forEach(policy => {
     policy.addEventListener('click', function () {
         const filePath = policy.getAttribute('data-file'); 
         
-        // ✨ FIX: Safety check! Don't freeze if no PDF exists.
+        // =======================================================
+        // ✨ THE MISSING PIECE: Grab the date from the HTML!
+        // =======================================================
+        window.pr_currentUploadDate = policy.getAttribute('data-upload-date') || "Unknown Date";
+
+        // Safety check
         if (!filePath || filePath === 'null' || filePath.trim() === '') {
             alert("No PDF document has been uploaded for this policy yet.");
             return; 
         }
 
+        // Grab the title and put it in the header
+        const nameSpan = policy.querySelector('.PR-Policies-Name');
+        const policyTitle = nameSpan ? nameSpan.textContent.trim() : policy.textContent.trim(); 
+        
+        const viewerTitle = document.getElementById('pdfViewerTitle');
+        if (viewerTitle) {
+            viewerTitle.textContent = policyTitle; 
+        }
+
         const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
-        const repoPanel = document.getElementById('policy-repo-content'); // ✨ FIX: Safely grab the panel
+        const repoPanel = document.getElementById('policy-repo-content'); 
         
         if(pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
-        if(repoPanel) repoPanel.style.display = 'none'; // ✨ FIX: Safely hide it
+        if(repoPanel) repoPanel.style.display = 'none'; 
 
-        // Load PDF via custom engine
+        // Load PDF
         if (typeof pdfjsLib !== 'undefined') {
             const encodedUrl = encodeURI(filePath);
             pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
@@ -525,12 +615,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (closePdfViewerButton) {
         closePdfViewerButton.addEventListener('click', () => {
-            const repoPanel = document.getElementById('policy-repo-content'); // ✨ FIX: Safely grab the panel
+            const repoPanel = document.getElementById('policy-repo-content');
             
             if (pdfViewerContainer) pdfViewerContainer.style.display = 'none';
-            if (repoPanel) repoPanel.style.display = 'block'; // ✨ FIX: Safely show it again
+            if (repoPanel) repoPanel.style.display = 'block'; 
             
-            // Clear memory when closing
+            // ✨ Reset title when closing
+            const viewerTitle = document.getElementById('pdfViewerTitle');
+            if (viewerTitle) viewerTitle.textContent = "Policy Viewer";
+            
             if (pr_ctx && pr_canvas) {
                 pr_ctx.clearRect(0, 0, pr_canvas.width, pr_canvas.height);
                 pr_canvas.height = 0;
@@ -1232,6 +1325,102 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// =====================================================================
+    // ✨ DEPARTMENT MANAGER: SEARCH & FILTER ENGINE (UPGRADED)
+    // =====================================================================
+    const dmSearchInput = document.getElementById('dmSearchInput');
+    const dmFilterSelect = document.getElementById('dmFilterSelect');
+
+    function applyDepartmentFilters() {
+        const searchTerm = dmSearchInput ? dmSearchInput.value.toLowerCase() : '';
+        const filterValue = dmFilterSelect ? dmFilterSelect.value : 'all';
+        
+        const allFolders = document.querySelectorAll('#departmentListContainer .department-item');
+        const allEmployees = document.querySelectorAll('#departmentListContainer .assigned-role-item');
+        const allContainers = document.querySelectorAll('#departmentListContainer .department-children-container');
+
+        // ✨ 1. DEFAULT STATE: If search is empty and filter is "Show All", reset perfectly!
+        if (searchTerm === '' && filterValue === 'all') {
+            allFolders.forEach(f => {
+                f.style.display = 'flex';
+                f.classList.remove('folder-open'); // Close all triangles
+            });
+            allEmployees.forEach(e => e.style.display = 'flex');
+            allContainers.forEach(c => c.style.display = 'none'); // Hide nested contents
+            return; // Exit early!
+        }
+
+        // 2. Hide everything initially for filtering
+        allFolders.forEach(f => {
+            f.style.display = 'none';
+            f.classList.remove('folder-open');
+        });
+        allEmployees.forEach(e => e.style.display = 'none');
+        allContainers.forEach(c => c.style.display = 'none');
+
+        // ✨ THE FIX: A helper function that climbs up and opens EVERY parent folder
+        function revealAncestors(element) {
+            let currentContainer = element.closest('.department-children-container');
+            while (currentContainer) {
+                currentContainer.style.display = 'flex'; // Show the container
+                
+                const parentId = currentContainer.dataset.parentId;
+                if (parentId) {
+                    const parentFolder = document.querySelector(`.department-item[data-department-id="${parentId}"]`);
+                    if (parentFolder) {
+                        parentFolder.style.display = 'flex'; // Show the folder
+                        parentFolder.classList.add('folder-open'); // Spin the triangle
+                        // Move up to the next parent container in the chain
+                        currentContainer = parentFolder.closest('.department-children-container');
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // 3. Process Employees
+        allEmployees.forEach(emp => {
+            const empText = emp.textContent.toLowerCase();
+            const matchesSearch = empText.includes(searchTerm);
+            
+            if (matchesSearch && filterValue !== 'departments_only') {
+                emp.style.display = 'flex';
+                revealAncestors(emp); // Blast open all doors to the root!
+            }
+        });
+
+        // 4. Process Departments
+        allFolders.forEach(folder => {
+            const folderNameSpan = folder.querySelector('span');
+            const folderName = folderNameSpan ? folderNameSpan.textContent.toLowerCase() : '';
+            const matchesSearch = folderName.includes(searchTerm);
+            
+            if (matchesSearch) {
+                if (filterValue === 'employees_only') {
+                    // Only show this folder if it has visible employees inside it
+                    const folderId = folder.dataset.departmentId;
+                    const childContainer = document.querySelector(`.department-children-container[data-parent-id="${folderId}"]`);
+                    const hasVisibleEmployees = childContainer ? Array.from(childContainer.querySelectorAll('.assigned-role-item')).some(e => e.style.display === 'flex') : false;
+                    
+                    if (hasVisibleEmployees) {
+                        folder.style.display = 'flex';
+                        revealAncestors(folder);
+                    }
+                } else {
+                    folder.style.display = 'flex';
+                    revealAncestors(folder); // Blast open all doors to the root!
+                }
+            }
+        });
+    }
+
+    // Attach the listeners so it filters in real-time as you type or click
+    if (dmSearchInput) dmSearchInput.addEventListener('input', applyDepartmentFilters);
+    if (dmFilterSelect) dmFilterSelect.addEventListener('change', applyDepartmentFilters);
+
 /* =====================================================================
    8. POLICY MANAGER SCRIPT (With Sync Logic)
    ===================================================================== */
@@ -1351,8 +1540,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     pmFolderInput.value = '';
                     
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    // ✨ FIXED: Leaves the breadcrumb before reloading!
+                    syncAndReload();
                 } else {
                     alert("Database Error: " + data.message);
                 }
@@ -1391,7 +1580,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     folderToEditId = null;
                     
                     // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1428,8 +1617,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     folderToEditId = null;
                     
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Cannot delete: " + data.message);
                 }
@@ -1474,8 +1662,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     currentFolderForFile = null;
                     
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1508,8 +1695,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     policyToRemoveId = null;
                     
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1708,6 +1894,102 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// =====================================================================
+    // ✨ POLICY MANAGER: SEARCH & FILTER ENGINE
+    // =====================================================================
+    const pmSearchInput = document.getElementById('pmSearchInput');
+    const pmFilterSelect = document.getElementById('pmFilterSelect');
+
+    function applyPolicyFilters() {
+        const searchTerm = pmSearchInput ? pmSearchInput.value.toLowerCase() : '';
+        const filterValue = pmFilterSelect ? pmFilterSelect.value : 'all';
+        
+        const allFolders = document.querySelectorAll('#pmFoldersContainer .pm-folder-item');
+        const allPolicies = document.querySelectorAll('#pmFoldersContainer .pm-policy-item');
+        const allContainers = document.querySelectorAll('#pmFoldersContainer .pm-children-container');
+
+        // ✨ 1. DEFAULT STATE: If search is empty and filter is "Show All", reset perfectly!
+        if (searchTerm === '' && filterValue === 'all') {
+            allFolders.forEach(f => {
+                f.style.display = 'flex';
+                f.classList.remove('folder-open'); // Close all triangles
+            });
+            allPolicies.forEach(p => p.style.display = 'flex');
+            allContainers.forEach(c => c.style.display = 'none'); // Hide nested contents
+            return; // Exit early!
+        }
+
+        // 2. Hide everything initially for filtering
+        allFolders.forEach(f => {
+            f.style.display = 'none';
+            f.classList.remove('folder-open');
+        });
+        allPolicies.forEach(p => p.style.display = 'none');
+        allContainers.forEach(c => c.style.display = 'none');
+
+        // ✨ A helper function that climbs up and opens EVERY parent folder
+        function revealPMAncestors(element) {
+            let currentContainer = element.closest('.pm-children-container');
+            while (currentContainer) {
+                currentContainer.style.display = 'flex'; // Show the container
+                
+                const parentId = currentContainer.dataset.parentFolderId;
+                if (parentId) {
+                    const parentFolder = document.querySelector(`.pm-folder-item[data-category-id="${parentId}"]`);
+                    if (parentFolder) {
+                        parentFolder.style.display = 'flex'; // Show the folder
+                        parentFolder.classList.add('folder-open'); // Spin the triangle
+                        // Move up to the next parent container in the chain
+                        currentContainer = parentFolder.closest('.pm-children-container');
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // 3. Process Policies (Files)
+        allPolicies.forEach(policy => {
+            const policyText = policy.textContent.toLowerCase();
+            const matchesSearch = policyText.includes(searchTerm);
+            
+            if (matchesSearch && filterValue !== 'folders_only') {
+                policy.style.display = 'flex';
+                revealPMAncestors(policy); // Blast open all doors to the root!
+            }
+        });
+
+        // 4. Process Folders
+        allFolders.forEach(folder => {
+            const folderNameSpan = folder.querySelector('.pm-folder-name');
+            const folderName = folderNameSpan ? folderNameSpan.textContent.toLowerCase() : '';
+            const matchesSearch = folderName.includes(searchTerm);
+            
+            if (matchesSearch) {
+                if (filterValue === 'policies_only') {
+                    // Only show this folder if it has visible policy files inside it
+                    const folderId = folder.dataset.categoryId;
+                    const childContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${folderId}"]`);
+                    const hasVisiblePolicies = childContainer ? Array.from(childContainer.querySelectorAll('.pm-policy-item')).some(p => p.style.display === 'flex') : false;
+                    
+                    if (hasVisiblePolicies) {
+                        folder.style.display = 'flex';
+                        revealPMAncestors(folder);
+                    }
+                } else {
+                    folder.style.display = 'flex';
+                    revealPMAncestors(folder); // Blast open all doors to the root!
+                }
+            }
+        });
+    }
+
+    // Attach the listeners so it filters in real-time as you type or click
+    if (pmSearchInput) pmSearchInput.addEventListener('input', applyPolicyFilters);
+    if (pmFilterSelect) pmFilterSelect.addEventListener('change', applyPolicyFilters);
 
 
 /* =====================================================================
@@ -2058,3 +2340,159 @@ function handleDrop(e) {
         });
     }
 }
+
+
+/* =====================================================================
+   ✨ SECURITY: ADVANCED ANTI-SCREENSHOT & COPY SHIELD
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    const pdfContainer = document.getElementById('Policy_Repo_pdfViewer');
+    const pdfCanvas = document.getElementById('pr_pdfCanvas');
+    
+    if (pdfContainer && pdfCanvas) {
+        
+        // Helper function to instantly black out the document
+        const secureDocument = () => {
+            if (pdfContainer.style.display === 'flex' || pdfContainer.style.display === 'block') {
+                pdfCanvas.style.filter = 'blur(40px)';
+                pdfCanvas.style.opacity = '0'; // Completely invisible
+            }
+        };
+
+        // Helper function to restore the document
+        const restoreDocument = () => {
+            if (pdfContainer.style.display === 'flex' || pdfContainer.style.display === 'block') {
+                pdfCanvas.style.filter = 'none';
+                pdfCanvas.style.opacity = '1';
+            }
+        };
+
+        // 1. Disable Right-Click (Context Menu)
+        pdfContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // 2. PREEMPTIVE KEYBOARD STRIKES
+        document.addEventListener('keydown', (e) => {
+            if (pdfContainer.style.display === 'flex' || pdfContainer.style.display === 'block') {
+                
+                // Block Print/Save/Copy (Ctrl+P, Ctrl+S, Ctrl+C)
+                if ((e.ctrlKey || e.metaKey) && ['p', 's', 'c'].includes(e.key.toLowerCase())) {
+                    e.preventDefault();
+                    alert("SECURITY ALERT: Copying or saving is prohibited.");
+                }
+
+                // 🚨 BEAT THE SNIPPING TOOL: Catch Win+Shift+S or Mac Cmd+Shift+4
+                if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+                    secureDocument(); // Blackout immediately before the OS freezes the screen!
+                }
+                
+                // Catch PrintScreen keypress
+                if (e.key === 'PrintScreen') {
+                    secureDocument();
+                    navigator.clipboard.writeText("SECURITY ALERT: Screenshotting official policies is prohibited.");
+                }
+            }
+        });
+
+        // Restore document a second after they let go of the screenshot keys
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'PrintScreen' || e.key === 'Meta' || e.key === 'Shift') {
+                setTimeout(restoreDocument, 1000); 
+            }
+        });
+
+        // 3. Window Blur (Catches Alt-Tabbing to another monitor/app)
+        window.addEventListener('blur', secureDocument);
+        window.addEventListener('focus', restoreDocument);
+
+        // 4. 🚨 AGGRESSIVE MOUSE TRACKING
+        // If they try to move their mouse to the Start Menu/Taskbar to click a snipping tool, 
+        // the document vanishes the moment the cursor leaves the browser window.
+        document.addEventListener('mouseleave', secureDocument);
+        document.addEventListener('mouseenter', restoreDocument);
+    }
+});
+/* =====================================================================
+   ✨ REPORTS DASHBOARD: CHART INITIALIZATION
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    
+    let workflowChartInstance = null;
+    let statusChartInstance = null;
+    let accessChartInstance = null;
+
+    window.renderReports = function() {
+        
+        fetch('../../generalComponents/policyManagerPHP/getReportsData.php')
+            .then(response => response.json())
+            .then(dbData => {
+                
+                // 1. INJECT KPI RIBBON
+                if (dbData.kpiData) {
+                    document.getElementById('kpi-active').innerText = dbData.kpiData.active;
+                    document.getElementById('kpi-pending').innerText = dbData.kpiData.pending;
+                    document.getElementById('kpi-speed').innerHTML = `${dbData.kpiData.speed} <span style="font-size: 14px; color: #64748b;">Days</span>`;
+                    document.getElementById('kpi-expiring').innerText = dbData.kpiData.expiring;
+                }
+
+                // 2. WORKFLOW BAR CHART (Dynamic)
+                const ctxWorkflow = document.getElementById('workflowChart');
+                if (ctxWorkflow) {
+                    if (workflowChartInstance) workflowChartInstance.destroy(); 
+                    workflowChartInstance = new Chart(ctxWorkflow, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Drafting', 'Review', 'Verification', 'Approval'],
+                            datasets: [{
+                                label: 'Average Days',
+                                data: dbData.workflowData, // 👈 PULLING FROM DATABASE
+                                backgroundColor: '#fbaf41', 
+                                borderRadius: 6
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    });
+                }
+
+                // 3. STATUS DONUT CHART (Dynamic)
+                const ctxStatus = document.getElementById('statusChart');
+                if (ctxStatus) {
+                    if (statusChartInstance) statusChartInstance.destroy();
+                    statusChartInstance = new Chart(ctxStatus, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Approved', 'Under Review', 'Draft', 'Archived'],
+                            datasets: [{
+                                data: dbData.statusData, // 👈 PULLING FROM DATABASE
+                                backgroundColor: ['#1a2035', '#fbaf41', '#64748b', '#ef4444'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', layout: { padding: 10 } }
+                    });
+                }
+
+                // 4. ACCESS TRENDS LINE CHART (Dynamic)
+                const ctxAccess = document.getElementById('accessChart');
+                if (ctxAccess) {
+                    if (accessChartInstance) accessChartInstance.destroy();
+                    accessChartInstance = new Chart(ctxAccess, {
+                        type: 'line',
+                        data: {
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                            datasets: [{
+                                label: 'Policy Views',
+                                data: dbData.accessData, // 👈 PULLING FROM DATABASE
+                                borderColor: '#1a2035', 
+                                backgroundColor: 'rgba(26, 32, 53, 0.1)', 
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4 
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+            })
+            .catch(error => console.error("Error fetching report data:", error));
+    };
+});

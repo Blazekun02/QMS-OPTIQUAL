@@ -162,7 +162,7 @@
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 5";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 4";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -181,7 +181,7 @@
                                     echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 5";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 4";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -292,18 +292,14 @@
         </div>
 
         <div class="Role-Manager-Panel" style="display:none;">
-            <h1 class="rm-title">Quality Assurance Team Manager</h1>
+            <h1 class="rm-title">Quality Assurance Team Directory</h1>
             
             <div class="rm-controls">
                 <div class="rm-search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" placeholder="find employee" id="rmSearchInput">
                 </div>
-                <button class="rm-icon-btn" id="rmAddRoleBtn" title="Add User"><i class="fas fa-user-plus"></i></button>
-                <button class="rm-icon-btn rm-delete-btn" id="rmDeleteRoleBtn" title="Remove Users"><i class="fas fa-trash-alt"></i></button>
-                <button class="rm-icon-btn" id="rmConfirmDeleteBtn" title="Confirm Removal" style="display: none; color: #4CAF50;"><i class="fas fa-check-circle"></i></button>
-                <span id="rmDeleteInstruction" style="display: none; color: #f44336; font-family: 'Istok Web', sans-serif; font-weight: bold; margin-left: 10px; font-size: 16px;">Select users to be removed.</span>
-            </div>
+                </div>
             <div class="rm-grid-container" id="rmGridContainer"></div>
         </div>
 

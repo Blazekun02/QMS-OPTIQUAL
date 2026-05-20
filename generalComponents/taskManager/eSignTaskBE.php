@@ -50,26 +50,31 @@ if ($statusResult->num_rows > 0) {
 }
 $statusQuery->close();
 
-// ✨ 4. THE 4-STEP WORKFLOW LOGIC (Now with Name Tracking!)
+// ✨ 4. THE 4-STEP WORKFLOW LOGIC (Now with Name Tracking AND Date Stamping!)
 if ($currentStatus == 1) {
     $newStatus = 2; // QA Staff signs -> becomes 2 (Reviewed)
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, reviewedBy = ? WHERE policyID = ?");
+    // ✨ ADDED: dateReviewed = NOW()
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, reviewedBy = ?, dateReviewed = NOW() WHERE policyID = ?");
     $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
+
 } else if ($currentStatus == 2) {
     $newStatus = 3; // Verifier signs -> becomes 3 (Verified)
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, verifiedBy = ? WHERE policyID = ?");
+    // ✨ ADDED: dateVerified = NOW()
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, verifiedBy = ?, dateVerified = NOW() WHERE policyID = ?");
     $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
+
 } else if ($currentStatus == 3) {
     $newStatus = 4; // Approver signs -> becomes 4 (Approved)
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, approvedBy = ? WHERE policyID = ?");
+    // ✨ ADDED: dateApproved = NOW()
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, approvedBy = ?, dateApproved = NOW() WHERE policyID = ?");
     $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
+
 } else {
     // Fallback
     $newStatus = $currentStatus;
     $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ? WHERE policyID = ?");
     $updatePolicy->bind_param("ii", $newStatus, $policyID);
 }
-
 if ($updatePolicy->execute()) {
     // Clear from tasktbl so it leaves the inbox
     $completeTask = $conn->prepare("DELETE FROM tasktbl WHERE policyAssigned = ? AND assignedTo = ?");

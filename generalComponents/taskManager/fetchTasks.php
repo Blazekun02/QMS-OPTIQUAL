@@ -44,7 +44,7 @@ try {
     ";
 
     if ($userRole == 2) {
-        $query = $selectCore . " WHERE (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR p.policyStatusID IN (3, 4) ORDER BY p.dateSubmitted ASC";
+        $query = $selectCore . " WHERE (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR p.policyStatusID = 3 OR (p.policyStatusID = 4 AND p.categoryID IS NULL) ORDER BY p.dateSubmitted ASC";
         $res = $conn->query($query);
         if ($res) {
             while($row = $res->fetch_assoc()){ $actionRequired[] = $row; }

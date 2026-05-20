@@ -116,11 +116,14 @@ body {
 .Sidebar-Menu {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* ✨ Ensures the text aligns perfectly left when expanded */
+    align-items: flex-start; 
+    justify-content: space-evenly; /* ✨ THE MAGIC: Automatically spreads them to fill the whole height! */
     width: 100%;
-    height: 100%;
-    padding-left: 0; /* ✨ Removed static padding from the container */
-    padding-top: 30px;
+    flex: 1;                 /* Ensures the menu stretches all the way down */
+    padding-left: 0; 
+    padding-top: 20px;       /* A little breathing room under the APC logo */
+    margin: 0;
+    padding-bottom: 80px;    /* Leaves plenty of room so the bottom icon doesn't hit the copyright bar */
 }
 
 .Sidebar-Menu li {
@@ -129,8 +132,8 @@ body {
     color: white;
     align-items: center;
     width: 100%;
-    margin-bottom: 45px; /* ✨ Increased from 25px to 45px to stretch out the 5 icons! */
-    padding-left: 17px; /* ✨ Mathematically centers a 0.35in icon perfectly inside a 0.7in sidebar */
+    margin-bottom: 0;        /* Keep this at 0, space-evenly does the work now! */
+    padding-left: 17px;      
     box-sizing: border-box;
 }
 
