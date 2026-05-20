@@ -1,20 +1,22 @@
-RewriteEngine On
+RewriteEngine on
 
 RewriteBase /qms_optiqual/
 
 # 1. Remove .php from the URL
 # If the request is for a file that exists with .php, serve it
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
+#RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteCond %{REQUEST_FILENAME}\.php -f
+#RewriteRule ^([^\.]+)$ $1.php [NC,L]
 
 # 2. Redirect /login to /auth/log_in/login.php
 # This creates a "alias" for long paths
-RewriteRule ^qms_optiqual$ auth/landing/landingPage.php [L]
-RewriteRule ^login$ auth/log_in/login.php [L]
-RewriteRule ^signup$ auth/sign_up/signup.php [L]
-RewriteRule ^dashboard$ auth/connectionVerification.php [L]
-RewriteRule ^dashboard$ auth/connectionVerification.php [L]
+#RewriteRule ^qms_optiqual$ auth/landing/landingPage.php [L]
+#RewriteRule ^login$ auth/log_in/login.php [L]
+#RewriteRule ^signup$ auth/sign_up/signup.php [L]
+#RewriteRule ^dashboard$ auth/connectionVerification.php [L]
+#RewriteRule ^dashboard$ auth/connectionVerification.php [L]
 
-# 3. Prevent users from browsing your folders
-Options -Indexes
+# 3. Allow users to browse your folders
+Options +Indexes
+
+DirectoryIndex disabled

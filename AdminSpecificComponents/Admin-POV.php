@@ -75,6 +75,21 @@
             </div>
         </div>
         <div class="white-line-separator"></div>
+        <div class="table-container">
+            <table class="role-manager-table">
+                <thead>
+                    <tr>
+                        <th>Full name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="roleManagerTableBody">
+                    <!-- User rows will be dynamically populated here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>    
 

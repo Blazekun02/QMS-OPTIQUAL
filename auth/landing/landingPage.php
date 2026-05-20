@@ -39,11 +39,11 @@ require_once genMsg_dir . '/setMessage.php';
 </div>    
 <script>
     function redirecttodataPrivacy() {
-        window.location.href = "../../auth/dataPriv/dataPrivacy";
+        window.location.href = "../../auth/dataPriv/dataPrivacy.html";
     }
 
     function redirectToLogin() {
-        window.location.href = "../../auth/connectionVerification";
+        window.location.href = "../../auth/connectionVerification.php";
     }
 
 </script>

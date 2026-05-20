@@ -570,3 +570,100 @@ body {
 .role-manager-container {
     overflow-y: hidden; /* Ensure the container itself doesn't scroll unnecessarily */
 }
+
+/* --- ROLE MANAGER TABLE ENHANCEMENTS --- */
+
+.table-container {
+    width: 100%;
+    flex-grow: 1; /* Allow the table to fill remaining vertical space */
+    min-height: 0; /* Crucial for scrolling to work inside flexbox */
+    overflow-y: auto; /* Enable vertical scroll if list exceeds height */
+    margin-top: 15px;
+    background-color: white; /* Clean background for the table */
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Custom Scrollbar for the table container */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+}
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: #fbaf41;
+    border-radius: 4px;
+}
+
+.role-manager-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Istok Web', sans-serif;
+    font-size: 16px; /* Larger, readable font */
+}
+
+.role-manager-table thead th {
+    position: sticky;
+    top: 0; /* Keep headers visible when scrolling */
+    background-color: #293A82;
+    color: white;
+    padding: 15px 20px;
+    text-align: left;
+    font-size: 1.1em;
+    font-weight: bold;
+    z-index: 2;
+    letter-spacing: 0.5px;
+}
+
+.role-manager-table thead th:first-child { border-radius: 5px 0 0 0; }
+.role-manager-table thead th:last-child { border-radius: 0 5px 0 0; }
+
+.role-manager-table tbody td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+    vertical-align: middle;
+}
+
+.role-manager-table tbody tr:hover {
+    background-color: #f0f4ff; /* Slight blue tint on hover */
+}
+
+.role-manager-select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-family: 'Istok Web', sans-serif;
+    font-size: 15px;
+    color: #333;
+    background-color: #fff;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.role-manager-select:focus {
+    border-color: #fbaf41;
+}
+
+.role-manager-delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-family: 'Istok Web', sans-serif;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.role-manager-delete-btn:hover {
+    background-color: #d32f2f;
+    transform: scale(1.05); /* Slight bounce pop effect */
+}

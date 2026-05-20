@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -17,6 +19,7 @@ function sendEmail_Verify($email, $email_subject, $email_template) {
 
     try {
         //Server settings
+        $mail->SMTPDebug = 2; // 2 provides client and server communication details
         // $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
         $mail->isSMTP();                                            //Send using SMTP
         $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
@@ -24,7 +27,7 @@ function sendEmail_Verify($email, $email_subject, $email_template) {
         $mail->Username   = 'joaquind.rizal@gmail.com';                     //SMTP username
         $mail->Password   = 'fatk zlot uttj wtke';                               //SMTP password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;                              //Enable implicit TLS encryption
-        $mail->Port       =  587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+        $mail->Port       =  465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
         $mail->setFrom('joaquind.rizal@gmail.com', 'Quality Management System');
         $mail->addAddress($email);     //Add a recipient

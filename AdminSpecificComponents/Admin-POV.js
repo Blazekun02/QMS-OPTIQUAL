@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             showMainContent(mainContentRoleManager);
             // Ensure body scroll is normal when showing main content
             document.body.style.overflow = '';
+            loadRoleManagerUsers(); // Fetch and display users when panel is opened
         });
     }
 
@@ -187,3 +188,117 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.body.style.overflow = '';
     }
 });
+
+/**
+ * Role Manager Logic
+ */
+
+// Load users and populate the table
+function loadRoleManagerUsers() {
+    console.log("Attempting to fetch users from getUsers.php...");
+    
+    fetch('getUsers.php')
+        .then(response => {
+            console.log("Received response headers. Status:", response.status);
+            return response.text(); // Read as plain text first so we can see raw PHP errors
+        })
+        .then(text => {
+            console.log("Raw server response:", text);
+            if (!text) return;
+            
+            try {
+                const data = JSON.parse(text); // Try parsing the JSON
+                console.log("Parsed JSON data:", data);
+                
+                const tbody = document.getElementById('roleManagerTableBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                
+                if (data.success && data.users) {
+                    if (data.users.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#666; font-size:1.1em;">No users found in database.</td></tr>';
+                        return;
+                    }
+                    data.users.forEach(user => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${user.fullName || 'N/A'}</td>
+                            <td>${user.email || 'N/A'}</td>
+                            <td>
+                                <select class="role-manager-select" onchange="updateUserRole(${user.accID}, this.value)">
+                                    <option value="1" ${user.roleID == 1 ? 'selected' : ''}>Admin</option>
+                                    <option value="2" ${user.roleID == 2 ? 'selected' : ''}>QAD</option>
+                                    <option value="3" ${user.roleID == 3 ? 'selected' : ''}>QAP</option>
+                                    <option value="4" ${user.roleID == 4 ? 'selected' : ''}>Staff</option>
+                                    <option value="5" ${user.roleID == 5 ? 'selected' : ''}>Archived</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="role-manager-delete-btn" onclick="deleteUserAccount(${user.accID})">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    console.error("Backend returned an error message:", data.message);
+                }
+            } catch (e) {
+                console.error("Failed to parse JSON. This means your PHP script crashed and returned an HTML error instead of JSON. Error:", e);
+            }
+        })
+        .catch(err => {
+            console.error("Network or fetch error. Check your URL, cache, or adblockers.", err);
+        });
+}
+
+// Function to update a user's role when the select dropdown changes
+function updateUserRole(accID, newRole) {
+    if (confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
+        fetch('updateRole.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accID: accID, role: newRole })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Role updated successfully.');
+            } else {
+                alert('Error updating role: ' + data.message);
+                loadRoleManagerUsers(); // Revert the dropdown UI change if it fails
+            }
+        })
+        .catch(err => console.error("Error updating role:", err));
+    } else {
+        loadRoleManagerUsers(); // Revert the dropdown UI change if user hits cancel
+    }
+}
+
+// Function to permanently delete a user account
+function deleteUserAccount(accID) {
+    if (confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
+        fetch('deleteUser.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accID: accID })
+        })
+        .then(res => res.text()) // Read as raw text first
+        .then(text => {
+            try {
+                const data = JSON.parse(text); // Try parsing the text into JSON
+                if (data.success) {
+                    alert('Account deleted successfully.');
+                    loadRoleManagerUsers(); // Refresh the table automatically
+                } else {
+                    alert('Error deleting account: ' + data.message);
+                }
+            } catch (err) {
+                console.error("Backend crashed and returned HTML/Text instead of JSON:", text);
+                alert("A server error occurred. Check the browser console for exact details.");
+            }
+        })
+        .catch(err => console.error("Error deleting user:", err));
+    }
+}

@@ -54,7 +54,7 @@ if (isset($_POST["signInButton"])) {
         require_once BASE_DIR . "/connect.php";
 
         //check if acc exists
-        $sql_retreive_accID = "SELECT accID, password FROM accdatatbl WHERE email = ?";
+        $sql_retreive_accID = "SELECT accID, password, roleID FROM accdatatbl WHERE email = ?";
         $stmt = $conn->prepare($sql_retreive_accID);
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -64,6 +64,13 @@ if (isset($_POST["signInButton"])) {
             $hashedPassword = $row['password'];
             //Check if passwords match
             if (password_verify($inputtedPassword, $hashedPassword)) {
+                // Prevent login if the account is archived (roleID == 5)
+                if ($row['roleID'] == 5) {
+                    setMessage("Your account has been archived. Please contact the administrator.", "error");
+                    header("Location: login.php");
+                    exit;
+                }
+
                 // Store accID in session
                 $accID = $row['accID'];
                 $_SESSION['accID'] = $accID;
