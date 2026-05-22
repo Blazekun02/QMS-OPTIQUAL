@@ -544,11 +544,11 @@ document.querySelectorAll('.PR-Policies').forEach(policy => {
     policy.addEventListener('click', function () {
         const filePath = policy.getAttribute('data-file'); 
         
-        // =======================================================
-        // ✨ THE MISSING PIECE: Grab the date from the HTML!
-        // =======================================================
+        // ✨ FIX: Explicitly grab the data-id from the clicked element
+        window.currentSelectedPolicyId = this.getAttribute('data-id');
+        
+        // ... existing upload date logic ...
         window.pr_currentUploadDate = policy.getAttribute('data-upload-date') || "Unknown Date";
-
         // Safety check
         if (!filePath || filePath === 'null' || filePath.trim() === '') {
             alert("No PDF document has been uploaded for this policy yet.");
@@ -2496,3 +2496,118 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Error fetching report data:", error));
     };
 });
+
+// =====================================================================
+// ✨ INLINE REMARKS SECTION ✨
+// =====================================================================
+window.openFeedbackModal = function() {
+    const policyId = window.currentSelectedPolicyId; // ✨ THE FIX: Grab the ID from the global scope
+
+    if (!policyId) {
+        alert("Error: Please select a valid policy.");
+        return;
+    }
+
+    window.currentPolicyId = policyId; // Set it for the submit function to use
+    const remarksSection = document.getElementById('policyRemarksSection');
+    const remarkInput = document.getElementById('policyRemarkText');
+
+    if (remarksSection) {
+        const isVisible = remarksSection.style.display === 'block';
+        remarksSection.style.display = isVisible ? 'none' : 'block';
+    }
+
+    if (remarkInput) {
+        remarkInput.focus();
+    }
+};
+
+const submitRemarkBtn = document.getElementById('submitRemarkBtn');
+const cancelRemarkBtn = document.getElementById('cancelRemarkBtn');
+const policyRemarkText = document.getElementById('policyRemarkText');
+
+if (cancelRemarkBtn) {
+    cancelRemarkBtn.addEventListener('click', () => {
+        const remarksSection = document.getElementById('policyRemarksSection');
+        if (remarksSection) remarksSection.style.display = 'none';
+        if (policyRemarkText) policyRemarkText.value = '';
+    });
+}
+
+if (submitRemarkBtn) {
+    submitRemarkBtn.addEventListener('click', function() {
+        const content = policyRemarkText ? policyRemarkText.value.trim() : '';
+        if (!content) return alert("Please write a remark.");
+
+        const btn = this;
+        btn.innerHTML = "Submitting...";
+        btn.disabled = true;
+
+        fetch('../../generalComponents/policyManagerPHP/submitFeedback.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ policyId: window.currentPolicyId, content: content })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Feedback submitted successfully!");
+                if (policyRemarkText) policyRemarkText.value = '';
+                const remarksSection = document.getElementById('policyRemarksSection');
+                if (remarksSection) remarksSection.style.display = 'none';
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => alert("Network error."))
+        .finally(() => {
+            btn.innerHTML = "Submit Remark";
+            btn.disabled = false;
+        });
+    });
+}
+
+window.loadWorkspaceFeedbacks = function() {
+    const container = document.getElementById('workspaceFeedbackList');
+    if (!container) return;
+
+    fetch('../../generalComponents/policyManagerPHP/getFeedbacks.php')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            container.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+            return;
+        }
+
+        if (data.feedbacks.length === 0) {
+            container.innerHTML = '<p style="padding: 20px;">No feedbacks found.</p>';
+            return;
+        }
+
+        // Render the list with better text wrapping
+        // Inside your loadWorkspaceFeedbacks map function:
+        container.innerHTML = data.feedbacks.map((fb, index) => `
+            <div class="fb-item" style="background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer;" onclick="toggleFbDetails(${index})">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>Policy: ${fb.policyTitle}</strong>
+                    <span>${fb.dateSubmitted}</span>
+                </div>
+                <div>Submitted by: ${fb.submittedBy}</div>
+                
+                <div id="fb-details-${index}" style="display:none; margin-top:15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #fbaf41; border-radius: 4px; overflow: visible;">
+                    <p style="white-space: pre-wrap; word-wrap: break-word; color: #333;">${fb.content}</p>
+                </div>
+            </div>
+        `).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        container.innerHTML = '<p>Error loading feedbacks.</p>';
+    });
+};
+
+// Helper to toggle details
+window.toggleFbDetails = function(index) {
+    const el = document.getElementById(`fb-details-${index}`);
+    if (el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
+};

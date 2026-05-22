@@ -2149,3 +2149,52 @@ body {
 .folder-open .folder-toggle-icon {
     transform: rotate(90deg);
 }
+
+.custom-pdf-toolbar {
+    display: flex;
+    justify-content: space-between; /* This forces left, center, and right to spread out */
+    align-items: center;
+}
+
+.pdf-tools-left, .pdf-tools-center, .pdf-tools-right {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between buttons */
+}
+
+/* Add this to your QAD-POV.css */
+.fb-item p {
+    white-space: pre-wrap;       /* Respects line breaks and wraps text */
+    word-wrap: break-word;       /* Prevents long words from breaking layout */
+    overflow-wrap: break-word;   /* Ensures text stays inside the container */
+    margin: 0;
+    line-height: 1.5;            /* Improves readability of long paragraphs */
+}
+
+/* Ensure the container doesn't have a fixed height that cuts off text */
+#workspaceFeedbackList {
+    max-height: 60vh;            /* Gives it a generous height */
+    overflow-y: auto;            /* Adds a scrollbar if the list gets too long */
+}
+
+/* Add this to your QAD-POV.css */
+#workspaceFeedbackList {
+    max-height: 400px;        /* Limits height so the whole page doesn't grow too long */
+    overflow-y: auto;         /* ADDS THE SCROLLBAR when content exceeds height */
+    padding-right: 10px;
+}
+
+/* Customizing the scrollbar for your Optiqual branding */
+#workspaceFeedbackList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#workspaceFeedbackList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#workspaceFeedbackList::-webkit-scrollbar-thumb {
+    background: #fbaf41;      /* Optiqual Yellow */
+    border-radius: 4px;
+}

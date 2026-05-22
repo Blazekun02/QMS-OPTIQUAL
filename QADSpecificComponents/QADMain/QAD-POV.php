@@ -147,7 +147,8 @@
                             if (mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
                                     // ADDED DATA ATTRIBUTE HERE:
-                                    echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . $rowPol['dateUploaded'] . '">';
+                                    // Ensure your PHP loop looks like this:
+echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . $rowPol['dateUploaded'] . '">';
                                     echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                     echo '</div>';
                                 }
@@ -172,7 +173,8 @@
                                     if (mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
                                             // ADDED DATA ATTRIBUTE HERE:
-                                            echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . $rowPol['dateUploaded'] . '">';
+                                            
+echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . $rowPol['dateUploaded'] . '">';
                                             echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                             echo '</div>';
                                         }
@@ -208,6 +210,11 @@
                         <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="pr_pageNum">1</span> of <span id="pr_pageCount">?</span></span>
                         <button id="pr_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
                     </div>
+
+                    <button class="pdf-btn" onclick="openFeedbackModal(window.currentSelectedPolicyId)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px;">
+                        <i class="fas fa-comment-alt"></i> Remark
+                    </button>
+
                     <div class="pdf-tools-right">
                         <button id="pr_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
                         <span id="pr_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
@@ -217,6 +224,14 @@
 
                 <div class="pdf-canvas-container" style="background-color: #525659; height: 68vh; overflow: auto; display: block; text-align: center; padding: 20px 0; border-radius: 0 0 8px 8px;">
                     <canvas id="pr_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
+                </div>
+                <div id="policyRemarksSection" class="policy-remarks-section" style="display:none; background: #ffffff; border-top: 1px solid #d1d5db; padding: 20px;">
+                    <h3 style="margin: 0 0 10px; color: #1a2035;">Remarks</h3>
+                    <textarea id="policyRemarkText" placeholder="Type your feedback here..." style="width: 100%; min-height: 120px; padding: 12px; border-radius: 8px; border: 1px solid #d1d5db; resize: vertical; margin-bottom: 15px;"></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button id="cancelRemarkBtn" class="pdf-btn" style="background: transparent; color: #1a2035; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 18px; cursor: pointer;">Cancel</button>
+                        <button id="submitRemarkBtn" class="pdf-btn" style="background: #fbaf41; color: #1a2035; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; cursor: pointer;">Submit Remark</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -621,6 +636,7 @@
             </div>
             
 </div>
+
 
 <script src="QAD-POV.js?v=<?php echo time(); ?>"></script>
 
