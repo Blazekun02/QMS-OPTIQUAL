@@ -2163,14 +2163,25 @@ body {
 }
 
 /* Add this to your QAD-POV.css */
-.fb-item p {
-    white-space: pre-wrap;       /* Respects line breaks and wraps text */
-    word-wrap: break-word;       /* Prevents long words from breaking layout */
-    overflow-wrap: break-word;   /* Ensures text stays inside the container */
-    margin: 0;
-    line-height: 1.5;            /* Improves readability of long paragraphs */
+/* Update this to allow the container to expand with content */
+.fb-item div[id^="fb-details-"] {
+    display: none; 
+    margin-top: 15px; 
+    padding: 15px; 
+    background: #f9f9f9; 
+    border-left: 4px solid #fbaf41; 
+    border-radius: 4px;
+    height: auto !important;      /* Forces container to fit text height */
+    overflow: visible !important;  /* Prevents clipping */
 }
 
+/* Ensure the paragraph itself wraps correctly */
+.fb-item p {
+    margin: 0;
+    white-space: pre-wrap;        /* Preserves your paragraph line breaks */
+    word-wrap: break-word;        /* Forces long lines to wrap */
+    line-height: 1.6;             /* Makes it easier to read */
+}
 /* Ensure the container doesn't have a fixed height that cuts off text */
 #workspaceFeedbackList {
     max-height: 60vh;            /* Gives it a generous height */
@@ -2197,4 +2208,18 @@ body {
 #workspaceFeedbackList::-webkit-scrollbar-thumb {
     background: #fbaf41;      /* Optiqual Yellow */
     border-radius: 4px;
+}
+
+.kpi-box {
+    background: #293A82;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    text-align: center;
+}
+.kpi-box:hover {
+    transform: scale(1.05);
+    background: #3b4e9b;
 }

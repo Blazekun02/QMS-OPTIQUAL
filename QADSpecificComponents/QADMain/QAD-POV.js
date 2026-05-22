@@ -2585,20 +2585,31 @@ window.loadWorkspaceFeedbacks = function() {
         }
 
         // Render the list with better text wrapping
-        // Inside your loadWorkspaceFeedbacks map function:
-        container.innerHTML = data.feedbacks.map((fb, index) => `
-            <div class="fb-item" style="background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer;" onclick="toggleFbDetails(${index})">
-                <div style="display: flex; justify-content: space-between;">
-                    <strong>Policy: ${fb.policyTitle}</strong>
-                    <span>${fb.dateSubmitted}</span>
-                </div>
-                <div>Submitted by: ${fb.submittedBy}</div>
-                
-                <div id="fb-details-${index}" style="display:none; margin-top:15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #fbaf41; border-radius: 4px; overflow: visible;">
-                    <p style="white-space: pre-wrap; word-wrap: break-word; color: #333;">${fb.content}</p>
-                </div>
+        // Inside your loadWorkspaceFeedbacks function in QAD-POV.js
+    container.innerHTML = data.feedbacks.map((fb, index) => `
+    <div class="fb-item" style="background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer;" onclick="toggleFbDetails(${index})">
+        <div style="display: flex; justify-content: space-between;">
+            <strong>Policy: ${fb.policyTitle}</strong>
+            <span>${fb.dateSubmitted}</span>
+        </div>
+        <div>Submitted by: ${fb.submittedBy}</div>
+        
+        <div id="fb-details-${index}" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #eee;">
+            <p><strong>Feedback Content:</strong></p>
+            <div style="
+                background: #f9f9f9; 
+                padding: 10px; 
+                border-radius: 5px; 
+                max-height: 150px;       /* Limits the height to trigger scrolling */
+                overflow-y: auto;        /* Adds the vertical scrollbar */
+                white-space: pre-wrap;   /* Keeps your paragraph formatting */
+                border: 1px solid #eee;  /* Visual cue for the scroll box */
+            ">
+                ${fb.content}
             </div>
-        `).join('');
+        </div>
+    </div>
+`).join('');
     })
     .catch(err => {
         console.error(err);
@@ -2611,3 +2622,25 @@ window.toggleFbDetails = function(index) {
     const el = document.getElementById(`fb-details-${index}`);
     if (el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
 };
+
+let currentReportType = '';
+
+function loadReportDetails(type) {
+    currentReportType = type;
+    document.getElementById('reportDetailsArea').style.display = 'block';
+    fetchReportDetails();
+}
+
+function fetchReportDetails() {
+    const month = document.getElementById('filterMonth').value;
+    const year = document.getElementById('filterYear').value;
+    
+    fetch(`../../generalComponents/policyManagerPHP/getReportsData.php?type=${currentReportType}&month=${month}&year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.querySelector('#detailsTable tbody');
+            tbody.innerHTML = data.map(item => `
+                <tr><td>${item.categoryName}</td><td>${item.total}</td></tr>
+            `).join('');
+        });
+}

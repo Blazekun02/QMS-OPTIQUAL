@@ -26,7 +26,7 @@ if ($authorResult->num_rows > 0) {
     $authorID = $row['policyAuthor'];
     $policyTitle = $row['title'];
     
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = 5, reviewedBy = NULL, policyVerifier = NULL, policyApprover = NULL WHERE policyID = ?");
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = 6, reviewedBy = NULL, policyVerifier = NULL, policyApprover = NULL WHERE policyID = ?");
     
     if (!$updatePolicy) {
         ob_end_clean();

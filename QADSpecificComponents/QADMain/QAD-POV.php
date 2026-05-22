@@ -281,83 +281,42 @@ echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="
         </div>
         </div>
 
-<div id="Reports-Panel" class="Main-Panel" style="display: none; position: absolute; top: 60px; left: 75px; width: calc(100% - 75px); height: calc(100vh - 60px);; box-sizing: border-box; overflow-y: auto; background-color: #f4f7f6;">
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
     
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
-        
-        <div style="background: white; border-radius: 10px; padding: 20px; border-left: 5px solid #1a2035; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center;">
-            <div style="background: rgba(26, 32, 53, 0.1); padding: 15px; border-radius: 8px; margin-right: 15px;">
-                <i class="fas fa-file-signature" style="color: #1a2035; font-size: 24px;"></i>
-            </div>
-            <div>
-                <p style="margin: 0; color: #64748b; font-size: 13px; font-family: 'Istok Web', sans-serif; text-transform: uppercase; letter-spacing: 1px;">Active Policies</p>
-                <h2 id="kpi-active" style="margin: 5px 0 0 0; color: #1a2035; font-size: 28px; font-family: 'Istok Web', sans-serif;">0</h2>
-            </div>
-        </div>
-
-        <div style="background: white; border-radius: 10px; padding: 20px; border-left: 5px solid #fbaf41; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center;">
-            <div style="background: rgba(251, 175, 65, 0.2); padding: 15px; border-radius: 8px; margin-right: 15px;">
-                <i class="fas fa-clock" style="color: #e69b33; font-size: 24px;"></i>
-            </div>
-            <div>
-                <p style="margin: 0; color: #64748b; font-size: 13px; font-family: 'Istok Web', sans-serif; text-transform: uppercase; letter-spacing: 1px;">Pending Review</p>
-                <h2 id="kpi-pending" style="margin: 5px 0 0 0; color: #1a2035; font-size: 28px; font-family: 'Istok Web', sans-serif;">0</h2>
-            </div>
-        </div>
-
-        <div style="background: white; border-radius: 10px; padding: 20px; border-left: 5px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center;">
-            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; margin-right: 15px;">
-                <i class="fas fa-bolt" style="color: #3b82f6; font-size: 24px;"></i>
-            </div>
-            <div>
-                <p style="margin: 0; color: #64748b; font-size: 13px; font-family: 'Istok Web', sans-serif; text-transform: uppercase; letter-spacing: 1px;">Avg. Approval</p>
-                <h2 id="kpi-speed" style="margin: 5px 0 0 0; color: #1a2035; font-size: 28px; font-family: 'Istok Web', sans-serif;">0 <span style="font-size: 14px; color: #64748b;">Days</span></h2>
-            </div>
-        </div>
-
-        <div style="background: white; border-radius: 10px; padding: 20px; border-left: 5px solid #ef4444; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center;">
-            <div style="background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 8px; margin-right: 15px;">
-                <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 24px;"></i>
-            </div>
-            <div>
-                <p style="margin: 0; color: #64748b; font-size: 13px; font-family: 'Istok Web', sans-serif; text-transform: uppercase; letter-spacing: 1px;">Expiring Soon</p>
-                <h2 id="kpi-expiring" style="margin: 5px 0 0 0; color: #ef4444; font-size: 28px; font-family: 'Istok Web', sans-serif;">0</h2>
-            </div>
-        </div>
-
+    <div class="kpi-box" onclick="loadReportDetails('active')" data-type="active" 
+         style="background: #293A82; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Active Policies</p>
+        <h2 id="kpi-active" style="margin: 5px 0 0 0; font-size: 28px;">0</h2>
     </div>
 
-    <div style="margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-        <h1 style="color: #1a2035; margin: 0; font-size: clamp(20px, 2vw, 24px); font-family: 'Istok Web', sans-serif;">Quality Assurance Reports</h1>
-        <p style="color: #64748b; margin-top: 5px; font-size: clamp(12px, 1vw, 14px); font-family: 'Istok Web', sans-serif;">Real-time overview of system compliance and workflow efficiency.</p>
+    <div class="kpi-box" onclick="loadReportDetails('pending')" data-type="pending"
+         style="background: #293A82; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Pending Policies</p>
+        <h2 id="kpi-pending" style="margin: 5px 0 0 0; font-size: 28px;">0</h2>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 20px;">
-        
-        <div style="background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: clamp(220px, 30vh, 350px);">
-            <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px; color: #1a2035; font-family: 'Istok Web', sans-serif; flex-shrink: 0;">Average Workflow Duration</h3>
-            <div style="flex-grow: 1; position: relative; width: 100%; height: 100%;">
-                <canvas id="workflowChart"></canvas>
-            </div>
-        </div>
-
-        <div style="background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: clamp(220px, 30vh, 350px);">
-            <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px; color: #1a2035; font-family: 'Istok Web', sans-serif; flex-shrink: 0;">Current Repository Status</h3>
-            
-            <div style="flex-grow: 1; position: relative; width: 100%; height: 100%; min-height: 0; min-width: 0; display: flex; justify-content: center; align-items: center;">
-                <canvas id="statusChart"></canvas>
-            </div>
-        </div>
-
+    <div class="kpi-box" onclick="loadReportDetails('rejected')" data-type="rejected"
+         style="background: #293A82; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Rejected Policies</p>
+        <h2 id="kpi-rejected" style="margin: 5px 0 0 0; font-size: 28px;">0</h2>
     </div>
+</div>
 
-    <div style="background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 20px; display: flex; flex-direction: column; height: clamp(200px, 25vh, 300px);">
-        <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px; color: #1a2035; font-family: 'Istok Web', sans-serif; flex-shrink: 0;">30-Day Policy Access Trends</h3>
-        <div style="flex-grow: 1; position: relative; width: 100%; height: 100%;">
-            <canvas id="accessChart"></canvas>
-        </div>
+<div id="reportDetailsArea" style="display:none; background:white; padding:20px; border-radius:10px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
+    <div style="display:flex; gap:10px; margin-bottom:15px; align-items: center;">
+        <select id="filterMonth" style="padding: 5px;">
+            <option value="">All Months</option>
+            </select>
+        <select id="filterYear" style="padding: 5px;">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+        </select>
+        <button onclick="fetchReportDetails()" style="padding: 5px 15px; background: #fbaf41; border:none; border-radius: 5px; cursor:pointer;">Filter</button>
     </div>
-
+    <table id="detailsTable" style="width: 100%; border-collapse: collapse;">
+        <thead><tr style="background: #f4f4f4;"><th style="padding:10px; text-align:left;">Category</th><th style="padding:10px; text-align:left;">Count</th></tr></thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <!-- Department Manager  -->
