@@ -281,42 +281,45 @@ echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="
         </div>
         </div>
 
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+<div id="Reports-Panel" class="Main-Panel" style="display: none; width: 100%; height: 100%; overflow-y: auto; background-color: #f4f7f6; padding: 100px; box-sizing: border-box;">
     
-    <div class="kpi-box" onclick="loadReportDetails('active')" data-type="active" 
-         style="background: #293A82; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
-        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Active Policies</p>
-        <h2 id="kpi-active" style="margin: 5px 0 0 0; font-size: 28px;">0</h2>
-    </div>
+    <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 1200px; margin: 0 auto;">
+        
+        <h1 style="color: #1a2035; margin-bottom: 25px; font-family: 'Istok Web', sans-serif;">Quality Assurance Reports</h1>
 
-    <div class="kpi-box" onclick="loadReportDetails('pending')" data-type="pending"
-         style="background: #293A82; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
-        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Pending Policies</p>
-        <h2 id="kpi-pending" style="margin: 5px 0 0 0; font-size: 28px;">0</h2>
-    </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+            <div class="kpi-box" onclick="loadReportDetails('active')" data-type="active" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+                <p style="margin: 0; opacity: 0.8;">Active Policies</p>
+                <h2 id="kpi-active" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
+            </div>
+            <div class="kpi-box" onclick="loadReportDetails('pending')" data-type="pending" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+                <p style="margin: 0; opacity: 0.8;">Pending Review</p>
+                <h2 id="kpi-pending" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
+            </div>
+            <div class="kpi-box" onclick="loadReportDetails('rejected')" data-type="rejected" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+                <p style="margin: 0; opacity: 0.8;">Rejected Policies</p>
+                <h2 id="kpi-rejected" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
+            </div>
+        </div>
 
-    <div class="kpi-box" onclick="loadReportDetails('rejected')" data-type="rejected"
-         style="background: #293A82; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
-        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Rejected Policies</p>
-        <h2 id="kpi-rejected" style="margin: 5px 0 0 0; font-size: 28px;">0</h2>
+        <div id="reportDetailsArea" style="display:none; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+            <div style="display:flex; gap:15px; margin-bottom:20px; align-items: center;">
+                <select id="filterMonth" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="">All Months</option>
+                    </select>
+                <select id="filterYear" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="2026">2026</option>
+                </select>
+                <button onclick="fetchReportDetails()" style="padding: 8px 20px; background: #fbaf41; border:none; border-radius: 5px; cursor:pointer; font-weight:bold;">Filter Results</button>
+            </div>
+            <table id="detailsTable" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead style="background: #f8f9fa;">
+                    <tr><th style="padding:12px;">Category</th><th style="padding:12px;">Count</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
-</div>
-
-<div id="reportDetailsArea" style="display:none; background:white; padding:20px; border-radius:10px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
-    <div style="display:flex; gap:10px; margin-bottom:15px; align-items: center;">
-        <select id="filterMonth" style="padding: 5px;">
-            <option value="">All Months</option>
-            </select>
-        <select id="filterYear" style="padding: 5px;">
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-        </select>
-        <button onclick="fetchReportDetails()" style="padding: 5px 15px; background: #fbaf41; border:none; border-radius: 5px; cursor:pointer;">Filter</button>
-    </div>
-    <table id="detailsTable" style="width: 100%; border-collapse: collapse;">
-        <thead><tr style="background: #f4f4f4;"><th style="padding:10px; text-align:left;">Category</th><th style="padding:10px; text-align:left;">Count</th></tr></thead>
-        <tbody></tbody>
-    </table>
 </div>
 
 <!-- Department Manager  -->

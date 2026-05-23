@@ -338,6 +338,27 @@ if (lastChildBtn) {
     });
 }
 
+function setupPolicyFileAutoTitle() {
+    const titleInput = document.getElementById('policyTitle');
+    const fileInput = document.querySelector('input[type="file"][name="policyFile"]');
+    if (!titleInput || !fileInput) return;
+
+    let userEdited = false;
+    titleInput.addEventListener('input', () => {
+        userEdited = titleInput.value.trim().length > 0;
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length === 0) return;
+        const fileName = fileInput.files[0].name.replace(/\.pdf$/i, '');
+        if (!userEdited || titleInput.value.trim() === '') {
+            titleInput.value = fileName;
+        }
+    });
+}
+
+setupPolicyFileAutoTitle();
+
 const submitButtonTrigger = document.getElementById('submitButton');
 if (submitButtonTrigger && submitOverlay) {
     submitButtonTrigger.addEventListener('click', () => {

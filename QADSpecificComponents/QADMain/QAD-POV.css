@@ -2219,7 +2219,9 @@ body {
     transition: transform 0.2s, background 0.2s;
     text-align: center;
 }
+
+
 .kpi-box:hover {
-    transform: scale(1.05);
-    background: #3b4e9b;
+    background: #3b4e9b !important;
+    transform: translateY(-5px);
 }
