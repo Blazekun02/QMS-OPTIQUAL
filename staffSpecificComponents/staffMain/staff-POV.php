@@ -92,7 +92,7 @@
                         <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'Staff Member'; ?>
                     </button>
                     <div class="signOut-overlay" id="signOutOverlay">
-                        <div class="signOut-content">
+                        <div class="signOut-content" onclick="window.location.href='/qms_optiqual/auth/log_out/logout.php'" style="cursor: pointer;">
                             Sign out
                         </div>
                     </div>

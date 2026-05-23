@@ -25,9 +25,9 @@ function sendEmail_Verify($email, $email_subject, $email_template) {
         $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
         $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
         $mail->Username   = 'joaquind.rizal@gmail.com';                     //SMTP username
-        $mail->Password   = 'fatk zlot uttj wtke';                               //SMTP password
+        $mail->Password   = 'gkgw qich dyob xpoy';                               //SMTP password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;                              //Enable implicit TLS encryption
-        $mail->Port       =  465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+        $mail->Port       =  587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
         $mail->setFrom('joaquind.rizal@gmail.com', 'Quality Management System');
         $mail->addAddress($email);     //Add a recipient
@@ -40,5 +40,4 @@ function sendEmail_Verify($email, $email_subject, $email_template) {
         error_log("Email could not be sent. Error: {$mail->ErrorInfo}");
     }
 }
-
 ?>
