@@ -2420,6 +2420,40 @@ document.addEventListener('DOMContentLoaded', () => {
     let statusChartInstance = null;
     let accessChartInstance = null;
 
+    // ✨ NEW: Populate date filters for the details table
+    function populateReportDateFilters() {
+        const monthSelect = document.getElementById('filterMonth');
+        const yearSelect = document.getElementById('filterYear');
+        if (!monthSelect || !yearSelect) return;
+
+        const currentYear = new Date().getFullYear();
+
+        // Populate months
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        // Clear existing options except the first one ("All Months")
+        while (monthSelect.options.length > 1) {
+            monthSelect.remove(1);
+        }
+        months.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index + 1;
+            option.textContent = month;
+            monthSelect.appendChild(option);
+        });
+
+        // Populate years (e.g., last 5 years + next 2)
+        yearSelect.innerHTML = ''; // Clear all existing options
+        for (let y = currentYear + 2; y >= currentYear - 5; y--) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = y;
+            yearSelect.appendChild(option);
+        }
+        // Set current year as selected
+        yearSelect.value = currentYear;
+    }
+    populateReportDateFilters();
+
     window.renderReports = function() {
         
         fetch('../../generalComponents/policyManagerPHP/getReportsData.php')
@@ -2635,7 +2669,7 @@ function fetchReportDetails() {
     const month = document.getElementById('filterMonth').value;
     const year = document.getElementById('filterYear').value;
     
-    fetch(`../../generalComponents/policyManagerPHP/getReportsData.php?type=${currentReportType}&month=${month}&year=${year}`)
+    fetch(`../../generalComponents/policyManagerPHP/getReportsData.php?action=details&type=${currentReportType}&month=${month}&year=${year}`)
         .then(res => res.json())
         .then(data => {
             const tbody = document.querySelector('#detailsTable tbody');
