@@ -237,8 +237,8 @@
             <div class="policy-submission">
                 <h2>Policy Submission</h2>
                 <div class="policy-submission-buttons">
-                    <button class="btn"><i class="fa fa-download" id=".policy-submission-buttons button:first-child"></i> 
-                    <span class=".policy-submission-buttons button:first-child">New Policy Template</span>
+                    <button class="btn" id="downloadTemplateBtn"><i class="fa fa-download"></i> 
+                    <span>New Policy Template</span>
                     </button>
                     <button class="btn" id="submitButton">Submit</button>
                 </div>
@@ -249,8 +249,8 @@
             <div class= "confirm-popUp">
                 <h2> Confirm Download?</h2>
                 <div class="cf-buttons">
-                    <button id="first-child">No</button>
-                    <button id="last-child">Yes</button>
+                    <button id="cancelDownloadBtn">No</button>
+                    <button id="confirmDownloadBtn">Yes</button>
                 </div>
             </div>
         </div>
@@ -325,5 +325,37 @@
         </div>
 
         <script src="QAP-POV.js?v=<?php echo time(); ?>"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+                const confirmDlPopup = document.getElementById('confirm-dl');
+                const cancelDownloadBtn = document.getElementById('cancelDownloadBtn');
+                const confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
+
+                if (downloadTemplateBtn && confirmDlPopup) {
+                    downloadTemplateBtn.addEventListener('click', function() {
+                        confirmDlPopup.style.display = 'flex';
+                    });
+                }
+
+                if (cancelDownloadBtn && confirmDlPopup) {
+                    cancelDownloadBtn.addEventListener('click', function() {
+                        confirmDlPopup.style.display = 'none';
+                    });
+                }
+
+                if (confirmDownloadBtn && confirmDlPopup) {
+                    confirmDownloadBtn.addEventListener('click', function() {
+                        const link = document.createElement('a');
+                        link.href = '../../assets/Policy_Template.docx'; // Update if your template path differs
+                        link.download = 'Policy_Template.docx';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        confirmDlPopup.style.display = 'none';
+                    });
+                }
+            });
+        </script>
     </body>
 </html>
