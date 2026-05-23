@@ -2149,3 +2149,77 @@ body {
 .folder-open .folder-toggle-icon {
     transform: rotate(90deg);
 }
+
+.custom-pdf-toolbar {
+    display: flex;
+    justify-content: space-between; /* This forces left, center, and right to spread out */
+    align-items: center;
+}
+
+.pdf-tools-left, .pdf-tools-center, .pdf-tools-right {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between buttons */
+}
+
+/* Add this to your QAD-POV.css */
+/* Update this to allow the container to expand with content */
+.fb-item div[id^="fb-details-"] {
+    display: none; 
+    margin-top: 15px; 
+    padding: 15px; 
+    background: #f9f9f9; 
+    border-left: 4px solid #fbaf41; 
+    border-radius: 4px;
+    height: auto !important;      /* Forces container to fit text height */
+    overflow: visible !important;  /* Prevents clipping */
+}
+
+/* Ensure the paragraph itself wraps correctly */
+.fb-item p {
+    margin: 0;
+    white-space: pre-wrap;        /* Preserves your paragraph line breaks */
+    word-wrap: break-word;        /* Forces long lines to wrap */
+    line-height: 1.6;             /* Makes it easier to read */
+}
+/* Ensure the container doesn't have a fixed height that cuts off text */
+#workspaceFeedbackList {
+    max-height: 60vh;            /* Gives it a generous height */
+    overflow-y: auto;            /* Adds a scrollbar if the list gets too long */
+}
+
+/* Add this to your QAD-POV.css */
+#workspaceFeedbackList {
+    max-height: 400px;        /* Limits height so the whole page doesn't grow too long */
+    overflow-y: auto;         /* ADDS THE SCROLLBAR when content exceeds height */
+    padding-right: 10px;
+}
+
+/* Customizing the scrollbar for your Optiqual branding */
+#workspaceFeedbackList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#workspaceFeedbackList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#workspaceFeedbackList::-webkit-scrollbar-thumb {
+    background: #fbaf41;      /* Optiqual Yellow */
+    border-radius: 4px;
+}
+
+.kpi-box {
+    background: #293A82;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    text-align: center;
+}
+.kpi-box:hover {
+    transform: scale(1.05);
+    background: #3b4e9b;
+}

@@ -180,13 +180,18 @@ if(isset($_SESSION['accID']) && isset($conn)){
         <h2 class="task-header">My Workspace</h2>
         
         <div class="workspace-tabs">
-            <button class="ws-tab active" id="tabActionRequired" onclick="switchWorkspaceTab('action')">
-                <i class="fas fa-clipboard-list"></i> My Tasks
-            </button>
-            <button class="ws-tab" id="tabMySubmissions" onclick="switchWorkspaceTab('track')">
-                <i class="fas fa-paper-plane"></i> My Submissions
-            </button>
-        </div>
+    <button class="ws-tab active" id="tabActionRequired" onclick="switchWorkspaceTab('action')">
+        <i class="fas fa-clipboard-list"></i> My Tasks
+    </button>
+    
+    <button class="ws-tab" id="tabMySubmissions" onclick="switchWorkspaceTab('track')">
+        <i class="fas fa-paper-plane"></i> My Submissions
+    </button>
+    
+    <button class="ws-tab" id="tabFeedbacks" onclick="switchWorkspaceTab('feedbacks')">
+        <i class="fas fa-comments"></i> Feedbacks
+    </button>
+</div>
     </div>
 
     <div id="trackerTimelineUI" style="display: none; background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
@@ -222,13 +227,18 @@ if(isset($_SESSION['accID']) && isset($conn)){
     </div>
 
     <table class="task-manager-table" id="workspaceTable">
-        <thead>
-            <tr id="workspaceTableHeaders">
-                </tr>
-        </thead>
-        <tbody id="taskTableBody">
-        </tbody>
-    </table>
+    <thead>
+        <tr id="workspaceTableHeaders"></tr>
+    </thead>
+    <tbody id="taskTableBody"></tbody>
+</table>
+
+<div id="feedbacksContent" style="display: none; background: white; padding: 20px; border-radius: 10px; color: black; min-height: 300px;">
+    <h2 style="color: #293A82; margin-top:0;">Received Feedbacks</h2>
+    <div id="workspaceFeedbackList">
+        <p>Loading...</p>
+    </div>
+</div>
 
     <div class="introduction-section" id="workspaceDocViewer" style="display: none;">
         <div class="introduction-header">
@@ -259,19 +269,26 @@ if(isset($_SESSION['accID']) && isset($conn)){
             </div>
         </div>
 
-        <div class="pdf-container-wrapper" id="tmPdfWrapper" style="display: none; flex-direction: column;">
-            <div class="custom-pdf-toolbar" id="customPdfToolbar">
-                <div class="pdf-tools-left">
-                    <button id="tm_prevPage" class="pdf-btn"><i class="fas fa-chevron-left"></i></button>
-                    <span class="page-info">Page <span id="tm_pageNum">1</span> of <span id="tm_pageCount">?</span></span>
-                    <button id="tm_nextPage" class="pdf-btn"><i class="fas fa-chevron-right"></i></button>
-                </div>
-                <div class="pdf-tools-right">
-                    <button id="tm_zoomOut" class="pdf-btn"><i class="fas fa-search-minus"></i></button>
-                    <span id="tm_zoomLevel">120%</span>
-                    <button id="tm_zoomIn" class="pdf-btn"><i class="fas fa-search-plus"></i></button>
-                </div>
-            </div>
+        <div class="custom-pdf-toolbar" id="customPdfToolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px; border-radius: 8px 8px 0 0;">
+    
+    <div class="pdf-tools-left">
+        <button id="tm_prevPage" class="pdf-btn"><i class="fas fa-chevron-left"></i></button>
+        <span class="page-info">Page <span id="tm_pageNum">1</span> of <span id="tm_pageCount">?</span></span>
+        <button id="tm_nextPage" class="pdf-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="pdf-tools-center">
+        <button class="pdf-btn" onclick="openFeedbackModal(currentTaskPolicyID)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px;">
+            <i class="fas fa-comment-alt"></i> Remark
+        </button>
+    </div>
+
+    <div class="pdf-tools-right">
+        <button id="tm_zoomOut" class="pdf-btn"><i class="fas fa-search-minus"></i></button>
+        <span id="tm_zoomLevel">120%</span>
+        <button id="tm_zoomIn" class="pdf-btn"><i class="fas fa-search-plus"></i></button>
+    </div>
+</div>
             <div class="pdf-canvas-container" id="pdfCanvasContainer">
                 <canvas id="tm_pdfCanvas"></canvas>
             </div>
@@ -390,20 +407,49 @@ function tm_onZoomOut() { if (tm_scale <= 0.6) return; tm_scale -= 0.2; tm_queue
 // ==========================================
 // WORKSPACE LOGIC
 // ==========================================
-function switchWorkspaceTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.ws-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById(tab === 'action' ? 'tabActionRequired' : 'tabMySubmissions').classList.add('active');
+window.switchWorkspaceTab = function(tabId) {
+    currentTab = tabId;
     
+    // 1. Reset active button states
+    document.querySelectorAll('.ws-tab').forEach(b => b.classList.remove('active'));
+    
+    // 2. Determine which button to highlight
+    let activeBtnId = 'tabActionRequired';
+    if (tabId === 'track') activeBtnId = 'tabMySubmissions';
+    else if (tabId === 'feedbacks') activeBtnId = 'tabFeedbacks';
+    
+    const activeBtn = document.getElementById(activeBtnId);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // 3. UI References
     const headerRow = document.getElementById('workspaceTableHeaders');
-    if (tab === 'action') {
-        headerRow.innerHTML = `<th>Policy Title</th><th>Author</th><th>Date</th><th>Reviewed by</th><th>Verified by</th><th>Approved by</th><th>Status</th><th>Action</th>`;
-        populateWorkspaceTable(workspaceData.actionRequired);
+    const table = document.getElementById('workspaceTable');
+    const feedbacksContent = document.getElementById('feedbacksContent');
+
+    // 4. LOGIC SWITCH
+    if (tabId === 'feedbacks') {
+        // Show Feedback Content
+        if(table) table.style.display = 'none';
+        if(feedbacksContent) feedbacksContent.style.display = 'block';
+        
+        // Load data
+        if (typeof window.loadWorkspaceFeedbacks === 'function') {
+            window.loadWorkspaceFeedbacks();
+        }
     } else {
-        headerRow.innerHTML = `<th>Policy Title</th><th>Date Submitted</th><th>Current Status</th><th>Action</th>`;
-        populateWorkspaceTable(workspaceData.mySubmissions);
+        // Show Table Content
+        if(table) table.style.display = 'table';
+        if(feedbacksContent) feedbacksContent.style.display = 'none';
+
+        if (tabId === 'action') {
+            headerRow.innerHTML = `<th>Policy Title</th><th>Author</th><th>Date</th><th>Reviewed by</th><th>Verified by</th><th>Approved by</th><th>Status</th><th>Action</th>`;
+            populateWorkspaceTable(workspaceData.actionRequired);
+        } else if (tabId === 'track') {
+            headerRow.innerHTML = `<th>Policy Title</th><th>Date Submitted</th><th>Current Status</th><th>Action</th>`;
+            populateWorkspaceTable(workspaceData.mySubmissions);
+        }
     }
-}
+};
 
 function populateWorkspaceTable(tasks) {
     const tableBody = document.getElementById('taskTableBody');
