@@ -287,6 +287,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    const signOutUrl = '/qms_optiqual/auth/sign_out/signoutBE.php';
+    const signOut = () => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = signOutUrl;
+        document.body.appendChild(form);
+        form.submit();
+    };
+
     const userButton = document.getElementById('userButton');
     if (userButton && signOutOverlay) {
         userButton.addEventListener('click', (e) => {
@@ -296,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         signOutOverlay.addEventListener("click", function (e) {
             e.stopPropagation();
-            window.location.href = "landingPage.html";
+            signOut();
         });
     }
 
@@ -1044,6 +1053,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         assignNameContainer.style.display = 'none';
                         if(overlay) overlay.style.display = 'none';
                         departmentNameInput.value = '';
+                        window.location.href = "QAD-POV.php?panel=department";
+                        syncAndReload();
                     } else {
                         alert('Failed to add department: ' + (data.message || 'Unknown error'));
                     }
@@ -1181,12 +1192,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         departmentStructureContainer.style.display = 'none';
                         if(overlay) overlay.style.display = 'none';
                         structureNameInput.value = '';
+                        window.location.href = "QAD-POV.php?panel=department";
+                        syncAndReload();
                     } else {
                         alert('Error adding structure: ' + data.message);
                     }
                 } catch (e) {
                     alert("Database saved folder, reloading UI.");
                     window.location.reload(); 
+                    syncAndReload();
                 }
             })
             .catch(err => alert("Network Error."));
@@ -1218,6 +1232,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if(overlay) overlay.style.display = 'none';
                         renameDepartmentInput.value = '';
                         renameDepartmentContainer.dataset.targetDepartmentSpan = '';
+                        window.location.href = "QAD-POV.php?panel=department";
+                        syncAndReload();
                     } else {
                         alert('Failed to rename department: ' + (data.message || 'Unknown error'));
                     }
@@ -1260,8 +1276,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         if(overlay) overlay.style.display = 'none';
                         departmentToDelete = null;
 
-                        // ✨ FIX: Instantly reload to show the rescued sub-folders!
-                        location.reload(); 
+                        // ✨ FIX: Reload the department panel after remove and update
+                        window.location.href = "QAD-POV.php?panel=department";
+                        syncAndReload();
                     } else {
                         alert('Failed to delete department: ' + (data.message || 'Unknown error'));
                         confirmDeleteButton.innerHTML = originalBtnHtml;

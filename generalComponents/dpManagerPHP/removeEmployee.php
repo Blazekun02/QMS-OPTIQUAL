@@ -29,4 +29,5 @@ mysqli_close($conn);
 $jsonOutput = json_encode($response);
 ob_end_clean();
 echo $jsonOutput;
+
 ?>

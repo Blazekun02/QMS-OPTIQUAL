@@ -45,4 +45,6 @@ mysqli_close($conn);
 // Clear the buffer of any HTML warnings and strictly output the JSON
 ob_end_clean();
 echo json_encode($response);
+
+
 ?>

@@ -45,4 +45,5 @@ $conn->close();
 // ✨ THE FIX: Clean the buffer FIRST, and THEN echo the response!
 ob_end_clean();
 echo json_encode($response);
+
 ?>

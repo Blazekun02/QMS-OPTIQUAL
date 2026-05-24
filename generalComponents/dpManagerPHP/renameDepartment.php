@@ -31,4 +31,5 @@ if (isset($data['departmentId'], $data['newDepartmentName'])) {
 }
 
 $conn->close();
+
 ?>

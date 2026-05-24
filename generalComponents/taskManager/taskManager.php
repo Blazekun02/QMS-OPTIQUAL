@@ -176,8 +176,20 @@ if(isset($_SESSION['accID']) && isset($conn)){
 </style>
 
 <div class="task-manager">
-    <div class="task-manager-header-container" id="workspaceHeaderArea">
-        <h2 class="task-header">My Workspace</h2>
+    <div class="task-manager-header-container" id="workspaceHeaderArea" style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
+            <h2 class="task-header" style="margin: 0;">My Workspace</h2>
+            <div id="task-list-controls" style="display: none; align-items: center; gap: 10px;">
+                <label for="taskSortFilter" style="font-weight: bold; font-family: 'Istok Web', sans-serif; font-size: 16px;">Filter by:</label>
+                <select id="taskSortFilter" onchange="fetchTasksAndPopulate()" style="padding: 6px 12px; border-radius: 8px; border: 2px solid #fbaf41; font-family: 'Istok Web', sans-serif; font-size: 14px; background: white; color: black; cursor: pointer;">
+                    <option value="date_desc">Latest</option>
+                    <option value="date_asc">Oldest</option>
+                    <option value="status_2">Reviewed</option>
+                    <option value="status_3">Verified</option>
+                    <option value="status_4">Approved</option>
+                </select>
+            </div>
+        </div>
         
         <div class="workspace-tabs">
     <button class="ws-tab active" id="tabActionRequired" onclick="switchWorkspaceTab('action')">
@@ -425,12 +437,14 @@ window.switchWorkspaceTab = function(tabId) {
     const headerRow = document.getElementById('workspaceTableHeaders');
     const table = document.getElementById('workspaceTable');
     const feedbacksContent = document.getElementById('feedbacksContent');
+    const taskControls = document.getElementById('task-list-controls');
 
     // 4. LOGIC SWITCH
     if (tabId === 'feedbacks') {
         // Show Feedback Content
         if(table) table.style.display = 'none';
         if(feedbacksContent) feedbacksContent.style.display = 'block';
+        if(taskControls) taskControls.style.display = 'none';
         
         // Load data
         if (typeof window.loadWorkspaceFeedbacks === 'function') {
@@ -442,9 +456,11 @@ window.switchWorkspaceTab = function(tabId) {
         if(feedbacksContent) feedbacksContent.style.display = 'none';
 
         if (tabId === 'action') {
+            if(taskControls) taskControls.style.display = 'flex';
             headerRow.innerHTML = `<th>Policy Title</th><th>Author</th><th>Date</th><th>Reviewed by</th><th>Verified by</th><th>Approved by</th><th>Status</th><th>Action</th>`;
             populateWorkspaceTable(workspaceData.actionRequired);
         } else if (tabId === 'track') {
+            if(taskControls) taskControls.style.display = 'none';
             headerRow.innerHTML = `<th>Policy Title</th><th>Date Submitted</th><th>Current Status</th><th>Action</th>`;
             populateWorkspaceTable(workspaceData.mySubmissions);
         }
@@ -986,7 +1002,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch tasks and populate the table
     function fetchTasksAndPopulate() {
-        const fetchUrl = '/qms_optiqual/generalComponents/taskManager/fetchTasks.php?t=' + new Date().getTime();
+        const sortValue = document.getElementById('taskSortFilter') ? document.getElementById('taskSortFilter').value : 'date_desc';
+        const fetchUrl = `/qms_optiqual/generalComponents/taskManager/fetchTasks.php?sort=${sortValue}&t=${new Date().getTime()}`;
         fetch(fetchUrl, {
             method: 'GET',
             headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
@@ -1000,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('SQL Error:', data.error);
                 } else {
                     workspaceData = data; 
-                    switchWorkspaceTab('action'); 
+                    switchWorkspaceTab(currentTab); 
                 }
             } catch (e) {
                 console.error("Raw Server Response:", text);

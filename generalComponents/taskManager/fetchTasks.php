@@ -23,6 +23,8 @@ try {
     $userRole = $roleStmt->get_result()->fetch_assoc()['roleID'] ?? 0;
     $roleStmt->close();
 
+    $sort = $_GET['sort'] ?? 'date_desc';
+
     $actionRequired = [];
     $mySubmissions = [];
 
@@ -33,8 +35,8 @@ try {
         SELECT 
             p.policyID, p.title AS policyTitle, a.fullName AS author, 
             p.dateSubmitted, p.versionNo AS version, ps.policyStatusName AS status, p.policyStatusID AS statusCode,
-            rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName,
-            p.contentPath AS pdfPath
+            rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName, p.contentPath AS pdfPath
+            " . ($userRole != 2 ? ", t.dateCreated" : ", p.dateSubmitted AS dateCreated") . "
         FROM policytbl p
         LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
         LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
@@ -43,20 +45,67 @@ try {
         LEFT JOIN accdatatbl app ON p.policyApprover = app.accID
     ";
 
+    $whereClauses = [];
+    $params = [];
+    $types = "";
+    $orderBy = "";
+
     if ($userRole == 2) {
-        $query = $selectCore . " WHERE (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR p.policyStatusID = 3 OR (p.policyStatusID = 4 AND p.categoryID IS NULL) ORDER BY p.dateSubmitted ASC";
-        $res = $conn->query($query);
-        if ($res) {
-            while($row = $res->fetch_assoc()){ $actionRequired[] = $row; }
-        }
+        // QAD User: Tasks are policies needing specific actions
+        $whereClauses[] = "((p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR p.policyStatusID = 3 OR (p.policyStatusID = 4 AND p.categoryID IS NULL))";
+        $dateColumn = "p.dateSubmitted";
     } else {
-        $stmt = $conn->prepare($selectCore . "
-            JOIN tasktbl t ON p.policyID = t.policyAssigned
-            WHERE t.assignedTo = ? ORDER BY t.dateCreated");
-        $stmt->bind_param("i", $accID);
+        // Regular User: Tasks are assigned via tasktbl
+        $selectCore .= " JOIN tasktbl t ON p.policyID = t.policyAssigned";
+        $whereClauses[] = "t.assignedTo = ?";
+        $params[] = $accID;
+        $types .= "i";
+        $dateColumn = "t.dateCreated";
+    }
+
+    // Handle Filtering by status
+    if (strpos($sort, 'status_') === 0) {
+        $statusID = (int) substr($sort, 7);
+        if ($userRole == 2) {
+            // For QAD, we replace the base filter with the specific one
+            if ($statusID == 2) $whereClauses = ["p.policyStatusID = 2 AND p.policyVerifier IS NULL"];
+            elseif ($statusID == 3) $whereClauses = ["p.policyStatusID = 3"];
+            elseif ($statusID == 4) $whereClauses = ["p.policyStatusID = 4 AND p.categoryID IS NULL"];
+        } else {
+            // For regular users, we add an AND condition
+            $whereClauses[] = "p.policyStatusID = ?";
+            $params[] = $statusID;
+            $types .= "i";
+        }
+    }
+
+    // Handle Sorting by date
+    switch ($sort) {
+        case 'date_asc':
+            $orderBy = " ORDER BY $dateColumn ASC";
+            break;
+        case 'date_desc':
+        default: // Also default for status filters
+            $orderBy = " ORDER BY $dateColumn DESC";
+            break;
+    }
+
+    $query = $selectCore . " WHERE " . implode(" AND ", $whereClauses) . $orderBy;
+
+    if (!empty($params)) {
+        $stmt = $conn->prepare($query);
+        if (!$stmt) { throw new Exception("Prepare failed: " . $conn->error); }
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $res = $stmt->get_result();
+    } else {
+        $res = $conn->query($query);
+    }
+
+    if ($res) {
         while($row = $res->fetch_assoc()){ $actionRequired[] = $row; }
+    }
+    if (isset($stmt)) {
         $stmt->close();
     }
 
