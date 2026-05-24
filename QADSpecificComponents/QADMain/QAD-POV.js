@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         signOutOverlay.addEventListener("click", function (e) {
             e.stopPropagation();
-            signOut();
+            window.location.href = "landingPage.html";
         });
     }
 
@@ -557,7 +557,11 @@ document.querySelectorAll('.PR-Policies').forEach(policy => {
         window.currentSelectedPolicyId = this.getAttribute('data-id');
         
         // ... existing upload date logic ...
+        // =======================================================
+        // ✨ THE MISSING PIECE: Grab the date from the HTML!
+        // =======================================================
         window.pr_currentUploadDate = policy.getAttribute('data-upload-date') || "Unknown Date";
+
         // Safety check
         if (!filePath || filePath === 'null' || filePath.trim() === '') {
             alert("No PDF document has been uploaded for this policy yet.");

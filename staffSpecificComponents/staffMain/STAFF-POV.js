@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
         });
         signOutOverlay.addEventListener("click", function () {
-            signOut();
+            window.location.href = "/qms_optiqual/auth/log_out/logout.php";
         });
     }
 });

@@ -98,7 +98,7 @@
                         <?php echo isset($_SESSION['fullName']) ? htmlspecialchars($_SESSION['fullName']) : 'QA Staff'; ?>
                     </button>
                     <div class="signOut-overlay" id="signOutOverlay">
-                        <div class="signOut-content">
+                        <div class="signOut-content" onclick="window.location.href='/qms_optiqual/auth/log_out/logout.php'" style="cursor: pointer;">
                             Sign out
                         </div>
                     </div>
@@ -347,8 +347,8 @@
                 if (confirmDownloadBtn && confirmDlPopup) {
                     confirmDownloadBtn.addEventListener('click', function() {
                         const link = document.createElement('a');
-                        link.href = '../../assets/Policy_Template.docx'; // Update if your template path differs
-                        link.download = 'Policy_Template.docx';
+                        link.href = '/qms_optiqual/Policy_Templates/QMS Template.docx'; // Make sure this path points to your actual template file
+                        link.download = 'QMS Template.docx';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
