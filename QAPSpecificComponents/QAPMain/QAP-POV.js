@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         signOutOverlay.addEventListener("click", function (e) {
             e.stopPropagation();
-            window.location.href = "/qms_optiqual/auth/log_out/logout.php";
+            signOut();
         });
     }
 

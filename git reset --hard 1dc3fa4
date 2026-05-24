@@ -1,0 +1,75 @@
+[33mc359d72[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to HEAD~1
+[33m8a0c2b9[m HEAD@{1}: reset: moving to HEAD~1
+[33m1dc3fa4[m HEAD@{2}: commit: Added Filter in Task Manager but no function
+[33m8a0c2b9[m HEAD@{3}: reset: moving to HEAD~
+[33m905007f[m HEAD@{4}: reset: moving to HEAD~
+[33m7175902[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{5}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m905007f[m HEAD@{6}: commit: Added Filter in Task Manager but no function
+[33m8a0c2b9[m HEAD@{7}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33mc359d72[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{8}: commit: Added Policy viewing for staff
+[33m751c9c4[m HEAD@{9}: commit: Feedback update
+[33m4275da5[m HEAD@{10}: commit: Feedback 100% done?????
+[33ma0e4f1f[m HEAD@{11}: commit: May Feedback Na
+[33m9c34f7d[m HEAD@{12}: pull --tags origin main: Fast-forward
+[33m5409f44[m HEAD@{13}: commit: Ehhhhhh?
+[33m8f99740[m HEAD@{14}: commit: Integrate Login and Data Privacy Updates
+[33m0a16bd8[m HEAD@{15}: commit: Added Folder Indicators
+[33m1ad107b[m HEAD@{16}: commit: Added movable folder in policy manager
+[33m9142e9b[m HEAD@{17}: commit: Fixed some problems with Notif. Fallback if problem with Moving Policy Folder
+[33m88a881a[m HEAD@{18}: commit: Add Reject and Feedback Functionality to My Workspace
+[33m2f94843[m HEAD@{19}: commit: Merged Policy Tracker and Task Manager. Fixed bugs in Policy Repository.
+[33m9a540fe[m HEAD@{20}: commit: Merge Policy Tracker and Task Manager into Workspace
+[33m55d8875[m HEAD@{21}: commit: Almost all finished
+[33ma359071[m HEAD@{22}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m3f65d31[m HEAD@{23}: commit: Added the Verify and Aprrove button Functionality
+[33mb4cf42b[m HEAD@{24}: commit: Marami nagbago AHSHAHSHAHSAHSHDeparment Manager, Task manager
+[33m6990013[m HEAD@{25}: commit: Added Policy Manager PHP files and updated QAD-POV files and processTracker.php, submit_policy.php
+[33mca93fe2[m HEAD@{26}: commit: Rename Department
+[33m990d062[m HEAD@{27}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m4881684[m HEAD@{28}: commit: PDF Viewing Changes
+[33mfed184d[m HEAD@{29}: reset: moving to HEAD~
+[33m16000a6[m HEAD@{30}: reset: moving to HEAD~
+[33m10566d9[m HEAD@{31}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m16000a6[m HEAD@{32}: commit: PDF Viewing Changes
+[33mfed184d[m HEAD@{33}: commit: DEPARTMENT MANAGER PENDING CHANGES
+[33m2091fe4[m HEAD@{34}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m617cc02[m HEAD@{35}: commit: Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m36c7111[m HEAD@{36}: reset: moving to HEAD~
+[33m425ae6a[m HEAD@{37}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m36c7111[m HEAD@{38}: commit: Department Manager Backend Pending
+[33mc2df283[m HEAD@{39}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m9db076a[m HEAD@{40}: commit: Added PDFVIEWING IN POLICY REPOSITORY
+[33m6275b4c[m HEAD@{41}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33ma220002[m HEAD@{42}: commit: None
+[33m13f8f73[m HEAD@{43}: commit: Information Changes
+[33m5d8bd85[m HEAD@{44}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33mcf20c2f[m HEAD@{45}: commit: Changed policy repo font
+[33m9252b8e[m HEAD@{46}: pull --tags origin main: Fast-forward
+[33m58f0234[m HEAD@{47}: reset: moving to HEAD~
+[33mf3c5c8d[m HEAD@{48}: pull --tags origin main: Fast-forward
+[33m958e6f3[m HEAD@{49}: reset: moving to HEAD~
+[33m445aff3[m HEAD@{50}: reset: moving to HEAD~
+[33m2f5207c[m HEAD@{51}: reset: moving to HEAD~
+[33m5e4ceb5[m HEAD@{52}: reset: moving to HEAD~
+[33m7eb67be[m HEAD@{53}: pull --tags origin main: Fast-forward
+[33mc12051d[m HEAD@{54}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m30edf0a[m HEAD@{55}: commit: Process Tracker still in progress
+[33m77a6a24[m HEAD@{56}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m43139c4[m HEAD@{57}: commit: wala
+[33m7b6239c[m HEAD@{58}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m9e7979a[m HEAD@{59}: commit: Updated QAP to resemble QAD code
+[33m0a533a6[m HEAD@{60}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m57d9144[m HEAD@{61}: commit: Pending Policy submission
+[33mda06c97[m HEAD@{62}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33m2479b77[m HEAD@{63}: commit: UPDATES to DAD-POV:
+[33m767d70e[m HEAD@{64}: pull --tags origin main: Fast-forward
+[33m8dc1668[m HEAD@{65}: reset: moving to HEAD
+[33m8dc1668[m HEAD@{66}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m06b7c42[m HEAD@{67}: commit: Chenges to QAPOV
+[33m77e3925[m HEAD@{68}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m2954179[m HEAD@{69}: commit: Modified QAPOV.css and QAPOV.html, added QAPOV.js
+[33ma8718f3[m HEAD@{70}: commit: Modified QAPOV
+[33m05ca036[m HEAD@{71}: commit (merge): Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+[33m8a75fc1[m HEAD@{72}: commit: Added QA Policy_Repo
+[33ma078e35[m HEAD@{73}: pull --tags origin main: Fast-forward
+[33m71ac6b0[m HEAD@{74}: clone: from https://github.com/Blazekun02/QMS-OPTIQUAL

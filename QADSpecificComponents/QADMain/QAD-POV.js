@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         signOutOverlay.addEventListener("click", function (e) {
             e.stopPropagation();
-            window.location.href = "landingPage.html";
+            signOut();
         });
     }
 

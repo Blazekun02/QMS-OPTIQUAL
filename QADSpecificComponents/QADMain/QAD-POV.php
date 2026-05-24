@@ -281,6 +281,8 @@ echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="
         </div>
         </div>
 
+        <!--  REPORTS -->
+
 <div id="Reports-Panel" class="Main-Panel" style="display: none; width: 100%; height: 100%; overflow-y: auto; background-color: #f4f7f6; padding: 100px; box-sizing: border-box;">
     
     <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 1200px; margin: 0 auto;">

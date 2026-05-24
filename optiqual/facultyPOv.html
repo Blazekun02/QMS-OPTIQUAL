@@ -2059,6 +2059,11 @@
 
     document.getElementById("signOutOverlay").addEventListener("click", function () {
         window.location.href = "landingPage.html";
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/qms_optiqual/auth/sign_out/signoutBE.php';
+        document.body.appendChild(form);
+        form.submit();
     });
 
 
