@@ -29,5 +29,6 @@ if ($stmt) {
 } else {
     echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
 }
+
 $conn->close();
 ?>

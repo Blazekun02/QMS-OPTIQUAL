@@ -79,7 +79,7 @@ if (userButton && signOutOverlay) {
 
 if (signOutOverlay) {
     signOutOverlay.addEventListener("click", function () {
-        window.location.href = "landingPage.html";
+        window.location.href = "/qms_optiqual/auth/log_out/logout.php";
     });
 }
 

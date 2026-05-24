@@ -41,4 +41,5 @@ if (isset($data['departmentId']) && array_key_exists('newParentId', $data)) {
 $conn->close();
 ob_end_clean();
 echo json_encode($response);
+
 ?>

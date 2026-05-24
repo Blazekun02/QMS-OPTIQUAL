@@ -85,13 +85,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const signOutUrl = '/qms_optiqual/auth/sign_out/signoutBE.php';
+    const signOut = () => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = signOutUrl;
+        document.body.appendChild(form);
+        form.submit();
+    };
+
     const userButton = document.getElementById('userButton');
     if (userButton && signOutOverlay) {
         userButton.addEventListener('click', () => {
             signOutOverlay.style.display = signOutOverlay.style.display === 'block' ? 'none' : 'block';
         });
         signOutOverlay.addEventListener("click", function () {
-            window.location.href = "landingPage.html";
+            window.location.href = "/qms_optiqual/auth/log_out/logout.php";
         });
     }
 });
