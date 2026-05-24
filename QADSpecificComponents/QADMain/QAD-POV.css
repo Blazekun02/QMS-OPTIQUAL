@@ -474,29 +474,99 @@ body {
 }
 
 /* 3.2. Modals (Submit, Confirm) */
+/* --- CENTRALIZED MODAL --- */
 .submit-overlay {
     display: none;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
     z-index: 1000;
+    display: flex; /* This centers the popup */
     justify-content: center;
     align-items: center;
 }
 
 .submit-popUp {
     background-color: #293A82;
+    padding: 30px;
+    border-radius: 15px;
+    width: 400px;
     color: white;
-    padding: 1vw;
-    border-radius: 10px;
-    width: 30vw;
-    height: 35vh;
-    text-align: center;
-    align-items: center;
-    margin-left: 35.2vw;
-    margin-top: 33vh;
-    font-size: 20px;
+    font-family: 'Istok Web', sans-serif;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.submit-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.submit-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.submit-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.submit-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+}
+
+.revision-toggle {
+    margin: 20px 0;
+    padding: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.hidden-revision-fields {
+    display: none;
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.submit-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background-color: #fbaf41;
+    color: black;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    flex: 1;
+}
+
+.btn-secondary {
+    background-color: #ffffff;
+    color: #293A82;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    flex: 1;
 }
 
 .submit-field {
@@ -535,26 +605,26 @@ body {
 
 .confirm-dl {
     display: none;
-    position: absolute;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    justify-content: center;
-    align-items: center;
 }
 
 .confirm-popUp {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background-color: #293A82;
     color: white;
-    padding: 1vw;
+    padding: 2vw;
     border-radius: 10px;
     width: 28vw;
-    height: 20vh;
-    margin-left: 35.5vw;
-    margin-top: 38vh;
     text-align: center;
-    align-items: center;
     font-size: 20px;
     display: flex;
     flex-direction: column;
@@ -585,26 +655,26 @@ body {
 
 .confirmSubmit-dl {
     display: none;
-    position: absolute;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    justify-content: center;
-    align-items: center;
 }
 
 .confirmSubmit-popUp {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background-color: #293A82;
     color: white;
-    padding: 1vw;
+    padding: 2vw;
     border-radius: 10px;
     width: 28vw;
-    height: 20vh;
-    margin-left: 35.5vw;
-    margin-top: 38vh;
     text-align: center;
-    align-items: center;
     font-size: 20px;
     display: flex;
     flex-direction: column;
@@ -1824,13 +1894,7 @@ body {
         margin-top: 2vh;
     }
 
-    .submit-popUp {
-        width: 60%;
-        height: auto;
-        margin: 35vh auto;
-        padding: 2vw;
-        font-size: 1.3em;
-    }
+
 
     .submit-buttons button {
         padding: 1vh 4vw;

@@ -261,25 +261,43 @@ echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="
             </div>
 
         
-        <div class="submit-overlay" id="submitOverlay">
-            <div class="submit-popUp">
-                <h2>Submission</h2>
-                <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
-                <div class="submit-field">
-                    <p>Policy Title</p>
-                </div>
-        
-            <div class="submit-input">
-                <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
-                <input type="file" name="policyFile" required style="margin-top:10px;">
-            </div>
-            <div class="submit-buttons">
-                <button id="cancelBtn">Cancel</button>
-                <button id="submitBtn">Submit</button>
-            </div>
-            </form> 
-        </div>
-        </div>
+        <div class="submit-overlay" id="submitOverlay" style="display: none;">
+    <div class="submit-popUp">
+        <h2>Policy Submission</h2>
+<form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
+    <div class="submit-group">
+        <label>Policy Title</label>
+        <input type="text" name="policyTitle" placeholder="Enter policy title" required>
+    </div>
+
+    <div class="submit-group">
+        <label>Upload Policy Document</label>
+        <input type="file" name="policyFile" accept=".pdf" required>
+    </div>
+
+    <div class="revision-toggle">
+        <input type="checkbox" id="isRevisionCheckbox" name="isRevision" onchange="toggleRevision(this)">
+        <label for="isRevisionCheckbox">Mark as Policy Revision</label>
+    </div>
+
+    <div id="revisionUploads" class="hidden-revision-fields">
+        <label>Upload Revision Log (PDF)</label>
+        <input type="file" name="changeLogFile" accept=".pdf">
+    </div>
+
+    <div class="submit-buttons">
+        <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
+        <button type="submit" id="submitBtn" class="btn-primary">Submit</button>
+    </div>
+</form>
+    </div>
+</div>
+
+<script>
+function toggleRevision(checkbox) {
+    document.getElementById('revisionUploads').style.display = checkbox.checked ? 'block' : 'none';
+}
+</script>
 
         <!--  REPORTS -->
 

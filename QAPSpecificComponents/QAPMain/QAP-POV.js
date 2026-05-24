@@ -234,15 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         form.submit();
     };
 
-    const signOutUrl = '/qms_optiqual/auth/sign_out/signoutBE.php';
-    const signOut = () => {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = signOutUrl;
-        document.body.appendChild(form);
-        form.submit();
-    };
-
     const userButton = document.getElementById('userButton');
     if (userButton && signOutOverlay) {
         userButton.addEventListener('click', (e) => {
@@ -252,7 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         signOutOverlay.addEventListener("click", function (e) {
             e.stopPropagation();
+
             signOut();
+
+
         });
     }
 
