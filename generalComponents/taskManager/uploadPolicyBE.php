@@ -40,12 +40,17 @@ try {
     $policyTitle = $policyData['title'];
     $getAuthorStmt->close();
 
-    // 2. Update policy status to 'Published' (assuming 6 is the new status for Published)
-    // Also, remove it from any category if "upload" means it's now in a final, published state
-    // and no longer needs to be managed within a specific folder structure.
-    $newStatusID = 6; // Define 6 as 'Published'
-    $updatePolicyStmt = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, categoryID = NULL WHERE policyID = ?");
-    $updatePolicyStmt->bind_param("ii", $newStatusID, $policyID);
+    // 2. Update policy status to 'Published' (Status 5) and set the upload timestamp & category.
+    $categoryID = isset($data['categoryID']) && $data['categoryID'] !== 'NULL' ? (int)$data['categoryID'] : null;
+    $newStatusID = 5; 
+    
+    if ($categoryID === null) {
+        $updatePolicyStmt = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, dateUploaded = NOW(), categoryID = NULL WHERE policyID = ?");
+        $updatePolicyStmt->bind_param("ii", $newStatusID, $policyID);
+    } else {
+        $updatePolicyStmt = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, dateUploaded = NOW(), categoryID = ? WHERE policyID = ?");
+        $updatePolicyStmt->bind_param("iii", $newStatusID, $categoryID, $policyID);
+    }
 
     if (!$updatePolicyStmt->execute()) {
         ob_end_clean();
