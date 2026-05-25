@@ -390,6 +390,45 @@ if(isset($_SESSION['accID']) && isset($conn)){
             </div>
         </div>
     </div>
+
+    <div id="uploadFolderModal" class="overlay" style="display: none;">
+        <div class="confirm-reply-modal" style="width: 35%; height: auto; padding: 2vw;">
+            <h2>Select Destination Folder</h2>
+            <p style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;">Choose where to publish this policy.</p>
+            
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <select id="uploadFolderSelect" style="flex-grow: 1; padding: 10px; border-radius: 8px; font-size: 16px; font-family: 'Istok Web', sans-serif;">
+                    <option value="">Loading folders...</option>
+                </select>
+                <button id="btnUploadAddFolder" class="action-btn-inline" style="padding: 10px 15px;" title="New Folder"><i class="fas fa-plus"></i></button>
+                <button id="btnUploadRenameFolder" class="action-btn-inline" style="padding: 10px 15px; background: #64748b; color: white;" title="Rename Folder"><i class="fas fa-pencil-alt"></i></button>
+            </div>
+
+            <div id="uploadAddFolderDiv" style="display: none; margin-bottom: 15px; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:bold;">Create New Folder</label>
+                <p style="font-size:12px; margin-top:0; margin-bottom:10px; color:#ddd;">If a folder is selected above, this will be created as a sub-folder. Otherwise, it will be a main folder.</p>
+                <input type="text" id="uploadNewFolderName" placeholder="Folder name..." style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 10px; border:none; box-sizing: border-box; font-family: 'Istok Web', sans-serif;">
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="btnUploadCancelAdd" class="action-btn-inline" style="background:#ccc; color:black;">Cancel</button>
+                    <button id="btnUploadConfirmAdd" class="action-btn-inline">Create</button>
+                </div>
+            </div>
+
+            <div id="uploadRenameFolderDiv" style="display: none; margin-bottom: 15px; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:bold;">Rename Selected Folder</label>
+                <input type="text" id="uploadRenameFolderName" placeholder="New folder name..." style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 10px; border:none; box-sizing: border-box; font-family: 'Istok Web', sans-serif;">
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="btnUploadCancelRename" class="action-btn-inline" style="background:#ccc; color:black;">Cancel</button>
+                    <button id="btnUploadConfirmRename" class="action-btn-inline">Rename</button>
+                </div>
+            </div>
+
+            <div class="confirm-actions">
+                <button class="cancel-button" onclick="document.getElementById('uploadFolderModal').style.display='none'">Cancel</button>
+                <button class="confirm-button" id="confirmUploadPolicyBtn">Publish Policy</button>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
 var userRole = "<?php echo isset($_SESSION['accID']) ? $_SESSION['accID'] : ''; ?>"; 
@@ -438,6 +477,79 @@ function tm_onPrevPage() { if (tm_pageNum <= 1) return; tm_pageNum--; tm_queueRe
 function tm_onNextPage() { if (!tm_pdfDoc || tm_pageNum >= tm_pdfDoc.numPages) return; tm_pageNum++; tm_queueRenderPage(tm_pageNum); }
 function tm_onZoomIn() { tm_scale += 0.2; tm_queueRenderPage(tm_pageNum); }
 function tm_onZoomOut() { if (tm_scale <= 0.6) return; tm_scale -= 0.2; tm_queueRenderPage(tm_pageNum); }
+
+// ==========================================
+// UPLOAD POLICY LOGIC
+// ==========================================
+let currentUploadPolicyID = null;
+let currentUploadBtnElement = null;
+
+window.uploadPolicyAction = function(policyID, btnElement) {
+    if (!policyID) return alert('No policy selected to upload.');
+
+    currentUploadPolicyID = policyID;
+    currentUploadBtnElement = btnElement;
+
+    document.getElementById('uploadFolderModal').style.display = 'flex';
+    document.getElementById('uploadAddFolderDiv').style.display = 'none';
+    document.getElementById('uploadRenameFolderDiv').style.display = 'none';
+    
+    loadUploadFolders();
+};
+
+function loadUploadFolders(selectedId = null) {
+    const select = document.getElementById('uploadFolderSelect');
+    if(!select) return;
+    
+    currentUploadPolicyID = policyID;
+    currentUploadBtnElement = btnElement;
+
+    document.getElementById('uploadFolderModal').style.display = 'flex';
+    document.getElementById('uploadAddFolderDiv').style.display = 'none';
+    document.getElementById('uploadRenameFolderDiv').style.display = 'none';
+    
+    loadUploadFolders();
+};
+
+function loadUploadFolders(selectedId = null) {
+    const select = document.getElementById('uploadFolderSelect');
+    if(!select) return;
+    
+    select.innerHTML = '<option value="">Loading...</option>';
+    
+    fetch('/qms_optiqual/generalComponents/policyManagerPHP/getCategories.php')
+        .then(res => res.json())
+        .then(data => {
+            select.innerHTML = '<option value="NULL">Main Repository (No Folder)</option>';
+            if (data.success && data.categories) {
+                const rootFolders = data.categories.filter(c => !c.parentCategoryID);
+                rootFolders.forEach(root => {
+                    const opt = document.createElement('option');
+                    opt.value = root.categoryID;
+                    opt.textContent = root.categoryName;
+                    select.appendChild(opt);
+
+                    const children = data.categories.filter(c => c.parentCategoryID == root.categoryID);
+                    children.forEach(child => {
+                        const childOpt = document.createElement('option');
+                        childOpt.value = child.categoryID;
+                        childOpt.textContent = `— ${child.categoryName}`;
+                        select.appendChild(childOpt);
+                    });
+                });
+
+                if (selectedId) {
+                    select.value = selectedId;
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            select.innerHTML = '<option value="NULL">Main Repository (No Folder)</option>';
+        });
+}
+// ==========================================
+
 
 // ==========================================
 // WORKSPACE LOGIC
@@ -550,7 +662,10 @@ function populateWorkspaceTable(tasks) {
             if (systemRoleID == 2) { 
                 if (task.status === 'Approved' || task.status === 'For Upload') {
                     actionBtn.textContent = 'Upload';
-                    actionBtn.onclick = () => alert("Upload feature coming soon!"); 
+                    actionBtn.onclick = (e) => {
+                        e.stopPropagation(); // Prevent opening the document viewer
+                        window.uploadPolicyAction(task.policyID, actionBtn);
+                    };
                 } else if (task.status === 'Reviewed') {
                     actionBtn.textContent = 'Assign';
                     actionBtn.onclick = () => openAssignModalForTask(task.policyID, task.status, task.policyTitle);
@@ -1148,31 +1263,141 @@ document.addEventListener('DOMContentLoaded', function() {
     const qadUploadBtn = document.getElementById('qadUploadBtn');
     if (qadUploadBtn) {
         qadUploadBtn.addEventListener('click', () => {
-            if (!currentTaskPolicyID) return alert('No policy selected to upload.');
+            window.uploadPolicyAction(currentTaskPolicyID, qadUploadBtn);
+        });
+    }
 
-            qadUploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-            qadUploadBtn.disabled = true;
+    // Upload Modal Logic
+    const btnUploadAddFolder = document.getElementById('btnUploadAddFolder');
+    const uploadAddFolderDiv = document.getElementById('uploadAddFolderDiv');
+    const uploadNewFolderName = document.getElementById('uploadNewFolderName');
+    
+    const btnUploadRenameFolder = document.getElementById('btnUploadRenameFolder');
+    const uploadRenameFolderDiv = document.getElementById('uploadRenameFolderDiv');
+    const uploadRenameFolderName = document.getElementById('uploadRenameFolderName');
+    const uploadFolderSelect = document.getElementById('uploadFolderSelect');
+
+    if (btnUploadAddFolder) {
+        btnUploadAddFolder.addEventListener('click', () => {
+            uploadRenameFolderDiv.style.display = 'none';
+            uploadAddFolderDiv.style.display = uploadAddFolderDiv.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+
+    if (btnUploadRenameFolder) {
+        btnUploadRenameFolder.addEventListener('click', () => {
+            const selectedFolder = uploadFolderSelect.value;
+            if (!selectedFolder || selectedFolder === 'NULL') {
+                return alert('Please select a valid folder to rename. You cannot rename the Main Repository.');
+            }
+            uploadAddFolderDiv.style.display = 'none';
+            uploadRenameFolderDiv.style.display = uploadRenameFolderDiv.style.display === 'none' ? 'block' : 'none';
+            
+            const text = uploadFolderSelect.options[uploadFolderSelect.selectedIndex].text.replace('— ', '');
+            uploadRenameFolderName.value = text;
+        });
+    }
+
+    const btnUploadCancelAdd = document.getElementById('btnUploadCancelAdd');
+    if (btnUploadCancelAdd) btnUploadCancelAdd.addEventListener('click', () => uploadAddFolderDiv.style.display = 'none');
+
+    const btnUploadCancelRename = document.getElementById('btnUploadCancelRename');
+    if (btnUploadCancelRename) btnUploadCancelRename.addEventListener('click', () => uploadRenameFolderDiv.style.display = 'none');
+
+    const btnUploadConfirmAdd = document.getElementById('btnUploadConfirmAdd');
+    if (btnUploadConfirmAdd) {
+        btnUploadConfirmAdd.addEventListener('click', () => {
+            const name = uploadNewFolderName.value.trim();
+            if (!name) return alert('Enter a folder name.');
+
+            const selectedParent = uploadFolderSelect.value;
+            const parentID = (!selectedParent || selectedParent === 'NULL') ? null : selectedParent;
+
+            const btnText = btnUploadConfirmAdd.innerHTML;
+            btnUploadConfirmAdd.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnUploadConfirmAdd.disabled = true;
+
+            fetch('/qms_optiqual/generalComponents/policyManagerPHP/createCategory.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ categoryName: name, parentCategoryID: parentID })
+            }).then(res => res.json()).then(data => {
+                btnUploadConfirmAdd.innerHTML = btnText;
+                btnUploadConfirmAdd.disabled = false;
+                if (data.success) {
+                    uploadAddFolderDiv.style.display = 'none';
+                    uploadNewFolderName.value = '';
+                    loadUploadFolders(data.categoryID);
+                } else alert('Error: ' + data.message);
+            }).catch(e => {
+                console.error(e);
+                btnUploadConfirmAdd.innerHTML = btnText;
+                btnUploadConfirmAdd.disabled = false;
+            });
+        });
+    }
+
+    const btnUploadConfirmRename = document.getElementById('btnUploadConfirmRename');
+    if (btnUploadConfirmRename) {
+        btnUploadConfirmRename.addEventListener('click', () => {
+            const name = uploadRenameFolderName.value.trim();
+            const id = uploadFolderSelect.value;
+            if (!name) return alert('Enter a folder name.');
+
+            const btnText = btnUploadConfirmRename.innerHTML;
+            btnUploadConfirmRename.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnUploadConfirmRename.disabled = true;
+
+            fetch('/qms_optiqual/generalComponents/policyManagerPHP/renameCategory.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ categoryID: id, newName: name })
+            }).then(res => res.json()).then(data => {
+                btnUploadConfirmRename.innerHTML = btnText;
+                btnUploadConfirmRename.disabled = false;
+                if (data.success) {
+                    uploadRenameFolderDiv.style.display = 'none';
+                    uploadRenameFolderName.value = '';
+                    loadUploadFolders(id);
+                } else alert('Error: ' + data.message);
+            }).catch(e => {
+                console.error(e);
+                btnUploadConfirmRename.innerHTML = btnText;
+                btnUploadConfirmRename.disabled = false;
+            });
+        });
+    }
+
+    const confirmUploadPolicyBtn = document.getElementById('confirmUploadPolicyBtn');
+    if (confirmUploadPolicyBtn) {
+        confirmUploadPolicyBtn.addEventListener('click', () => {
+            const selectedFolder = uploadFolderSelect.value;
+            if (!selectedFolder) return alert('Please select a destination folder.');
+
+            const originalText = confirmUploadPolicyBtn.innerHTML;
+            confirmUploadPolicyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+            confirmUploadPolicyBtn.disabled = true;
 
             fetch('/qms_optiqual/generalComponents/taskManager/uploadPolicyBE.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ policyID: currentTaskPolicyID })
+                body: JSON.stringify({ policyID: currentUploadPolicyID, categoryID: selectedFolder })
             })
             .then(res => res.json())
             .then(data => {
-                qadUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
-                qadUploadBtn.disabled = false;
                 if (data.success) {
                     alert(data.message);
                     location.reload();
                 } else {
+                    confirmUploadPolicyBtn.innerHTML = originalText;
+                    confirmUploadPolicyBtn.disabled = false;
                     alert('Upload failed: ' + data.message);
                 }
             })
             .catch(err => {
                 console.error(err);
-                qadUploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
-                qadUploadBtn.disabled = false;
+                confirmUploadPolicyBtn.innerHTML = originalText;
+                confirmUploadPolicyBtn.disabled = false;
                 alert('Network error: could not upload policy.');
             });
         });

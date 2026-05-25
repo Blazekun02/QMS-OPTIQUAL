@@ -19,15 +19,26 @@ function sendEmail_Verify($email, $email_subject, $email_template) {
 
     try {
         //Server settings
-        $mail->SMTPDebug = 2; // 2 provides client and server communication details
+        $mail->SMTPDebug = 0; // Disable debug output for production
         // $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
         $mail->isSMTP();                                            //Send using SMTP
         $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
         $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
         $mail->Username   = 'joaquind.rizal@gmail.com';                     //SMTP username
         $mail->Password   = 'gkgw qich dyob xpoy';                               //SMTP password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;                              //Enable implicit TLS encryption
-        $mail->Port       =  587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+        //$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;                              //Enable implicit TLS encryption
+        //$mail->Port       =  587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Use Implicit SSL
+        $mail->Port       =  465;                                   //TCP port to connect to; use 465 for SMTPS
+
+        // Bypass SSL verification (Useful for local XAMPP environments)
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
 
         $mail->setFrom('joaquind.rizal@gmail.com', 'Quality Management System');
         $mail->addAddress($email);     //Add a recipient
