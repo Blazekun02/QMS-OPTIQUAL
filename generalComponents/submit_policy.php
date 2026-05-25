@@ -39,6 +39,7 @@
         // Allowed file types
         $allowedTypes = array('pdf', 'doc', 'docx', 'txt');
 
+        
         if (in_array($fileType, $allowedTypes)) {
             // Upload Files to Server
             if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {

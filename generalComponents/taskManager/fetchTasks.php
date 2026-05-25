@@ -44,6 +44,7 @@ try {
         LEFT JOIN accdatatbl ver ON p.policyVerifier = ver.accID
         LEFT JOIN accdatatbl app ON p.policyApprover = app.accID
     ";
+    
 
     $whereClauses = [];
     $params = [];
