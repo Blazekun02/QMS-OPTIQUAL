@@ -204,6 +204,11 @@ if(isset($_SESSION['accID']) && isset($conn)){
     <button class="ws-tab" id="tabFeedbacks" onclick="switchWorkspaceTab('feedbacks')">
         <i class="fas fa-comments"></i> Feedbacks
     </button>
+    <?php if ($roleID == 2 || $roleID == 3): ?>
+    <button class="ws-tab" id="tabRevisions" onclick="switchWorkspaceTab('revisions')">
+        <i class="fas fa-history"></i> Revision History
+    </button>
+    <?php endif; ?>
 </div>
     </div>
 
@@ -251,6 +256,24 @@ if(isset($_SESSION['accID']) && isset($conn)){
     <div id="workspaceFeedbackList">
         <p>Loading...</p>
     </div>
+</div>
+
+<div id="revisionsContent" style="display: none; background: white; padding: 20px; border-radius: 10px; color: black; min-height: 300px;">
+    <h2 style="color: #293A82; margin-top:0;">Revision History</h2>
+    <table class="task-manager-table" id="revisionsTable">
+        <thead>
+            <tr>
+                <th>Original Policy</th>
+                <th>Revised Policy</th>
+                <th>Version</th>
+                <th>Submitted By</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="revisionsTableBody"></tbody>
+    </table>
 </div>
 
     <div class="introduction-section" id="workspaceDocViewer" style="display: none;">
@@ -542,6 +565,7 @@ window.switchWorkspaceTab = function(tabId) {
     let activeBtnId = 'tabActionRequired';
     if (tabId === 'track') activeBtnId = 'tabMySubmissions';
     else if (tabId === 'feedbacks') activeBtnId = 'tabFeedbacks';
+    else if (tabId === 'revisions') activeBtnId = 'tabRevisions';
     
     const activeBtn = document.getElementById(activeBtnId);
     if (activeBtn) activeBtn.classList.add('active');
@@ -550,6 +574,7 @@ window.switchWorkspaceTab = function(tabId) {
     const headerRow = document.getElementById('workspaceTableHeaders');
     const table = document.getElementById('workspaceTable');
     const feedbacksContent = document.getElementById('feedbacksContent');
+    const revisionsContent = document.getElementById('revisionsContent');
     const taskControls = document.getElementById('task-list-controls');
 
     // 4. LOGIC SWITCH
@@ -557,16 +582,26 @@ window.switchWorkspaceTab = function(tabId) {
         // Show Feedback Content
         if(table) table.style.display = 'none';
         if(feedbacksContent) feedbacksContent.style.display = 'block';
+        if(revisionsContent) revisionsContent.style.display = 'none';
         if(taskControls) taskControls.style.display = 'none';
         
         // Load data
         if (typeof window.loadWorkspaceFeedbacks === 'function') {
             window.loadWorkspaceFeedbacks();
         }
+    } else if (tabId === 'revisions') {
+        if(table) table.style.display = 'none';
+        if(feedbacksContent) feedbacksContent.style.display = 'none';
+        if(revisionsContent) revisionsContent.style.display = 'block';
+        if(taskControls) taskControls.style.display = 'none';
+        if (typeof window.loadWorkspaceRevisions === 'function') {
+            window.loadWorkspaceRevisions();
+        }
     } else {
         // Show Table Content
         if(table) table.style.display = 'table';
         if(feedbacksContent) feedbacksContent.style.display = 'none';
+        if(revisionsContent) revisionsContent.style.display = 'none';
 
         if (tabId === 'action') {
             if(taskControls) taskControls.style.display = 'flex';
@@ -579,6 +614,7 @@ window.switchWorkspaceTab = function(tabId) {
         }
     }
 };
+
 
 function populateWorkspaceTable(tasks) {
     const tableBody = document.getElementById('taskTableBody');
@@ -593,11 +629,18 @@ function populateWorkspaceTable(tasks) {
     tasks.forEach(task => {
         const row = tableBody.insertRow();
         
+        // ✨ NEW: Determine if it's a revision and create the badge
+        const isRevision = task.requestChangeContentPath && task.requestChangeContentPath.trim() !== "";
+        const revisionBadge = isRevision 
+            ? `<span style="background-color: #fbaf41; color: black; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-left: 5px;">REVISION</span>` 
+            : '';
+
         if (currentTab === 'action') {
-            row.onclick = function() { showTaskIntroduction(task.policyID, task.policyTitle, task.author, task.pdfPath, task.status); };
+            row.onclick = function() { showTaskIntroduction(task.policyID, task.policyTitle, task.author, task.pdfPath, task.status, task.originalFilePath); };
             
+            // ✨ ADDED: ${revisionBadge} next to the policyTitle
             row.innerHTML = `
-                <td>${task.policyTitle}</td>
+                <td>${task.policyTitle} ${revisionBadge}</td>
                 <td>${task.author}</td>
                 <td>${task.dateSubmitted ? new Date(task.dateSubmitted).toLocaleDateString() : '---'}</td>
                 <td>${task.reviewerName || '---'}</td>
@@ -653,9 +696,28 @@ function populateWorkspaceTable(tasks) {
             }
             actionCell.appendChild(actionBtn);
 
+            // ✨ NEW: If it's a revision, append the View Log button to the action cell
+            if (isRevision) {
+                const logBtn = document.createElement('a');
+                logBtn.href = task.requestChangeContentPath;
+                logBtn.target = "_blank";
+                logBtn.className = "action-btn-inline";
+                logBtn.style.backgroundColor = "#ffffff";
+                logBtn.style.color = "#293A82";
+                logBtn.style.marginLeft = "10px";
+                logBtn.style.textDecoration = "none";
+                logBtn.innerHTML = '<i class="fas fa-file-pdf"></i> View Log';
+                
+                // Stop the row click event from firing when they click the log button
+                logBtn.onclick = (e) => e.stopPropagation(); 
+                actionCell.appendChild(logBtn);
+            }
+
         } else {
+            // "Track" Tab Logic
+            // ✨ ADDED: ${revisionBadge} next to the policyTitle here as well
             row.innerHTML = `
-                <td>${task.policyTitle}</td>
+                <td>${task.policyTitle} ${revisionBadge}</td>
                 <td>${task.dateSubmitted ? new Date(task.dateSubmitted).toLocaleDateString() : '---'}</td>
                 <td style="font-weight:bold;">${task.status}</td>
             `;
@@ -671,7 +733,6 @@ function populateWorkspaceTable(tasks) {
                 `;
             }
             
-            // ✨ Removed the blue View File button as requested!
             actionCell.innerHTML = `
                 <button class="action-btn-inline" style="background:#293A82; color:white;" onclick="openTracker(${task.statusCode}, '${task.policyTitle}', '${task.pdfPath}')">
                     <i class="fas fa-eye"></i> Track
@@ -681,7 +742,6 @@ function populateWorkspaceTable(tasks) {
         }
     });
 }
-
 // ==========================================
 // VISUAL TRACKER & MINI PDF LOGIC
 // ==========================================
@@ -764,7 +824,7 @@ function closeTracker() {
 // ==========================================
 // PDF VIEWER / DOCUMENT INTRODUCTION LOGIC
 // ==========================================
-function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, policyStatus) {
+function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, policyStatus, originalFilePath = null) {
     currentTaskPolicyID = policyID;
     currentTaskStatus = policyStatus;
     currentTaskPolicyTitle = policyTitle; 
@@ -785,6 +845,18 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
 
     const actionButtons = document.getElementById('qadActionButtons');
     if (actionButtons) actionButtons.style.display = 'flex';
+
+    let origBtn = document.getElementById('qadOriginalBtn');
+    if (!origBtn && actionButtons) {
+        origBtn = document.createElement('button');
+        origBtn.className = 'action-btn';
+        origBtn.id = 'qadOriginalBtn';
+        origBtn.style.borderColor = '#293A82';
+        origBtn.style.color = '#293A82';
+        origBtn.innerHTML = '<i class="fas fa-history"></i><span>Original</span>';
+        actionButtons.prepend(origBtn);
+    }
+    if (origBtn) { origBtn.style.display = originalFilePath ? 'flex' : 'none'; origBtn.onclick = () => window.open(originalFilePath, '_blank'); }
 
     const uploadBtn = document.getElementById('qadUploadBtn');
     const assignBtn = document.getElementById('qadAssignBtn');
@@ -1098,26 +1170,7 @@ function renderEmployeeListFlat(emps, container) {
     }
 }
 
-// ==========================================
-// INITIALIZATION & EVENT LISTENERS
-// ==========================================
-document.addEventListener('DOMContentLoaded', function() {
-    // Attach PDF listeners
-    if (document.getElementById('tm_prevPage')) document.getElementById('tm_prevPage').addEventListener('click', tm_onPrevPage);
-    if (document.getElementById('tm_nextPage')) document.getElementById('tm_nextPage').addEventListener('click', tm_onNextPage);
-    if (document.getElementById('tm_zoomIn')) document.getElementById('tm_zoomIn').addEventListener('click', tm_onZoomIn);
-    if (document.getElementById('tm_zoomOut')) document.getElementById('tm_zoomOut').addEventListener('click', tm_onZoomOut);
-    tm_canvas = document.getElementById('tm_pdfCanvas');
-    if (tm_canvas) tm_ctx = tm_canvas.getContext('2d');
-
-    // Attach Mini PDF listeners
-    if (document.getElementById('mini_prevPage')) document.getElementById('mini_prevPage').addEventListener('click', mini_onPrevPage);
-    if (document.getElementById('mini_nextPage')) document.getElementById('mini_nextPage').addEventListener('click', mini_onNextPage);
-    mini_canvas = document.getElementById('mini_pdfCanvas');
-    if (mini_canvas) mini_ctx = mini_canvas.getContext('2d');
-
-    // Function to fetch tasks and populate the table
-    function fetchTasksAndPopulate() {
+function fetchTasksAndPopulate() {
         const sortValue = document.getElementById('taskSortFilter') ? document.getElementById('taskSortFilter').value : 'date_desc';
         const fetchUrl = `/qms_optiqual/generalComponents/taskManager/fetchTasks.php?sort=${sortValue}&t=${new Date().getTime()}`;
         fetch(fetchUrl, {
@@ -1144,6 +1197,27 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Network Fetch Error:', error);
         });
     }
+
+// ==========================================
+// INITIALIZATION & EVENT LISTENERS
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach PDF listeners
+    if (document.getElementById('tm_prevPage')) document.getElementById('tm_prevPage').addEventListener('click', tm_onPrevPage);
+    if (document.getElementById('tm_nextPage')) document.getElementById('tm_nextPage').addEventListener('click', tm_onNextPage);
+    if (document.getElementById('tm_zoomIn')) document.getElementById('tm_zoomIn').addEventListener('click', tm_onZoomIn);
+    if (document.getElementById('tm_zoomOut')) document.getElementById('tm_zoomOut').addEventListener('click', tm_onZoomOut);
+    tm_canvas = document.getElementById('tm_pdfCanvas');
+    if (tm_canvas) tm_ctx = tm_canvas.getContext('2d');
+
+    // Attach Mini PDF listeners
+    if (document.getElementById('mini_prevPage')) document.getElementById('mini_prevPage').addEventListener('click', mini_onPrevPage);
+    if (document.getElementById('mini_nextPage')) document.getElementById('mini_nextPage').addEventListener('click', mini_onNextPage);
+    mini_canvas = document.getElementById('mini_pdfCanvas');
+    if (mini_canvas) mini_ctx = mini_canvas.getContext('2d');
+
+    // Function to fetch tasks and populate the table
+    
 
     // Initial fetch when the script loads
     fetchTasksAndPopulate();

@@ -135,8 +135,7 @@
             <div class="Poli-Repo-Header">
                 <h1>Policy Repository</h1>
                 <div class="PR-Search-Container">
-                    <label><input type="text" placeholder="Search" id="searchInput"></label>
-                    <button id="searchButton"><i class="fas fa-search"></i></button>
+                    <label><input type="text" placeholder="Search" id="searchInput">
                 </div>
             </div>
 
@@ -259,7 +258,34 @@ $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID']
         
                 <div class="submit-input">
                     <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
-                    <input type="file" name="policyFile" required style="margin-top:10px;">
+                    <input type="file" name="policyFile" 
+                <div class="revision-toggle" style="margin-top: 15px; text-align: left;">
+                    <input type="checkbox" id="staffIsRevision" name="isRevision" onchange="document.getElementById('staffRevFields').style.display = this.checked ? 'block' : 'none';">
+                    <label for="staffIsRevision">Mark as Policy Revision</label>
+                </div>
+                
+                <div id="staffRevFields" style="display: none; text-align: left; margin-top: 10px;">
+                    <label>Select Policy to Revise:</label>
+                    <select name="originalPolicyID" style="width: 100%; padding: 8px; margin-bottom: 10px;" onchange="if(this.value) document.getElementById('policyTitle').value = this.options[this.selectedIndex].text;">
+                        <option value="">-- Select a Policy --</option>
+                        <?php
+                            if(isset($conn)){
+                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3");
+                                if($polQ) {
+                                    while($p = $polQ->fetch_assoc()){
+                                        echo "<option value='".$p['policyID']."'>".htmlspecialchars($p['title'])."</option>";
+                                    }
+                                }
+                            }
+                        ?>
+                    </select>
+                    <label>Revision Type:</label>
+                    <select name="revisionType" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                        <option value="minor">Minor Revision</option>
+                        <option value="major">Major Revision</option>
+                    </select>
+                    <label>Upload Revision Form (PDF):</label>
+                    <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
                 </div>
                 <div class="submit-buttons">
                     <button type="button" id="cancelBtn">Cancel</button>

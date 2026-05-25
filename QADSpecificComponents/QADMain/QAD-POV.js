@@ -673,23 +673,32 @@ if (lastChildBtn) {
 function setupPolicyFileAutoTitle() {
     const titleInput = document.getElementById('policyTitle');
     const fileInput = document.querySelector('input[type="file"][name="policyFile"]');
+    
     if (!titleInput || !fileInput) return;
 
     let userEdited = false;
+    
+    // Detect if user manually types in the title
     titleInput.addEventListener('input', () => {
         userEdited = titleInput.value.trim().length > 0;
     });
 
+    // When a file is chosen, auto-fill the title
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length === 0) return;
-        const fileName = fileInput.files[0].name.replace(/\.pdf$/i, '');
+        
+        // Remove file extension
+        const fileName = fileInput.files[0].name.replace(/\.[^/.]+$/, "");
+        
+        // Only auto-fill if the user hasn't typed anything yet
         if (!userEdited || titleInput.value.trim() === '') {
             titleInput.value = fileName;
         }
     });
 }
 
-setupPolicyFileAutoTitle();
+// Call this on page load
+document.addEventListener('DOMContentLoaded', setupPolicyFileAutoTitle);
 
 const submitButtonTrigger = document.getElementById('submitButton');
 if (submitButtonTrigger && submitOverlay) {
@@ -698,12 +707,12 @@ if (submitButtonTrigger && submitOverlay) {
     });
 }
 
-const formSubmitBtn = document.getElementById("submitBtn");
-if (formSubmitBtn) {
-    formSubmitBtn.addEventListener("click", function () {
-        if(submitOverlay) submitOverlay.style.display = "none";
-    });
-}
+// const formSubmitBtn = document.getElementById("submitBtn");
+// if (formSubmitBtn) {
+//     formSubmitBtn.addEventListener("click", function () {
+//         if(submitOverlay) submitOverlay.style.display = "none";
+//     });
+// }
 
 const cancelBtn = document.getElementById("cancelBtn");
 if (cancelBtn) {

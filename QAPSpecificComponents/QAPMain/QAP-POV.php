@@ -48,7 +48,7 @@
             }
         </script>
 
-        <link rel="stylesheet" href="QAP-POV.css?v=<?php echo time(); ?>">
+        <link rel="stylesheet" href="QAP-POV.css?v=<?php echo filemtime(__DIR__ . '/QAP-POV.css'); ?>">
     </head>
 
     <body>
@@ -140,7 +140,7 @@
                 <h1>Policy Repository</h1>
                 <div class="PR-Search-Container">
                     <label>
-                        <input type="text" placeholder="Search" id="searchInput">
+                        <input type="text" placeholder="Search" id="searchInput" autocomplete="new-password" name="pr_search_input_prevent_autofill">
                     </label>
                     <button id="searchButton"><i class="fas fa-search"></i></button>
                 </div>
@@ -265,7 +265,36 @@
         
                 <div class="submit-input">
                     <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
-                    <input type="file" name="policyFile" required style="margin-top:10px;">
+                    <input type="file" name="policyFile" accept=".pdf" required style="margin-top:10px;">
+                </div>
+                
+                <div class="revision-toggle" style="margin-top: 15px; text-align: left;">
+                    <input type="checkbox" id="qapIsRevision" name="isRevision" onchange="document.getElementById('qapRevFields').style.display = this.checked ? 'block' : 'none';">
+                    <label for="qapIsRevision">Mark as Policy Revision</label>
+                </div>
+                
+                <div id="qapRevFields" style="display: none; text-align: left; margin-top: 10px;">
+                    <label>Select Policy to Revise:</label>
+                    <select name="originalPolicyID" style="width: 100%; padding: 8px; margin-bottom: 10px;" onchange="if(this.value) document.getElementById('policyTitle').value = this.options[this.selectedIndex].text;">
+                        <option value="">-- Select a Policy --</option>
+                        <?php
+                            if(isset($conn)){
+                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3");
+                                if($polQ) {
+                                    while($p = $polQ->fetch_assoc()){
+                                        echo "<option value='".$p['policyID']."'>".htmlspecialchars($p['title'])."</option>";
+                                    }
+                                }
+                            }
+                        ?>
+                    </select>
+                    <label>Revision Type:</label>
+                    <select name="revisionType" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                        <option value="minor">Minor Revision</option>
+                        <option value="major">Major Revision</option>
+                    </select>
+                    <label>Upload Revision Form (PDF):</label>
+                    <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
                 </div>
                 <div class="submit-buttons">
                     <button id="cancelBtn" type="button">Cancel</button>
@@ -297,7 +326,7 @@
             <div class="rm-controls">
                 <div class="rm-search-container">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="find employee" id="rmSearchInput">
+                    <input type="text" placeholder="find employee" id="rmSearchInput" autocomplete="new-password" name="rm_search_input_prevent_autofill">
                 </div>
                 </div>
             <div class="rm-grid-container" id="rmGridContainer"></div>
@@ -324,7 +353,7 @@
             </div>
         </div>
 
-        <script src="QAP-POV.js?v=<?php echo time(); ?>"></script>
+        <script src="QAP-POV.js?v=<?php echo filemtime(__DIR__ . '/QAP-POV.js'); ?>"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
