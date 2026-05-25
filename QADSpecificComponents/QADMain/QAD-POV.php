@@ -37,7 +37,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <link rel="stylesheet" href="QAD-POV.css?v=<?php echo time(); ?>">
+        <link rel="stylesheet" href="QAD-POV.css?v=<?php echo filemtime(__DIR__ . '/QAD-POV.css'); ?>">
     </head>
 
     <body>
@@ -119,7 +119,7 @@
 
                 <div class="PR-Search-Container">
                     <label>
-                        <input type="text" placeholder="Search" id="searchInput">
+                        <input type="text" placeholder="Search" id="searchInput" autocomplete="new-password" name="pr_search_input_prevent_autofill">
                     </label>
                     <button id="searchButton"><i class="fas fa-search"></i></button>
                 </div>
@@ -267,7 +267,7 @@ echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="
 <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
     <div class="submit-group">
         <label>Policy Title</label>
-        <input type="text" name="policyTitle" placeholder="Enter policy title" required>
+        <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required>
     </div>
 
     <div class="submit-group">
@@ -280,9 +280,30 @@ echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="
         <label for="isRevisionCheckbox">Mark as Policy Revision</label>
     </div>
 
-    <div id="revisionUploads" class="hidden-revision-fields">
-        <label>Upload Revision Log (PDF)</label>
-        <input type="file" name="changeLogFile" accept=".pdf">
+    <div id="revisionUploads" class="hidden-revision-fields" style="display: none; text-align: left; margin-top: 10px;">
+        <label>Select Policy to Revise:</label>
+        <select name="originalPolicyID" id="parentPolicySelect" style="width: 100%; padding: 8px; margin-bottom: 10px;" onchange="if(this.value) document.getElementById('policyTitle').value = this.options[this.selectedIndex].text;">
+            <option value="">-- Select a Policy --</option>
+            <?php
+                if (isset($conn)) {
+                    $polQuery = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3");
+                    if ($polQuery) {
+                        while($pol = $polQuery->fetch_assoc()){
+                            echo "<option value='".$pol['policyID']."'>".htmlspecialchars($pol['title'])."</option>";
+                        }
+                    }
+                }
+            ?>
+        </select>
+        <br>
+        <label>Revision Type:</label>
+        <select name="revisionType" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+            <option value="minor">Minor Revision</option>
+            <option value="major">Major Revision</option>
+        </select>
+        <br>
+        <label>Upload Revision Log (PDF):</label>
+        <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
     </div>
 
     <div class="submit-buttons">
@@ -348,8 +369,8 @@ function toggleRevision(checkbox) {
             <h1>Department Manager</h1>
             <div class="dm-controls" style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; margin-left: 10px;">
                 <!-- Search Bar -->
-                <div class="DM-Search-Container" style="margin: 0; width: 300px;">
-                    <input type="text" id="dmSearchInput" placeholder="Search departments or employees...">
+                <div class="DM-Search-Container" autocomplete="off" style="margin: 0; width: 300px;">
+                    <input type="text" id="dmSearchInput" placeholder="Search departments or employees..." autocomplete="new-password" name="dm_search_input_prevent_autofill">
                     <button style="cursor: default;"><i class="fas fa-search"></i></button>
                 </div>
 
@@ -374,7 +395,7 @@ function toggleRevision(checkbox) {
 
         <div id="assignNameContainer" class="pm-modal-container" style="display: none;">
             <h2 style="font-size: 32px; margin-bottom: 20px;">Assign Name</h2>
-            <input type="text" id="departmentNameInput" placeholder="Enter Department Name" style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 25px; box-sizing: border-box;">
+            <input type="text" id="departmentNameInput" placeholder="Enter Department Name" autocomplete="off" role="presentation" name="dept_fake_name" style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 25px; box-sizing: border-box;">
             <div class="pm-modal-buttons">
                 <button id="cancelAssignName" class="cancel-btn">Cancel</button>
                 <button id="confirmAssignName" class="confirm-btn">Confirm</button>
@@ -477,7 +498,7 @@ function toggleRevision(checkbox) {
                     <div style="display: flex; gap: 15px; margin-left: auto;">
                         <!-- Search Bar -->
                         <div class="PM-Search-Container" style="margin: 0; width: 300px;">
-                            <input type="text" id="pmSearchInput" placeholder="Search folders or policies...">
+                            <input type="text" id="pmSearchInput" placeholder="Search folders or policies..." autocomplete="new-password" name="pm_search_input_prevent_autofill">
                             <button style="cursor: default; background: transparent; border: none; outline: none; margin-left: 10px;"><i class="fas fa-search search-icon"></i></button>
                         </div>
 
@@ -560,7 +581,7 @@ function toggleRevision(checkbox) {
     <div class="rm-controls">
         <div class="rm-search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" placeholder="find employee" id="rmSearchInput">
+            <input type="text" placeholder="find employee" id="rmSearchInput" autocomplete="new-password" name="rm_search_input_prevent_autofill">
         </div>
         <button class="rm-icon-btn" id="rmAddRoleBtn" title="Add User"><i class="fas fa-user-plus"></i></button>
         
@@ -619,8 +640,7 @@ function toggleRevision(checkbox) {
             
 </div>
 
-
-<script src="QAD-POV.js?v=<?php echo time(); ?>"></script>
+<script src="QAD-POV.js?v=<?php echo filemtime(__DIR__ . '/QAD-POV.js'); ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');

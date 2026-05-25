@@ -122,7 +122,7 @@
 
                 <div class="PR-Search-Container">
                     <label>
-                        <input type="text" placeholder="Search" id="searchInput">
+                        <input type="text" placeholder="Search" id="searchInput" autocomplete="new-password" name="pr_search_input_prevent_autofill">
                     </label>
                     <button id="searchButton"><i class="fas fa-search"></i></button>
                 </div>
@@ -467,7 +467,7 @@
     <div class="rm-controls">
         <div class="rm-search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" placeholder="find employee" id="rmSearchInput">
+            <input type="text" placeholder="find employee" id="rmSearchInput" autocomplete="new-password" name="rm_search_input_prevent_autofill">
         </div>
         <button class="rm-icon-btn" id="rmAddRoleBtn" title="Add User"><i class="fas fa-user-plus"></i></button>
         
