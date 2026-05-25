@@ -28,9 +28,28 @@ try {
     $actionRequired = [];
     $mySubmissions  = [];
 
-    // =====================================================================
-    // 1. FETCH "ACTION REQUIRED"
-    // =====================================================================
+    // ==========================================
+    // 1. FETCH "ACTION REQUIRED" (Tasks to do)
+    // ==========================================
+    $selectCore = "
+        SELECT 
+            p.policyID, p.title AS policyTitle, a.fullName AS author, 
+            p.dateSubmitted, p.versionNo AS version, ps.policyStatusName AS status, p.policyStatusID AS statusCode,
+            rev.fullName AS reviewerName, ver.fullName AS verifierName, app.fullName AS approverName, p.contentPath AS pdfPath
+            " . ($userRole != 2 ? ", t.dateCreated" : ", p.dateSubmitted AS dateCreated") . "
+        FROM policytbl p
+        LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+        LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
+        LEFT JOIN accdatatbl rev ON p.reviewedBy = rev.accID
+        LEFT JOIN accdatatbl ver ON p.policyVerifier = ver.accID
+        LEFT JOIN accdatatbl app ON p.policyApprover = app.accID
+    ";
+    
+
+    $whereClauses = [];
+    $params = [];
+    $types = "";
+    $orderBy = "";
 
     if ($userRole == 2) {
         // -----------------------------------------------------------------

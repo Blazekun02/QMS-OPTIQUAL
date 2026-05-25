@@ -175,6 +175,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
     #assignContentArea::-webkit-scrollbar-thumb:hover { background: #db8804; }
 </style>
 
+
 <div class="task-manager">
     <div class="task-manager-header-container" id="workspaceHeaderArea" style="margin-bottom: 15px;">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
