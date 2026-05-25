@@ -326,17 +326,12 @@ body {
     align-items: center;
     justify-content: space-between;
     z-index: 2;
-    border-radius: 10px;
-    background-color: #4963D4;
-}
-
-.PR-Parent-Folders:hover {
-    background-color: #293A82;
-    color: white;
 }
 
 .PR-Parent-Folder-Name {
-    padding-left: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
 }
 
 .child-folders {
@@ -350,14 +345,12 @@ body {
     display: flex;
     justify-content: space-between;
     z-index: 2;
-    border-radius: 10px;
-    background-color: #5a76e9;
 }
 
 .PR-Child-Folder-Name {
-    justify-content: center;
-    align-items: center;
-    padding-left: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
 }
 
 .Policies-Folder {
@@ -371,13 +364,10 @@ body {
     display: flex;
     justify-content: space-between;
     z-index: 2;
-    border-radius: 10px;
-    margin-left: 20px;
-    background-color: #7B8EDE;
 }
 
 .PR-Policies-Name {
-    padding-left: 10px;
+    font-weight: bold;
 }
 
 /* 2.3. PDF Viewer */
@@ -1686,7 +1676,7 @@ body {
     flex-direction: column;
 }
 
-.pm-policy-item {
+.pm-policy-item, .PR-Policies {
     background-color: #BFE6F8;
     color: black;
     padding: 8px 20px !important;
@@ -1698,6 +1688,16 @@ body {
     margin: 4px 0 4px 40px;
     width: calc(100% - 40px);
     box-sizing: border-box;
+}
+
+.PR-Policies {
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    border: 2px solid transparent;
+}
+.PR-Policies:hover {
+    background-color: #A9DDF1;
+    border-color: #FBAF41;
 }
 
 /* 8.4. Modals (Create, Rename) */
@@ -2042,7 +2042,7 @@ body {
 /* ========================================= */
 
 /* 1. Main Parent Folders */
-.department-item, .pm-folder-item {
+.department-item, .pm-folder-item, .PR-Parent-Folders, .PR-Child-Folders {
     background-color: #293A82;       /* ✨ Navy Blue Base */
     border: 1px solid #4963D4;       /* Royal Blue Border */
     border-radius: 8px;
@@ -2058,14 +2058,14 @@ body {
 }
 
 /* 2. Main Folder Hover State */
-.department-item:hover, .pm-folder-item:hover {
+.department-item:hover, .pm-folder-item:hover, .PR-Parent-Folders:hover, .PR-Child-Folders:hover {
     background-color: #4963D4;       /* ✨ Brightens to Royal Blue on Hover */
     border-color: #FBAF41;           /* Pops with the Yellow/Orange Accent Border */
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }
 
 /* 3. Nested Child Folders */
-.dpt-child-folder, .pm-child-folder {
+.dpt-child-folder, .pm-child-folder, .PR-Child-Folders {
     background-color: #4963D4;       /* ✨ Royal Blue Base (Matches the parent's hover state) */
     border-left: 5px solid #FBAF41;  /* Thick Yellow/Orange Accent Line */
     border-radius: 0 8px 8px 0;      
@@ -2074,17 +2074,18 @@ body {
     border-top: none;
     border-right: none;
     border-bottom: none;
+    padding: 8px 16px; /* Reduces the height of the child folders */
 }
 
 /* 4. Child Folder Hover State */
-.dpt-child-folder:hover, .pm-child-folder:hover {
+.dpt-child-folder:hover, .pm-child-folder:hover, .PR-Child-Folders:hover {
     background-color: #BFE6F8;       /* ✨ Illuminates to Light Blue Hover */
     color: #293A82;                  /* Navy Blue Text for sharp contrast */
     border-left: 5px solid #293A82;  /* Switch accent line to Navy */
 }
 
 /* 5. Folder Icons & Triangles */
-.department-item i.fa-folder, .pm-folder-item i.fa-folder {
+.department-item i.fa-folder, .pm-folder-item i.fa-folder, .PR-Parent-Folders i.fa-folder, .PR-Child-Folders i.fa-folder {
     color: #FBAF41 !important;       /* Force folders to be Yellow/Orange */
 }
 
@@ -2280,11 +2281,55 @@ body {
     padding: 20px;
     border-radius: 10px;
     cursor: pointer;
+    transition: transf1;
+    border-radius: 4px;
+}
+
+#workspaceFeedbackList::-webkit-scrollbar-thumb {
+    background: #fbaf41;      /* Optiqual Yellow */
+    border-radius: 4px;
+}
+
+.kpi-box {
+    background: #293A82;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    cursor: eointer;
+    transition: transform 0.2s, background 0.2s;
+    tert-align: center;
+}
+
+
+.kpi-box:hover {
+    background: #3b4e9b !important;
+    transform: translateY(-5px);
+}
+
+.kpi-box:hover {
+    background: #3b4e9b !important;
+    transform: translateY(-5px);
+}
+#workspaceFeedbackList::-webkit-scrollbar-thumb {
+    background: #fbaf41;      /* Optiqual Yellow */
+    border-radius: 4px;
+}
+
+.kpi-box {
+    background: #293A82;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    cursor: pointer;
     transition: transform 0.2s, background 0.2s;
     text-align: center;
 }
 
 
+.kpi-box:hover {
+    background: #3b4e9b !important;
+    transform: translateY(-5px);
+}
 .kpi-box:hover {
     background: #3b4e9b !important;
     transform: translateY(-5px);
