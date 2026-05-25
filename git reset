@@ -1,0 +1,234 @@
+[33mcommit 805c5a7dcc7312c589af242e04fd11993476825b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Merge: 701c449 746d965
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon May 25 16:10:23 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+
+[33mcommit 701c449b1243de7b0acc8a9ebdd339a58f6c67c9[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon May 25 16:09:17 2026 +0800
+
+    Added getRevisionHistory.php to fetch revision history for a given policy, and updated staff-POV.php to include the original file path in the revision history and to allow uploading of PDF files for policies.
+
+[33mcommit 746d96507c9a15df4204deb40814f13c9f7e3e7f[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Mon May 25 14:37:16 2026 +0800
+
+    Upload function now working
+    
+    Challenges:
+    - issues with the policy viewing. some policies are not showing.
+    -UI should be fixed to show differences with policies from other subfolders
+
+[33mcommit 2b0fa18f592e96f10c41851551f44db61b983108[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sun May 24 22:48:13 2026 +0800
+
+    Updated Policy Submission to include submit Revision files button but no functionality
+
+[33mcommit a63c324206c31f19adcb29f05c3c9431dde8b690[m
+Merge: 7eb3fa1 7175902
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sun May 24 20:10:19 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+
+[33mcommit 7eb3fa1511b1c9573c32b35e3a471a72eeade2e2[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sun May 24 20:08:46 2026 +0800
+
+    Fixed Signout
+
+[33mcommit 1dc3fa4c5382d3f86f6420ef469446621d2940e7[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sun May 24 18:33:38 2026 +0800
+
+    Added Filter in Task Manager but no function
+
+[33mcommit 71759022eddc2ec4512be53254cc6c40b0f6d926[m
+Merge: 905007f c912be1
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sun May 24 17:54:30 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+
+[33mcommit 905007fbc81d85011bbcce15e231931d9a4ae0ba[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sun May 24 17:52:53 2026 +0800
+
+    Added Filter in Task Manager but no function
+
+[33mcommit c912be18a3e176aa797996230d9f2cddc6f9df9a[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat May 23 12:46:11 2026 +0800
+
+    Fixed email sending
+    Fixed sign out
+
+[33mcommit 353e8ad9d4a2ed24ef90fcd1b424998eb580bc82[m
+Merge: 75439be 8a0c2b9
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat May 23 09:06:34 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/untitled
+
+[33mcommit 75439be9245d8d15310b66fad4e4bc1fad5676ca[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat May 23 09:06:23 2026 +0800
+
+    Fixed file path for download template
+
+[33mcommit 8a0c2b9511fe4ea3470000effd0495a6851c4faa[m
+Merge: c359d72 bf33c6c
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sat May 23 08:55:42 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+
+[33mcommit c359d725977ebe5421582601f38be15e03189c3c[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sat May 23 08:55:15 2026 +0800
+
+    Added Policy viewing for staff
+
+[33mcommit bf33c6c88d99fed7e767412d55f299f612c5487d[m
+Merge: 75e4cd9 4275da5
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat May 23 08:54:14 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/untitled
+
+[33mcommit 75e4cd9e910a72ea375aae09707d7084a37b46a1[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat May 23 08:53:57 2026 +0800
+
+    Download Template Function
+
+[33mcommit 751c9c4f0bce174d79cd072259253d542bc57d07[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sat May 23 08:02:39 2026 +0800
+
+    Feedback update
+
+[33mcommit 4275da572b86ce87b3c444509160b25feac827e7[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sat May 23 01:08:13 2026 +0800
+
+    Feedback 100% done?????
+
+[33mcommit a0e4f1f652bf92f996e1f73d7acd3626b1f3f7e9[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Fri May 22 18:42:54 2026 +0800
+
+    May Feedback Na
+
+[33mcommit 9c34f7d8c1f9da0fef5062d0c7f3247b95acdf85[m
+Merge: 578ae67 5409f44
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Wed May 20 13:56:20 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/untitled
+
+[33mcommit 578ae67cd12c675b9cba2734743fb1ad8eb48108[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Wed May 20 13:55:50 2026 +0800
+
+    Admin is working? not tested
+
+[33mcommit 5409f4460a46bc30c4007fb34c7f808994770f4f[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Wed May 20 11:34:46 2026 +0800
+
+    Ehhhhhh?
+
+[33mcommit 8f997403d7cb8f4ac34299c62b30af55b32f4e56[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Wed May 6 00:42:38 2026 +0800
+
+    Integrate Login and Data Privacy Updates
+
+[33mcommit 0a16bd8fba00eca52a42e207fe5f8269a0374b7b[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon Apr 20 10:51:35 2026 +0800
+
+    Added Folder Indicators
+
+[33mcommit 1d1fd220ec7c29ebabeee2ff9f2669926b147e00[m
+Merge: b373aa9 88a881a
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat Apr 18 20:54:10 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/untitled
+
+[33mcommit b373aa902efbd01958808e160e513570bea68624[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Sat Apr 18 20:53:33 2026 +0800
+
+    initial web security:
+    
+    index
+    landingPage
+
+[33mcommit 1ad107b6162ac35cbcb1fedb0887d6ec08672129[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Thu Apr 16 22:42:28 2026 +0800
+
+    Added movable folder in policy manager
+
+[33mcommit 9142e9b6e8a8bb64798fe84a65226544a93659b0[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Thu Apr 16 22:14:50 2026 +0800
+
+    Fixed some problems with Notif. Fallback if problem with Moving Policy Folder
+
+[33mcommit 88a881a5e93cc39c07cc1eeef7f1ab73365ddc4d[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon Apr 13 08:28:13 2026 +0800
+
+    Add Reject and Feedback Functionality to My Workspace
+
+[33mcommit 2f94843a867dea4f70e896ffa7f7c129089e3c29[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon Apr 6 08:11:01 2026 +0800
+
+    Merged Policy Tracker and Task Manager. Fixed bugs in Policy Repository.
+
+[33mcommit 9a540fe0796465a7961f8515ebfa7ffea1333b3b[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sat Apr 4 15:12:18 2026 +0800
+
+    Merge Policy Tracker and Task Manager into Workspace
+
+[33mcommit 55d8875964105aa82aa2744630228f75713045dc[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Sat Apr 4 13:20:31 2026 +0800
+
+    Almost all finished
+
+[33mcommit a3590715d35041ea63b5636649b6d61860c7cd57[m
+Merge: 3f65d31 8040015
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon Mar 30 01:08:20 2026 +0800
+
+    Merge branch 'main' of https://github.com/Blazekun02/QMS-OPTIQUAL
+
+[33mcommit 3f65d31fe6a33faf7b208e5449ddc976f038df89[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon Mar 30 01:05:39 2026 +0800
+
+    Added the Verify and Aprrove button Functionality
+
+[33mcommit b4cf42b6b96490f890182ea726087fe9d64931ce[m
+Author: Yllanexs <149398171+Yllanexs@users.noreply.github.com>
+Date:   Mon Mar 23 08:29:45 2026 +0800
+
+    Marami nagbago AHSHAHSHAHSAHSHDeparment Manager, Task manager
+
+[33mcommit 80400158eb8f27ad3f38a86a092e24497f254f52[m
+Author: Joaquin Rizal <93752462+Blazekun02@users.noreply.github.com>
+Date:   Mon Mar 16 09:05:36 2026 +0800
+
+    Uhhh
+
+[3

@@ -72,12 +72,12 @@ $taskStmt->bind_param("ii", $newPolicyID, $accID);
 $taskStmt->execute();
 $taskStmt->close();
 
-// ── If revision → insert into policyrevisiontbl ───────────────
+// ── If revision → insert into revisionhistorytbl ───────────────
 if ($isRevision && $originalPolicyID) {
 
     // Calculate next version number
     $verStmt = $conn->prepare("
-        SELECT versionNo FROM policyrevisiontbl
+        SELECT versionNo FROM revisionhistorytbl
         WHERE originalPolicyID = ?
         ORDER BY revisionID DESC LIMIT 1
     ");
@@ -89,13 +89,8 @@ if ($isRevision && $originalPolicyID) {
     if ($verRow) {
         $lastVersion = $verRow['versionNo'];
     } else {
-        // First revision — base off original policy versionNo
-        $origStmt = $conn->prepare("SELECT versionNo FROM policytbl WHERE policyID = ?");
-        $origStmt->bind_param("i", $originalPolicyID);
-        $origStmt->execute();
-        $origRow  = $origStmt->get_result()->fetch_assoc();
-        $origStmt->close();
-        $lastVersion = $origRow['versionNo'] ?? '1.0';
+        // This is the first revision, so start at version 1.0
+        $lastVersion = '1.0';
     }
 
     // Bump version
@@ -106,12 +101,13 @@ if ($isRevision && $originalPolicyID) {
         ? ($major + 1) . '.0'
         : $major . '.' . ($minor + 1);
 
-    // Insert revision record
+    // ✨ FIXED: Now pointing to your actual revisionhistorytbl and correct columns
     $revStmt = $conn->prepare("
-        INSERT INTO policyrevisiontbl
-            (originalPolicyID, revisedPolicyID, versionNo, revisionType, revisionFormPath, changesDescription, submittedBy)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO revisionhistorytbl
+            (originalPolicyID, currentPolicyID, versionNo, revisionType, revisionFormPath, changeDescription, revisedBy, dateRevised)
+        VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE())
     ");
+    
     $revStmt->bind_param("iissssi",
         $originalPolicyID,
         $newPolicyID,
@@ -123,21 +119,35 @@ if ($isRevision && $originalPolicyID) {
     );
     $revStmt->execute();
     $revStmt->close();
-
-    // Stamp the new policy row's versionNo
-    $updStmt = $conn->prepare("UPDATE policytbl SET versionNo = ? WHERE policyID = ?");
-    $updStmt->bind_param("si", $newVersion, $newPolicyID);
-    $updStmt->execute();
-    $updStmt->close();
 }
 
-$conn->close();
 
-// Redirect to appropriate dashboard
-$roleID = $_SESSION['roleID'] ?? 4;
-switch ($roleID) {
-    case 2:  header("Location: /qms_optiqual/QADSpecificComponents/QADMain/QAD-POV.php"); break;
-    case 3:  header("Location: /qms_optiqual/QAPSpecificComponents/QAPMain/QAP-POV.php"); break;
-    default: header("Location: /qms_optiqual/staffSpecificComponents/staffMain/staff-POV.php");
-}
-exit;
+
+// ── Fetch true roleID before closing connection ───────────────
+    $roleID = 4; // Default to staff
+    if (isset($_SESSION['roleID'])) {
+        $roleID = $_SESSION['roleID'];
+    } else {
+        $roleStmt = $conn->prepare("SELECT roleID FROM accdatatbl WHERE accID = ?");
+        $roleStmt->bind_param("i", $accID);
+        $roleStmt->execute();
+        $roleRow = $roleStmt->get_result()->fetch_assoc();
+        if ($roleRow) {
+            $roleID = $roleRow['roleID'];
+            $_SESSION['roleID'] = $roleID; // Fix the missing session variable
+        }
+        $roleStmt->close();
+    }
+
+    $conn->close();
+
+    // ── Redirect to appropriate dashboard ─────────────────────────
+    switch ($roleID) {
+        case 2:  header("Location: /qms_optiqual/QADSpecificComponents/QADMain/QAD-POV.php"); break;
+        case 3:  header("Location: /qms_optiqual/QAPSpecificComponents/QAPMain/QAP-POV.php"); break;
+        default: header("Location: /qms_optiqual/staffSpecificComponents/staffMain/staff-POV.php");
+    }
+    exit;
+
+    $conn->close();
+?>

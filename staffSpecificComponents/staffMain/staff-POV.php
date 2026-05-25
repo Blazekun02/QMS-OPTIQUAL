@@ -258,7 +258,7 @@ $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID']
         
                 <div class="submit-input">
                     <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
-                    <input type="file" name="policyFile" 
+                    <input type="file" name="policyFile" accept=".pdf" required>
                 <div class="revision-toggle" style="margin-top: 15px; text-align: left;">
                     <input type="checkbox" id="staffIsRevision" name="isRevision" onchange="document.getElementById('staffRevFields').style.display = this.checked ? 'block' : 'none';">
                     <label for="staffIsRevision">Mark as Policy Revision</label>
@@ -284,6 +284,9 @@ $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID']
                         <option value="minor">Minor Revision</option>
                         <option value="major">Major Revision</option>
                     </select>
+                    <label for="changesDescription">Description of Changes:</label>
+                    <textarea name="changesDescription" rows="3" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+
                     <label>Upload Revision Form (PDF):</label>
                     <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
                 </div>

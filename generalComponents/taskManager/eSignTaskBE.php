@@ -54,19 +54,19 @@ $statusQuery->close();
 if ($currentStatus == 1) {
     $newStatus = 2; // QA Staff signs -> becomes 2 (Reviewed)
     // ✨ ADDED: dateReviewed = NOW()
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, reviewedBy = ?, dateReviewed = NOW() WHERE policyID = ?");
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, policyReviewer = ?, dateReviewed = NOW() WHERE policyID = ?");
     $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
 
 } else if ($currentStatus == 2) {
     $newStatus = 3; // Verifier signs -> becomes 3 (Verified)
     // ✨ ADDED: dateVerified = NOW()
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, verifiedBy = ?, dateVerified = NOW() WHERE policyID = ?");
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, policyVerifier = ?, dateVerified = NOW() WHERE policyID = ?");
     $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
 
 } else if ($currentStatus == 3) {
     $newStatus = 4; // Approver signs -> becomes 4 (Approved)
     // ✨ ADDED: dateApproved = NOW()
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, approvedBy = ?, dateApproved = NOW() WHERE policyID = ?");
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = ?, policyApprover = ?, dateApproved = NOW() WHERE policyID = ?");
     $updatePolicy->bind_param("iii", $newStatus, $accID, $policyID);
 
 } else {

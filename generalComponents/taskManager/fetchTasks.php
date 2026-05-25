@@ -79,7 +79,9 @@ try {
             else                     $whereClauses[] = "p.policyStatusID = 1";
         } else {
             // Default: all active policies the QAD still needs to act on
-            $whereClauses[] = "p.policyStatusID IN (1, 2, 3, 4)";
+            // ✨ FIX: Removed '1' so QAD ignores Pending policies (leaving them for QAP)
+            $whereClauses[] = "p.policyStatusID IN (2, 3, 4)";
+            
             // Exclude approved policies already filed into a folder
             $whereClauses[] = "NOT (p.policyStatusID = 4 AND p.categoryID IS NOT NULL)";
         }

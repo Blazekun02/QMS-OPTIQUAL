@@ -264,6 +264,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
             <tr>
                 <th>Original Policy</th>
                 <th>Revised Policy</th>
+                <th>Change Description</th>
                 <th>Version</th>
                 <th>Submitted By</th>
                 <th>Date</th>
@@ -487,20 +488,6 @@ let currentUploadBtnElement = null;
 window.uploadPolicyAction = function(policyID, btnElement) {
     if (!policyID) return alert('No policy selected to upload.');
 
-    currentUploadPolicyID = policyID;
-    currentUploadBtnElement = btnElement;
-
-    document.getElementById('uploadFolderModal').style.display = 'flex';
-    document.getElementById('uploadAddFolderDiv').style.display = 'none';
-    document.getElementById('uploadRenameFolderDiv').style.display = 'none';
-    
-    loadUploadFolders();
-};
-
-function loadUploadFolders(selectedId = null) {
-    const select = document.getElementById('uploadFolderSelect');
-    if(!select) return;
-    
     currentUploadPolicyID = policyID;
     currentUploadBtnElement = btnElement;
 
@@ -1592,4 +1579,51 @@ function showAuthorDocument(title, pdfPath) {
         }
     }
 }
+
+
+// ==========================================
+// REVISION HISTORY LOGIC
+// ==========================================
+window.loadWorkspaceRevisions = function() {
+    const tableBody = document.getElementById('revisionsTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Loading revisions...</td></tr>';
+    
+    fetch('/qms_optiqual/generalComponents/taskManager/getRevisionHistory.php')
+        .then(res => res.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+            if (data.success && data.revisions && data.revisions.length > 0) {
+                data.revisions.forEach(rev => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td style="color: #666; font-style: italic;">${rev.originalTitle}</td>
+                            <td style="font-weight: bold;">${rev.revisedTitle}</td>
+                            <td>${rev.changeDescription || 'No description provided'}</td>
+                            <td>v${rev.versionNo || '1.1'}</td>
+                            <td>${rev.submittedBy || 'Unknown'}</td>
+                            <td>${new Date(rev.dateSubmitted).toLocaleDateString()}</td>
+                            <td style="font-weight: bold;">${rev.revisionStatus || 'Pending'}</td>
+                            <td>
+                                <a href="${rev.revisedFilePath}" target="_blank" class="action-btn-inline" style="background:#293A82; color:white; text-decoration:none; margin-right: 5px;">
+                                    <i class="fas fa-file-pdf"></i> Revised Policy
+                                </a>
+                                ${rev.revisionFormPath ? `
+                                <a href="${rev.revisionFormPath}" target="_blank" class="action-btn-inline" style="background:#fbaf41; color:black; text-decoration:none;">
+                                    <i class="fas fa-file-alt"></i> Change Log
+                                </a>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">No revision history found.</td></tr>';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red; padding: 20px;">Failed to load revision history.</td></tr>';
+        });
+};
 </script>
