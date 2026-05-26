@@ -71,9 +71,9 @@ try {
                 NULL             AS assignedBy,
                 p.contentPath    AS pdfPath,
                 p.requestChangeContentPath,
-                r.fullName       AS reviewerName,
-                v.fullName       AS verifierName,
-                ap.fullName      AS approverName,
+                CASE WHEN p.policyStatusID >= 2 THEN r.fullName ELSE NULL END AS reviewerName,
+                CASE WHEN p.policyStatusID >= 3 THEN v.fullName ELSE NULL END AS verifierName,
+                CASE WHEN p.policyStatusID >= 4 THEN ap.fullName ELSE NULL END AS approverName,
                 p.originalPolicyID,
                 (SELECT contentPath FROM policytbl WHERE policyID = p.originalPolicyID) AS originalFilePath
             FROM policytbl p
@@ -124,9 +124,9 @@ try {
                 t.assignedBy,
                 p.contentPath    AS pdfPath,
                 p.requestChangeContentPath,
-                r.fullName       AS reviewerName,
-                v.fullName       AS verifierName,
-                ap.fullName      AS approverName,
+                CASE WHEN p.policyStatusID >= 2 THEN r.fullName ELSE NULL END AS reviewerName,
+                CASE WHEN p.policyStatusID >= 3 THEN v.fullName ELSE NULL END AS verifierName,
+                CASE WHEN p.policyStatusID >= 4 THEN ap.fullName ELSE NULL END AS approverName,
                 p.originalPolicyID,
                 (SELECT contentPath FROM policytbl WHERE policyID = p.originalPolicyID) AS originalFilePath
             FROM tasktbl t

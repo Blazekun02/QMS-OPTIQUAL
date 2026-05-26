@@ -36,6 +36,9 @@ $sql = "
     JOIN policytbl rev ON rv.currentPolicyID = rev.policyID
     LEFT JOIN policystatus ps ON rev.policyStatusID = ps.policyStatusID
     LEFT JOIN accdatatbl sub ON rv.revisedBy = sub.accID
+    
+    -- ✨ THE FIX: We added this WHERE clause so it only pulls fully approved (4) or published (5) revisions!
+    WHERE rev.policyStatusID >= 4
 ";
 
 $params = [];
@@ -43,7 +46,8 @@ $types  = '';
 
 // Filter logic if needed later
 if ($filterPolicyID) {
-    $sql   .= " WHERE rv.originalPolicyID = ? OR rv.currentPolicyID = ?";
+    // ✨ Also changed this from WHERE to AND so it chains correctly with the line above
+    $sql   .= " AND (rv.originalPolicyID = ? OR rv.currentPolicyID = ?)";
     $params = [$filterPolicyID, $filterPolicyID];
     $types  = 'ii';
 }

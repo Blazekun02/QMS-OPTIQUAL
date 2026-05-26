@@ -293,6 +293,9 @@
                         <option value="minor">Minor Revision</option>
                         <option value="major">Major Revision</option>
                     </select>
+                    <br>
+                    <label>Description of Changes:</label>
+                    <textarea name="changesDescription" rows="3" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
                     <label>Upload Revision Form (PDF):</label>
                     <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
                 </div>

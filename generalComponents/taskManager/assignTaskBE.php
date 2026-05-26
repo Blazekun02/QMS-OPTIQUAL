@@ -25,18 +25,8 @@ $stmt->bind_param("iiii", $policyID, $assigneeID, $assignedBy, $taskTypeID);
 
 if ($stmt->execute()) {
     
-    // Link this assignee to the policy so the QAD's fetchTasks.php knows it has been handled
-    if ($roleType === 'Verifier') {
-        $updatePolicy = $conn->prepare("UPDATE policytbl SET policyVerifier = ? WHERE policyID = ?");
-        $updatePolicy->bind_param("ii", $assigneeID, $policyID);
-        $updatePolicy->execute();
-        $updatePolicy->close();
-    } else {
-        $updatePolicy = $conn->prepare("UPDATE policytbl SET policyApprover = ? WHERE policyID = ?");
-        $updatePolicy->bind_param("ii", $assigneeID, $policyID);
-        $updatePolicy->execute();
-        $updatePolicy->close();
-    }
+    // Do NOT set the completed verifier/approver here.
+    // The assigned task is tracked in tasktbl, while the actual signer is stored when they complete verification or approval.
 
     // ✨ NEW: Fetch the exact Policy Title from the database
     $policyTitle = "a document"; // Fallback

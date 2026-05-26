@@ -1382,6 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dmSearchInput = document.getElementById('dmSearchInput');
     const dmFilterSelect = document.getElementById('dmFilterSelect');
 
+
     function applyDepartmentFilters() {
         const searchTerm = dmSearchInput ? dmSearchInput.value.toLowerCase() : '';
         const filterValue = dmFilterSelect ? dmFilterSelect.value : 'all';
@@ -1523,7 +1524,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let policyToRemoveElement = null;
 
     // --- FETCH FOLDERS AND FILES ON LOAD ---
-    fetch('../../generalComponents/policyManagerPHP/getCategories.php')
+    fetch(`../../generalComponents/policyManagerPHP/getCategories.php?_=${new Date().getTime()}`)
+    fetch(`../../generalComponents/policyManagerPHP/getCategories.php?_=${new Date().getTime()}`) // This line is correct, no change needed, just confirming.
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1651,29 +1653,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pmConfirmDelete) {
         pmConfirmDelete.addEventListener('click', () => {
+            if (!folderToEditId) return; // Safety check
+
             fetch('../../generalComponents/policyManagerPHP/deleteCategory.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ categoryID: folderToEditId })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`Server responded with status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Delete the folder AND its hidden container to prevent ghost elements
-                    const containerToDelete = document.querySelector(`.pm-children-container[data-parent-folder-id="${folderToEditId}"]`);
-                    if (containerToDelete) containerToDelete.remove();
-
-                    folderToEditElement.remove();
                     pmDeleteModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
-                    folderToEditId = null;
-                    
                     syncAndReload();
                 } else {
                     alert("Cannot delete: " + data.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error deleting folder:", error);
+                alert("An error occurred while trying to delete the folder. Please check the console for details.");
+            });
         });
     }
 
@@ -1699,26 +1702,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     policyID: selectedPolicyID 
                 })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`Server responded with status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
-                    const policyTitle = pmPolicySelect.options[pmPolicySelect.selectedIndex].text;
-                    renderPMPolicy(policyTitle, selectedPolicyID, currentFolderForFile);
-                    
-                    // Auto-expand folder so user sees the new file
-                    const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${currentFolderForFile}"]`);
-                    if (parentContainer) parentContainer.style.display = 'flex';
-
                     pmAddFileModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
-                    currentFolderForFile = null;
-                    
                     syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error assigning policy:", error);
+                alert("An error occurred while assigning the policy. Please check the console for details.");
+            });
         });
     }
 

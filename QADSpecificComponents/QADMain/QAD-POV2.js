@@ -1068,8 +1068,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let policyToRemoveId = null;
     let policyToRemoveElement = null;
 
+    // Custom reload function that leaves a "breadcrumb" for the script
+    function syncAndReload() {
+        sessionStorage.setItem('internalSync', 'true');
+        window.location.reload();
+    }
+
     // --- FETCH FOLDERS AND FILES ON LOAD ---
-    fetch('../../generalComponents/policyManagerPHP/getCategories.php')
+    fetch(`../../generalComponents/policyManagerPHP/getCategories.php?_=${new Date().getTime()}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1125,20 +1131,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    renderPMFolder(folderName, data.categoryID, currentParentCategoryId);
-                    
-                    // Auto-open parent folder so user sees the new sub-folder
-                    if (currentParentCategoryId) {
-                        const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${currentParentCategoryId}"]`);
-                        if (parentContainer) parentContainer.style.display = 'flex';
-                    }
-
                     pmCreateModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     pmFolderInput.value = '';
                     
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Database Error: " + data.message);
                 }
@@ -1170,14 +1167,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    folderToEditElement.querySelector('.pm-folder-name').textContent = newName;
                     pmRenameModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
                     pmRenameInput.value = '';
                     folderToEditId = null;
                     
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }
@@ -1197,30 +1192,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pmConfirmDelete) {
         pmConfirmDelete.addEventListener('click', () => {
+            if (!folderToEditId) return; // Safety check
+
             fetch('../../generalComponents/policyManagerPHP/deleteCategory.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ categoryID: folderToEditId })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`Server responded with status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Delete the folder AND its hidden container to prevent ghost elements
-                    const containerToDelete = document.querySelector(`.pm-children-container[data-parent-folder-id="${folderToEditId}"]`);
-                    if (containerToDelete) containerToDelete.remove();
-
-                    folderToEditElement.remove();
                     pmDeleteModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
-                    folderToEditId = null;
-                    
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Cannot delete: " + data.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error deleting folder:", error);
+                alert("An error occurred while trying to delete the folder. Please check the console for details.");
+            });
         });
     }
 
@@ -1246,27 +1241,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     policyID: selectedPolicyID 
                 })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`Server responded with status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
-                    const policyTitle = pmPolicySelect.options[pmPolicySelect.selectedIndex].text;
-                    renderPMPolicy(policyTitle, selectedPolicyID, currentFolderForFile);
-                    
-                    // Auto-expand folder so user sees the new file
-                    const parentContainer = document.querySelector(`.pm-children-container[data-parent-folder-id="${currentFolderForFile}"]`);
-                    if (parentContainer) parentContainer.style.display = 'flex';
-
                     pmAddFileModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
-                    currentFolderForFile = null;
-                    
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error assigning policy:", error);
+                alert("An error occurred while assigning the policy. Please check the console for details.");
+            });
         });
     }
 
@@ -1289,13 +1280,9 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    policyToRemoveElement.remove();
                     pmRemovePolicyModal.style.display = 'none';
                     if(globalOverlay) globalOverlay.style.display = 'none';
-                    policyToRemoveId = null;
-                    
-                    // ✨ INSTANT SYNC FIX
-                    location.reload();
+                    syncAndReload();
                 } else {
                     alert("Error: " + data.message);
                 }

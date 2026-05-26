@@ -539,6 +539,15 @@ if (cancelBtn) {
     });
 }
 
+const submitForm = document.querySelector('#submitOverlay form');
+const formSubmitBtn = document.getElementById('submitBtn');
+if (submitForm && formSubmitBtn) {
+    submitForm.addEventListener('submit', function () {
+        formSubmitBtn.disabled = true;
+        formSubmitBtn.textContent = 'Submitting...';
+        if (submitOverlay) submitOverlay.style.display = 'none';
+    });
+}
 
 /* =====================================================================
    6. ROLE MANAGER SCRIPT

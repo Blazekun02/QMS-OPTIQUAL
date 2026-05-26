@@ -3,8 +3,8 @@ ob_start();
 session_start();
 include '../../connect.php';
 
-// Fetch policies with status 4 (Approved) that aren't in a folder yet
-$query = "SELECT policyID, title FROM policytbl WHERE policyStatusID = 4 AND categoryID IS NULL";
+// ✨ THE FIX: Changed to >= 4 so it catches both Approved (4) and Uploaded (5) policies!
+    $query = "SELECT policyID, title FROM policytbl WHERE policyStatusID >= 4 AND categoryID IS NULL";
 $result = mysqli_query($conn, $query);
 
 $policies = [];

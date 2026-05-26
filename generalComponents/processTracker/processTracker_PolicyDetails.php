@@ -6,9 +6,9 @@ if (isset($_POST['policyID'])) {
 
     $query = "
         SELECT p.*, 
-               r.lName AS reviewerName, 
-               v.lName AS verifierName, 
-               a.lName AS approverName
+               CASE WHEN p.policyStatusID >= 2 THEN r.lName ELSE NULL END AS reviewerName,
+               CASE WHEN p.policyStatusID >= 3 THEN v.lName ELSE NULL END AS verifierName,
+               CASE WHEN p.policyStatusID >= 4 THEN a.lName ELSE NULL END AS approverName
         FROM policytbl p
         LEFT JOIN accdatatbl r ON p.policyReviewer = r.accID
         LEFT JOIN accdatatbl v ON p.policyVerifier = v.accID

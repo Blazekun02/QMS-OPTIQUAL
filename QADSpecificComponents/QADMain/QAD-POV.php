@@ -371,10 +371,17 @@ function toggleRevision(checkbox) {
             <h1>Department Manager</h1>
             <div class="dm-controls" style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; margin-left: 10px;">
                 <!-- Search Bar -->
-                <div class="DM-Search-Container" autocomplete="off" style="margin: 0; width: 300px;">
-                    <input type="text" id="dmSearchInput" placeholder="Search departments or employees..." autocomplete="new-password" name="dm_search_input_prevent_autofill">
-                    <button style="cursor: default;"><i class="fas fa-search"></i></button>
-                </div>
+                <div class="DM-Search-Container" style="margin: 0; width: 300px; position: relative;">
+    
+    <div style="opacity: 0; position: absolute; top: -9999px; left: -9999px; z-index: -1;">
+        <input type="text" name="fake_email_trap" tabindex="-1" autocomplete="username">
+        <input type="password" name="fake_password_trap" tabindex="-1" autocomplete="current-password">
+    </div>
+
+    <input type="text" id="dmSearchInput" placeholder="Search departments or employees..." autocomplete="nope" role="presentation" name="search_fake_name">
+    <button type="button" style="cursor: default;"><i class="fas fa-search"></i></button>
+
+</div>
 
                 <!-- Filter Dropdown -->
                 <select id="dmFilterSelect" style="padding: 6px 15px; border-radius: 20px; border: 2px solid gray; outline: none; font-family: 'Istok Web', sans-serif;">
