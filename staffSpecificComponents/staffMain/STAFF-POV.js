@@ -402,9 +402,46 @@ if (cancelBtn) {
 const submitForm = document.querySelector('#submitOverlay form');
 const formSubmitBtn = document.getElementById('submitBtn');
 if (submitForm && formSubmitBtn) {
-    submitForm.addEventListener('submit', function () {
+    submitForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const titleInput = document.getElementById('policyTitle');
+        const title = titleInput ? titleInput.value.trim() : '';
+        const isRevCheckbox = document.querySelector('input[name="isRevision"]');
+        
+        if (!title) return alert("Please enter a policy title.");
+        
+        let isRevision = false;
+        let originalPolicyID = null;
+
+        if (isRevCheckbox && isRevCheckbox.checked) {
+            isRevision = true;
+            const originalPolicySelect = document.querySelector('select[name="originalPolicyID"]');
+            if (originalPolicySelect) originalPolicyID = originalPolicySelect.value;
+        }
+        
         formSubmitBtn.disabled = true;
-        formSubmitBtn.textContent = 'Submitting...';
-        if (submitOverlay) submitOverlay.style.display = 'none';
+        formSubmitBtn.textContent = 'Checking Title...';
+        
+        fetch('/qms_optiqual/generalComponents/check_policy_title.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ policyTitle: title, isRevision: isRevision, originalPolicyID: originalPolicyID })
+        }).then(res => res.json()).then(data => {
+            if (data.exists) {
+                alert("A policy with this title already exists in the system. Please choose a different title.");
+                formSubmitBtn.disabled = false;
+                formSubmitBtn.textContent = 'Submit';
+            } else {
+                formSubmitBtn.textContent = 'Submitting...';
+                submitForm.submit();
+                if (submitOverlay) submitOverlay.style.display = 'none';
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("Error checking title. Please try again.");
+            formSubmitBtn.disabled = false;
+            formSubmitBtn.textContent = 'Submit';
+        });
     });
 }
