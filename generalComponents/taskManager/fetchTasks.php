@@ -97,12 +97,13 @@ try {
             elseif  ($statusID == 4) $whereClauses[] = "p.policyStatusID = 4 AND p.categoryID IS NULL";
             else                     $whereClauses[] = "p.policyStatusID = 1";
         } else {
-            // Default: all active policies the QAD still needs to act on
-            // ✨ FIX: Removed '1' so QAD ignores Pending policies (leaving them for QAP)
-            $whereClauses[] = "p.policyStatusID IN (2, 3, 4)";
-            
-            // Exclude approved policies already filed into a folder
-            $whereClauses[] = "NOT (p.policyStatusID = 4 AND p.categoryID IS NOT NULL)";
+            // Default: all active policies the QAD still needs to act on.
+            // This is now more specific to prevent showing tasks that are already delegated.
+            $whereClauses[] = "
+                (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR 
+                (p.policyStatusID = 3) OR
+                (p.policyStatusID = 4 AND p.categoryID IS NULL)
+            ";
         }
 
     } else {

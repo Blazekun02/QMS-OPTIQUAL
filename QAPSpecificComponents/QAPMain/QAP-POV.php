@@ -49,6 +49,77 @@
         </script>
 
         <link rel="stylesheet" href="QAP-POV.css?v=<?php echo filemtime(__DIR__ . '/QAP-POV.css'); ?>">
+        <style>
+            /* ✨ UPGRADED BRANDED FOLDER STYLING ✨ */
+            .PR-Parent-Folders, .PR-Child-Folders {
+                background-color: #293A82;
+                border: 1px solid #4963D4;
+                border-radius: 8px;
+                padding: 12px 18px;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                transition: all 0.2s ease-in-out;
+                color: white;
+            }
+            .PR-Parent-Folders:hover, .PR-Child-Folders:hover {
+                background-color: #4963D4;
+                border-color: #FBAF41;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            }
+            .PR-Child-Folders {
+                background-color: #4963D4;
+                border-left: 5px solid #FBAF41;
+                border-radius: 0 8px 8px 0;      
+                margin-left: 20px;
+                width: calc(100% - 20px);
+                border-top: none;
+                border-right: none;
+                border-bottom: none;
+                padding: 8px 16px;
+            }
+            .PR-Child-Folders:hover {
+                background-color: #BFE6F8;
+                color: #293A82;
+                border-left: 5px solid #293A82;
+            }
+            .folder-toggle-icon {
+                margin-right: 10px;
+                font-size: 1.2em;
+                color: #FBAF41; 
+                transition: transform 0.3s ease;
+            }
+            .folder-open .folder-toggle-icon {
+                transform: rotate(90deg);
+            }
+            .PR-Policies {
+                background-color: #BFE6F8;
+                color: black;
+                padding: 8px 20px !important;
+                font-size: 14px !important;
+                border-radius: 8px !important;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 4px 0 4px 40px;
+                width: calc(100% - 40px);
+                box-sizing: border-box;
+                cursor: pointer;
+                transition: background-color 0.2s, border-color 0.2s;
+                border: 2px solid transparent;
+            }
+            .PR-Policies:hover {
+                background-color: #A9DDF1;
+                border-color: #FBAF41;
+            }
+            .PR-Policies-Name {
+                font-weight: bold;
+                margin: 0;
+            }
+        </style>
     </head>
 
     <body>
@@ -59,25 +130,25 @@
             </div>
             <ul class="Sidebar-Menu">
                 <li class="menu-icons">
-                    <img src="../../assets/policy lib-notClicked.png" alt="Icon 1" onclick="showPolicyRepository()">
+                    <img src="../../assets/policy lib-notClicked.png" alt="Icon 1">
                     <span class="icon-label">Policies Repository</span>
                 </li>
                 <li class="menu-icons">
-                    <img src="../../assets/policy create-notClicked.png" alt="Icon 2" onclick="showPolicySubmission()">
+                    <img src="../../assets/policy create-notClicked.png" alt="Icon 2">
                     <span class="icon-label">Policy Submission</span>
                 </li>
                 
                 <li class="menu-icons">
-                    <img src="../../assets/task manager-notClicked.png" alt="Icon 3" onclick="showWorkspace()">
+                    <img src="../../assets/task manager-notClicked.png" alt="Icon 3">
                     <span class="icon-label">My Workspace</span>
                 </li>
                 
                 <li class="menu-icons">
-                    <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6" onclick="showRoleManager()">
+                    <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6">
                     <span class="icon-label">Manage Roles</span>
                 </li>
                 <li class="menu-icons">
-                    <img src="../../assets/info - notClicked.png" alt="Icon 10" onclick="showInformation()">
+                    <img src="../../assets/info - notClicked.png" alt="Icon 10">
                     <span class="icon-label">Information</span>
                 </li>
             </ul>
@@ -157,16 +228,19 @@
                         while ($row = mysqli_fetch_assoc($resultPF)) {
                             echo '<div class="Parent-Block">'; 
                             echo '<div class="PR-Parent-Folders" data-id="' . $row['categoryID'] . '">';
-                            echo '<p class="PR-Parent-Folder-Name">' . $row['categoryName'] . '</p>';
+                            // ✨ FIX: Added the spinning triangle icon!
+                            echo '<p class="PR-Parent-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $row['categoryName'] . '</p>';
                             echo '</div>';
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
-                            
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 4";
+
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4";
+
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
-                                    echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
+                                    // ✨ FIX: Added data-id and data-upload-date!
+                                    echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
                                     echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                     echo '</div>';
                                 }
@@ -178,17 +252,19 @@
                             if ($resultCF && mysqli_num_rows($resultCF) > 0) {
                                 while ($rowCF = mysqli_fetch_assoc($resultCF)) {
                                     echo '<div class="PR-Child-Folders" data-id="' . $rowCF['categoryID'] . '">';
-                                    echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
+                                    // ✨ FIX: Added the spinning triangle icon!
+                                    echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 4";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
                             
                                     if ($resultPol && mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
-                                            echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
+                                            // ✨ FIX: Added data-id and data-upload-date!
+                                            echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
                                             echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                             echo '</div>';
                                         }
@@ -200,6 +276,17 @@
                             echo '</div>'; 
                         }
                     }
+
+                // ✨ FIX: Fetch policies that are published directly to the "Main Repository" (No Folder)
+                $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4";
+                $resultMainPols = mysqli_query($conn, $queryMainPols);
+                if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
+                    while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
+                        echo '<div class="PR-Policies" style="margin-left: 0; width: 100%;" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
+                        echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
+                        echo '</div>';
+                    }
+                }
                 }
                 ?>
             </div>
@@ -210,7 +297,7 @@
                 <button id="closePdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; transition: color 0.2s;">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <span class="introduction-title" style="color: white; font-size: 28px; font-weight: bold;">Policy Viewer</span>
+                <h2 id="pdfViewerTitle" style="margin: 0; font-size: 24px; color: white;">Policy Viewer</h2>
             </div>
 
             <div class="pdf-container-wrapper" style="display: flex; flex-direction: column; flex-grow: 1; background-color: white; border-radius: 8px; overflow: hidden;">

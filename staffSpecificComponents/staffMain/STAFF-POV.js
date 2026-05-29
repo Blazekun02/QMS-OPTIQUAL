@@ -176,22 +176,39 @@ const parentFolders = document.querySelectorAll('.PR-Parent-Folders');
 parentFolders.forEach(folder => {
     folder.addEventListener('click', () => {
         const parentId = folder.getAttribute('data-id');
-        document.querySelectorAll('.child-folders').forEach(child => child.style.display = 'none');
-        document.querySelectorAll('.Policies-Folder').forEach(policyFolder => policyFolder.style.display = 'none');
-        
         const childToShow = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
-        if (childToShow) childToShow.style.display = 'flex';
+        
+        const isCurrentlyHidden = !childToShow || childToShow.style.display === 'none';
+        
+        // Close all first
+        document.querySelectorAll('.child-folders').forEach(child => child.style.display = 'none');
+        document.querySelectorAll('.Policies-Folder').forEach(pf => pf.style.display = 'none');
+        document.querySelectorAll('.PR-Parent-Folders').forEach(f => f.classList.remove('folder-open'));
+        document.querySelectorAll('.PR-Child-Folders').forEach(f => f.classList.remove('folder-open'));
+
+        if (isCurrentlyHidden && childToShow) {
+            childToShow.style.display = 'flex';
+            folder.classList.add('folder-open');
+        }
     });
 });
 
 const childFolders = document.querySelectorAll('.PR-Child-Folders');
 childFolders.forEach(childFolder => {
-    childFolder.addEventListener('click', () => {
+    childFolder.addEventListener('click', (e) => {
+        e.stopPropagation();
         const childId = childFolder.getAttribute('data-id');
-        document.querySelectorAll('.Policies-Folder').forEach(pf => pf.style.display = 'none');
-        
         const policiesFolderToShow = document.querySelector(`.Policies-Folder[data-pol-id='${childId}']`);
-        if (policiesFolderToShow) policiesFolderToShow.style.display = 'flex';
+        
+        const isCurrentlyHidden = !policiesFolderToShow || policiesFolderToShow.style.display === 'none';
+
+        document.querySelectorAll('.Policies-Folder').forEach(pf => pf.style.display = 'none');
+        document.querySelectorAll('.PR-Child-Folders').forEach(f => f.classList.remove('folder-open'));
+        
+        if (isCurrentlyHidden && policiesFolderToShow) {
+            policiesFolderToShow.style.display = 'flex';
+            childFolder.classList.add('folder-open');
+        }
     });
 });
 
@@ -379,5 +396,15 @@ const cancelBtn = document.getElementById("cancelBtn");
 if (cancelBtn) {
     cancelBtn.addEventListener("click", function () {
         if(submitOverlay) submitOverlay.style.display = "none";
+    });
+}
+
+const submitForm = document.querySelector('#submitOverlay form');
+const formSubmitBtn = document.getElementById('submitBtn');
+if (submitForm && formSubmitBtn) {
+    submitForm.addEventListener('submit', function () {
+        formSubmitBtn.disabled = true;
+        formSubmitBtn.textContent = 'Submitting...';
+        if (submitOverlay) submitOverlay.style.display = 'none';
     });
 }

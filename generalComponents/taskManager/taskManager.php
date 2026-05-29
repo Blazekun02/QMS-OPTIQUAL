@@ -306,6 +306,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
             </div>
         </div>
 
+        <div id="tmPdfWrapper" style="display: flex; flex-direction: column; flex-grow: 1; width: 100%;">
         <div class="custom-pdf-toolbar" id="customPdfToolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px; border-radius: 8px 8px 0 0;">
     
     <div class="pdf-tools-left">

@@ -150,16 +150,16 @@
                         while ($row = mysqli_fetch_assoc($resultPF)) {
                             echo '<div class="Parent-Block">'; 
                             echo '<div class="PR-Parent-Folders" data-id="' . $row['categoryID'] . '">';
-                            echo '<p class="PR-Parent-Folder-Name">' . $row['categoryName'] . '</p>';
+                            echo '<p class="PR-Parent-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $row['categoryName'] . '</p>';
                             echo '</div>';
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 4";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
-                                    echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
+                                    echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
                                     echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                     echo '</div>';
                                 }
@@ -171,17 +171,17 @@
                             if ($resultCF && mysqli_num_rows($resultCF) > 0) {
                                 while ($rowCF = mysqli_fetch_assoc($resultCF)) {
                                     echo '<div class="PR-Child-Folders" data-id="' . $rowCF['categoryID'] . '">';
-                                    echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
+                                    echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-$queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 4";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
                             
                                     if ($resultPol && mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
-                                            echo '<div class="PR-Policies" data-file="' . $rowPol['contentPath'] . '">';
+                                            echo '<div class="PR-Policies" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
                                             echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
                                             echo '</div>';
                                         }
@@ -191,6 +191,17 @@ $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID']
                             }
                             echo '</div>'; 
                             echo '</div>'; 
+                        }
+                    }
+
+                    // Fetch policies that are published directly to the "Main Repository" (No Folder)
+                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4";
+                    $resultMainPols = mysqli_query($conn, $queryMainPols);
+                    if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
+                        while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
+                            echo '<div class="PR-Policies" style="margin-left: 0; width: 100%;" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
+                            echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
+                            echo '</div>';
                         }
                     }
                 }
@@ -259,6 +270,7 @@ $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID']
                 <div class="submit-input">
                     <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
                     <input type="file" name="policyFile" accept=".pdf" required>
+                </div>
                 <div class="revision-toggle" style="margin-top: 15px; text-align: left;">
                     <input type="checkbox" id="staffIsRevision" name="isRevision" onchange="document.getElementById('staffRevFields').style.display = this.checked ? 'block' : 'none';">
                     <label for="staffIsRevision">Mark as Policy Revision</label>
