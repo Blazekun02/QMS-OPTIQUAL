@@ -142,7 +142,7 @@
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
                             // ✨ FIX 1: Add data-upload-date to Parent Folder Policies
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if (mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -164,7 +164,7 @@
                                     echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -188,7 +188,7 @@
                     }
 
                     // ✨ FIX 3: Fetch policies that are published directly to the "Main Repository" (No Folder)
-                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4";
+                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4 AND policyStatusID != 6";
                     $resultMainPols = mysqli_query($conn, $queryMainPols);
                     if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
                         while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
@@ -222,9 +222,14 @@
                         <button id="pr_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
                     </div>
 
-                    <button class="pdf-btn" onclick="openFeedbackModal(window.currentSelectedPolicyId)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px;">
-                        <i class="fas fa-comment-alt"></i> Remark
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="pdf-btn" onclick="openFeedbackModal(window.currentSelectedPolicyId)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px; border-radius: 5px; cursor: pointer; border: none;">
+                            <i class="fas fa-comment-alt"></i> Remark
+                        </button>
+                        <button class="pdf-btn" onclick="openDocumentHistoryModal(window.currentSelectedPolicyId)" style="background-color: #293A82; color: white; font-weight: bold; padding: 5px 15px; border-radius: 5px; cursor: pointer; border: 1px solid #fbaf41;">
+                            <i class="fas fa-history"></i> Document History
+                        </button>
+                    </div>
 
                     <div class="pdf-tools-right">
                         <button id="pr_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
@@ -297,7 +302,7 @@
             <option value="">-- Select a Policy --</option>
             <?php
                 if (isset($conn)) {
-                    $polQuery = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3");
+                    $polQuery = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3 AND policyStatusID != 6");
                     if ($polQuery) {
                         while($pol = $polQuery->fetch_assoc()){
                             echo "<option value='".$pol['policyID']."'>".htmlspecialchars($pol['title'])."</option>";
@@ -500,6 +505,63 @@ function toggleRevision(checkbox) {
         </div>
         </div>  
 </div>
+
+    <!-- Document History Modal -->
+    <div id="documentHistoryOverlay" class="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="confirm-reply-modal" style="background-color: #293A82; width: 70%; max-width: 900px; padding: 2vw; border-radius: 1vw; display: flex; flex-direction: column; color: white; font-family: 'Istok Web', sans-serif;">
+            <h2 style="margin-top: 0; margin-bottom: 10px; font-size: 2vw;">Document History</h2>
+            <p style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;" id="docHistorySubtitle">Loading history...</p>
+            
+            <div style="max-height: 50vh; overflow-y: auto; background-color: white; border-radius: 10px; padding: 15px; color: black; text-align: left;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Version</th>
+                            <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Title</th>
+                            <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Author</th>
+                            <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Approver</th>
+                            <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Published</th>
+                            <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="documentHistoryTableBody">
+                        <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="confirm-actions" style="margin-top: 20px; display: flex; justify-content: center;">
+                <button class="cancel-button" onclick="document.getElementById('documentHistoryOverlay').style.display='none'" style="padding: 10px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background-color: #D3D3D3; color: black;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary PDF Viewer for Comparison -->
+    <div id="Secondary_PdfViewer" style="display:none; position: fixed; top: 2%; left: 10%; width: 80%; height: 96%; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); background: #525659; border-radius: 10px; flex-direction: column;">
+        <div class="introduction-header" style="background: #293A82; padding: 15px 20px; display: flex; align-items: center; border-radius: 10px 10px 0 0;">
+            <h2 id="secPdfViewerTitle" style="margin: 0; font-size: 20px; color: white; flex-grow: 1;">Compare Document</h2>
+            <button id="closeSecondaryPdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; transition: color 0.2s;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="custom-pdf-toolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px;">
+            <div class="pdf-tools-left">
+                <button id="sec_prevPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="sec_pageNum">1</span> of <span id="sec_pageCount">?</span></span>
+                <button id="sec_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="pdf-tools-right">
+                <button id="sec_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
+                <span id="sec_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
+                <button id="sec_zoomIn" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-plus"></i></button>
+            </div>
+        </div>
+
+        <div class="pdf-canvas-container" style="flex-grow: 1; overflow: auto; text-align: center; padding: 20px 0;">
+            <canvas id="sec_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
+        </div>
+    </div>
 
 <!-- My Workspace -->
 <div class="Workspace-Panel" style="display: none;">

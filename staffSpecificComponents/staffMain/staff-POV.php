@@ -155,7 +155,7 @@
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -174,7 +174,7 @@
                                     echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -195,7 +195,7 @@
                     }
 
                     // Fetch policies that are published directly to the "Main Repository" (No Folder)
-                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4";
+                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4 AND policyStatusID != 6";
                     $resultMainPols = mysqli_query($conn, $queryMainPols);
                     if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
                         while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
@@ -282,7 +282,7 @@
                         <option value="">-- Select a Policy --</option>
                         <?php
                             if(isset($conn)){
-                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3");
+                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3 AND policyStatusID != 6");
                                 if($polQ) {
                                     while($p = $polQ->fetch_assoc()){
                                         echo "<option value='".$p['policyID']."'>".htmlspecialchars($p['title'])."</option>";

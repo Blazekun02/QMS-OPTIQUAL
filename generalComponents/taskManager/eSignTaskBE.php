@@ -82,6 +82,58 @@ if ($updatePolicy->execute()) {
     $completeTask->execute();
     
     // ====================================================================
+    // ✨ REVISION REPLACEMENT LOGIC ✨
+    // ====================================================================
+    if ($newStatus == 4) { // Only when fully approved
+        $revQuery = $conn->prepare("SELECT originalPolicyID FROM policytbl WHERE policyID = ?");
+        if ($revQuery) {
+            $revQuery->bind_param("i", $policyID);
+            $revQuery->execute();
+            $revResult = $revQuery->get_result();
+            if ($revResult->num_rows > 0) {
+                $revRow = $revResult->fetch_assoc();
+                if (!empty($revRow['originalPolicyID'])) {
+                    $origID = $revRow['originalPolicyID'];
+                    
+                    // 1. Inherit the folder (categoryID) of the original policy, but keep the NEW title
+                    $catQuery = $conn->prepare("SELECT categoryID FROM policytbl WHERE policyID = ?");
+                    if ($catQuery) {
+                        $catQuery->bind_param("i", $origID);
+                        $catQuery->execute();
+                        $catResult = $catQuery->get_result();
+                        if ($catResult->num_rows > 0) {
+                            $catRow = $catResult->fetch_assoc();
+                            $origCatID = $catRow['categoryID'];
+                            
+                            if ($origCatID !== null) {
+                                $updateCat = $conn->prepare("UPDATE policytbl SET categoryID = ?, policyStatusID = 5, dateUploaded = NOW() WHERE policyID = ?");
+                                $updateCat->bind_param("ii", $origCatID, $policyID);
+                                $updateCat->execute();
+                                $updateCat->close();
+                            } else {
+                                $updateCat = $conn->prepare("UPDATE policytbl SET categoryID = NULL, policyStatusID = 5, dateUploaded = NOW() WHERE policyID = ?");
+                                $updateCat->bind_param("i", $policyID);
+                                $updateCat->execute();
+                                $updateCat->close();
+                            }
+                        }
+                        $catQuery->close();
+                    }
+                    
+                    // 2. Archive the original policy so it disappears from the repository
+                    $archiveOrig = $conn->prepare("UPDATE policytbl SET policyStatusID = 6 WHERE policyID = ?");
+                    if ($archiveOrig) {
+                        $archiveOrig->bind_param("i", $origID);
+                        $archiveOrig->execute();
+                        $archiveOrig->close();
+                    }
+                }
+            }
+            $revQuery->close();
+        }
+    }
+
+    // ====================================================================
     // ✨ UNIVERSAL STATUS NOTIFICATION BLOCK ✨
     // ====================================================================
     

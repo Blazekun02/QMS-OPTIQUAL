@@ -145,7 +145,7 @@
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
                             // ✨ FIX: Check for policies attached DIRECTLY to this Parent Folder!
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID = 5";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if (mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -165,7 +165,7 @@
                                     echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID = 5";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -182,6 +182,17 @@
                             }
                             echo '</div>'; // close child-folders
                             echo '</div>'; // close Parent-Block
+                        }
+                    }
+
+                    // Fetch policies that are published directly to the "Main Repository" (No Folder)
+                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4 AND policyStatusID != 6";
+                    $resultMainPols = mysqli_query($conn, $queryMainPols);
+                    if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
+                        while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
+                            echo '<div class="PR-Policies" style="margin-left: 0; width: 100%;" data-id="' . $rowPol['policyID'] . '" data-file="' . $rowPol['contentPath'] . '" data-upload-date="' . ($rowPol['dateUploaded'] ?? '') . '">';
+                            echo '<p class="PR-Policies-Name"><i class="fas fa-file-pdf" style="margin-right:8px; color:#fbaf41;"></i>' . $rowPol['title'] . '</p>';
+                            echo '</div>';
                         }
                     }
                     ?>
@@ -456,6 +467,33 @@
         <div class="pm-modal-buttons">
             <button id="pmCancelRemovePolicy" class="cancel-btn">Cancel</button>
             <button id="pmConfirmRemovePolicy" class="confirm-btn" style="background-color: #f44336; color: white;">Remove</button>
+        </div>
+    </div>
+
+    <!-- Secondary PDF Viewer for Comparison -->
+    <div id="Secondary_PdfViewer" style="display:none; position: fixed; top: 2%; left: 10%; width: 80%; height: 96%; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); background: #525659; border-radius: 10px; flex-direction: column;">
+        <div class="introduction-header" style="background: #293A82; padding: 15px 20px; display: flex; align-items: center; border-radius: 10px 10px 0 0;">
+            <h2 id="secPdfViewerTitle" style="margin: 0; font-size: 20px; color: white; flex-grow: 1;">Compare Document</h2>
+            <button id="closeSecondaryPdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; transition: color 0.2s;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="custom-pdf-toolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px;">
+            <div class="pdf-tools-left">
+                <button id="sec_prevPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="sec_pageNum">1</span> of <span id="sec_pageCount">?</span></span>
+                <button id="sec_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="pdf-tools-right">
+                <button id="sec_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
+                <span id="sec_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
+                <button id="sec_zoomIn" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-plus"></i></button>
+            </div>
+        </div>
+
+        <div class="pdf-canvas-container" style="flex-grow: 1; overflow: auto; text-align: center; padding: 20px 0;">
+            <canvas id="sec_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
         </div>
     </div>
 

@@ -549,59 +549,80 @@ if (searchInput) {
 }
 
 // PDF Viewer Loading & Closing
+window.openCustomPdfViewer = function(filePath, documentTitle, uploadDate, policyId = null) {
+    if (!filePath || filePath === 'null' || filePath.trim() === '') {
+        alert("No PDF document available to view.");
+        return; 
+    }
+
+    if (policyId) {
+        window.currentSelectedPolicyId = policyId;
+    }
+
+    const viewerTitle = document.getElementById('pdfViewerTitle');
+    if (viewerTitle) {
+        viewerTitle.textContent = documentTitle || "Document Viewer";
+    }
+
+    window.pr_currentUploadDate = uploadDate || "Unknown Date";
+
+    const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+    
+    if (typeof hideAllPanels === 'function') hideAllPanels();
+    
+    if (pdfViewerContainer) {
+        pdfViewerContainer.style.display = 'flex'; 
+    }
+
+    if (typeof pdfjsLib !== 'undefined') {
+        const encodedUrl = encodeURI(filePath);
+        pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
+            pr_pdfDoc = pdfDoc_;
+            const pageCountEl = document.getElementById('pr_pageCount');
+            if (pageCountEl) pageCountEl.textContent = pr_pdfDoc.numPages;
+            
+            pr_pageNum = 1;
+            pr_scale = 1.2;
+            pr_renderPage(pr_pageNum);
+        }).catch(function(error) {
+            console.error("Error loading PDF: ", error);
+            alert("Error loading document. The file may be missing or corrupted.");
+        });
+    } else {
+        alert("PDF Library failed to load. Please refresh the page.");
+    }
+};
+
 document.querySelectorAll('.PR-Policies').forEach(policy => {
     policy.addEventListener('click', function () {
         const filePath = policy.getAttribute('data-file'); 
-        
-        // ✨ FIX: Explicitly grab the data-id from the clicked element
-        window.currentSelectedPolicyId = this.getAttribute('data-id');
-        
-        // ... existing upload date logic ...
-        // =======================================================
-        // ✨ THE MISSING PIECE: Grab the date from the HTML!
-        // =======================================================
-        window.pr_currentUploadDate = policy.getAttribute('data-upload-date') || "Unknown Date";
+        const policyId = this.getAttribute('data-id');
+        const uploadDate = policy.getAttribute('data-upload-date') || "Unknown Date";
 
-        // Safety check
-        if (!filePath || filePath === 'null' || filePath.trim() === '') {
-            alert("No PDF document has been uploaded for this policy yet.");
-            return; 
-        }
-
-        // Grab the title and put it in the header
         const nameSpan = policy.querySelector('.PR-Policies-Name');
         const policyTitle = nameSpan ? nameSpan.textContent.trim() : policy.textContent.trim(); 
-        
-        const viewerTitle = document.getElementById('pdfViewerTitle');
-        if (viewerTitle) {
-            viewerTitle.textContent = policyTitle; 
-        }
 
-        const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
-        const repoPanel = document.getElementById('policy-repo-content'); 
-        
-        if(pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
-        if(repoPanel) repoPanel.style.display = 'none'; 
-
-        // Load PDF
-        if (typeof pdfjsLib !== 'undefined') {
-            const encodedUrl = encodeURI(filePath);
-            pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
-                pr_pdfDoc = pdfDoc_;
-                const pageCountEl = document.getElementById('pr_pageCount');
-                if (pageCountEl) pageCountEl.textContent = pr_pdfDoc.numPages;
-                
-                pr_pageNum = 1;
-                pr_scale = 1.2;
-                pr_renderPage(pr_pageNum);
-            }).catch(function(error) {
-                console.error("Error loading PDF: ", error);
-                alert("Error loading document. The file may be missing or corrupted.");
-            });
-        } else {
-            alert("PDF Library failed to load. Please refresh the page.");
-        }
+        window.openCustomPdfViewer(filePath, policyTitle, uploadDate, policyId);
     });
+});
+
+// Event delegation for dynamically added Revised Policy and Change Log buttons
+document.addEventListener('click', function(e) {
+    const revisedBtn = e.target.closest('.revised-policy-btn');
+    if (revisedBtn) {
+        e.preventDefault();
+        const filePath = revisedBtn.getAttribute('data-file'); 
+        const date = revisedBtn.getAttribute('data-date') || "N/A";
+        window.openCustomPdfViewer(filePath, "Revised Policy", date);
+    }
+
+    const changeLogBtn = e.target.closest('.change-log-btn');
+    if (changeLogBtn) {
+        e.preventDefault();
+        const filePath = changeLogBtn.getAttribute('data-file'); 
+        const date = changeLogBtn.getAttribute('data-date') || "N/A";
+        window.openCustomPdfViewer(filePath, "Policy Change Log", date);
+    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -628,10 +649,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (closePdfViewerButton) {
         closePdfViewerButton.addEventListener('click', () => {
-            const repoPanel = document.getElementById('policy-repo-content');
-            
             if (pdfViewerContainer) pdfViewerContainer.style.display = 'none';
-            if (repoPanel) repoPanel.style.display = 'block'; 
+            
+            const savedPanel = localStorage.getItem('activePanel');
+            if (savedPanel === 'workspace' && typeof showWorkspace === 'function') showWorkspace();
+            else if (savedPanel === 'repository' && typeof showPolicyRepository === 'function') showPolicyRepository();
+            else if (savedPanel === 'submission' && typeof showPolicySubmission === 'function') showPolicySubmission();
+            else if (savedPanel === 'department' && typeof showDepartmentManager === 'function') showDepartmentManager();
+            else if (savedPanel === 'policy' && typeof showPolicyManager === 'function') showPolicyManager();
+            else if (savedPanel === 'role' && typeof showRoleManager === 'function') showRoleManager();
+            else if (savedPanel === 'reports' && typeof showReports === 'function') showReports();
+            else {
+                const repoPanel = document.getElementById('policy-repo-content');
+                if (repoPanel) repoPanel.style.display = 'block';
+            }
             
             // ✨ Reset title when closing
             const viewerTitle = document.getElementById('pdfViewerTitle');
@@ -705,6 +736,7 @@ if (submitButtonTrigger && submitOverlay) {
     submitButtonTrigger.addEventListener('click', () => {
         submitOverlay.style.display = submitOverlay.style.display === 'block' ? 'none' : 'block';
     });
+    
 }
 
 const submitForm = document.querySelector('#submitOverlay form');
@@ -2769,3 +2801,190 @@ function fetchReportDetails() {
             `).join('');
         });
 }
+
+window.openDocumentHistoryModal = function(policyId) {
+    if (!policyId) {
+        alert("Error: Please select a valid policy.");
+        return;
+    }
+
+    const overlay = document.getElementById('documentHistoryOverlay');
+    const tbody = document.getElementById('documentHistoryTableBody');
+    const subtitle = document.getElementById('docHistorySubtitle');
+    
+    if (overlay) overlay.style.display = 'flex';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Loading history...</td></tr>';
+    if (subtitle) subtitle.textContent = "Fetching revision history for this document...";
+
+    fetch(`../../generalComponents/policyManagerPHP/getDocumentHistory.php?policyID=${policyId}`)
+        .then(res => res.text()) // ✨ Use text() first to catch raw PHP errors
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
+                if (data.success && data.history && data.history.length > 0) {
+                    if (subtitle) subtitle.textContent = `History for: ${data.history[0].title}`;
+                
+                let html = '';
+                data.history.forEach(item => {
+                    html += `
+                        <tr style="border-bottom: 1px solid #eee; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f9f9f9'" onmouseout="this.style.backgroundColor='transparent'">
+                            <td style="padding: 12px; font-weight: bold;">${item.versionNo}</td>
+                            <td style="padding: 12px;">${item.title}</td>
+                            <td style="padding: 12px;">${item.authorName}</td>
+                            <td style="padding: 12px;">${item.approverName}</td>
+                            <td style="padding: 12px;">${item.datePublished}</td>
+                            <td style="padding: 12px; display: flex; flex-direction: column; gap: 5px;">
+                                <button class="action-btn-inline" 
+                                    onclick="openSecondaryPdfViewer('${item.contentPath}', '${item.title} (${item.versionNo})')"
+                                    style="background:#293A82; color:white; border:none; padding: 6px 15px; border-radius: 5px; cursor:pointer; font-weight: bold; width: 100%;">
+                                    <i class="fas fa-file-pdf"></i> View Policy
+                                </button>
+                                ${item.revisionFormPath ? `
+                                <button class="action-btn-inline" 
+                                    onclick="openSecondaryPdfViewer('${item.revisionFormPath}', 'Change Log - ${item.title}')"
+                                    style="background:#fbaf41; color:black; border:none; padding: 6px 15px; border-radius: 5px; cursor:pointer; font-weight: bold; width: 100%;">
+                                    <i class="fas fa-file-alt"></i> Change Log
+                                </button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+                    if (tbody) tbody.innerHTML = html;
+                } else {
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: red;">No history found.</td></tr>`;
+                    if (subtitle) subtitle.textContent = "No history available.";
+                }
+            } catch (e) {
+                console.error("Backend Error Response:", text);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: red;">Database error. Press F12 to check console.</td></tr>`;
+                if (subtitle) subtitle.textContent = "Error loading history.";
+            }
+        })
+        .catch(err => {
+            console.error("Network Error:", err);
+            if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: red;">Network error. Could not reach server.</td></tr>`;
+        });
+};
+
+// =====================================================================
+// ✨ SECONDARY PDF VIEWER ENGINE (For Side-by-Side Comparison) ✨
+// =====================================================================
+var sec_pdfDoc = null,
+    sec_pageNum = 1,
+    sec_pageRendering = false,
+    sec_pageNumPending = null,
+    sec_scale = 1.2,
+    sec_canvas = null,
+    sec_ctx = null;
+
+function sec_renderPage(num) {
+    sec_pageRendering = true;
+    if (sec_pdfDoc) {
+        sec_pdfDoc.getPage(num).then(function(page) {
+            let viewport = page.getViewport({scale: sec_scale});
+            sec_canvas.height = viewport.height;
+            sec_canvas.width = viewport.width;
+
+            let renderContext = {
+                canvasContext: sec_ctx,
+                viewport: viewport
+            };
+            let renderTask = page.render(renderContext);
+
+            renderTask.promise.then(function() {
+                sec_pageRendering = false;
+                
+                // Add watermark
+                sec_ctx.save();
+                sec_ctx.translate(sec_canvas.width / 2, sec_canvas.height / 2);
+                sec_ctx.rotate(-Math.PI / 4); 
+                sec_ctx.font = "bold 60px 'Istok Web', Arial, sans-serif";
+                sec_ctx.fillStyle = "rgba(180, 180, 180, 0.4)"; 
+                sec_ctx.textAlign = "center";
+                sec_ctx.textBaseline = "middle";
+                sec_ctx.fillText("OFFICIAL OPTIQUAL DOCUMENT", 0, 0);
+                sec_ctx.font = "18px 'Istok Web', Arial, sans-serif";
+                sec_ctx.fillText("DO NOT DISTRIBUTE OR REPRODUCE", 0, 40);
+                sec_ctx.restore();
+
+                if (sec_pageNumPending !== null) {
+                    sec_renderPage(sec_pageNumPending);
+                    sec_pageNumPending = null;
+                }
+            });
+        });
+
+        const pageNumEl = document.getElementById('sec_pageNum');
+        const zoomLevelEl = document.getElementById('sec_zoomLevel');
+        if (pageNumEl) pageNumEl.textContent = num;
+        if (zoomLevelEl) zoomLevelEl.textContent = Math.round(sec_scale * 100) + '%';
+    }
+}
+
+function sec_queueRenderPage(num) {
+    if (sec_pageRendering) sec_pageNumPending = num;
+    else sec_renderPage(num);
+}
+
+function sec_onPrevPage() { if (sec_pageNum <= 1) return; sec_pageNum--; sec_queueRenderPage(sec_pageNum); }
+function sec_onNextPage() { if (!sec_pdfDoc || sec_pageNum >= sec_pdfDoc.numPages) return; sec_pageNum++; sec_queueRenderPage(sec_pageNum); }
+function sec_onZoomIn() { sec_scale += 0.2; sec_queueRenderPage(sec_pageNum); }
+function sec_onZoomOut() { if (sec_scale <= 0.6) return; sec_scale -= 0.2; sec_queueRenderPage(sec_pageNum); }
+
+window.openSecondaryPdfViewer = function(filePath, documentTitle) {
+    if (!filePath || filePath === 'null' || filePath.trim() === '') {
+        alert("No PDF document available to view.");
+        return; 
+    }
+
+    const viewerTitle = document.getElementById('secPdfViewerTitle');
+    if (viewerTitle) viewerTitle.textContent = documentTitle || "Document Compare Viewer";
+
+    const pdfViewerContainer = document.getElementById('Secondary_PdfViewer');
+    if (pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
+
+    if (typeof pdfjsLib !== 'undefined') {
+        const encodedUrl = encodeURI(filePath);
+        pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
+            sec_pdfDoc = pdfDoc_;
+            const pageCountEl = document.getElementById('sec_pageCount');
+            if (pageCountEl) pageCountEl.textContent = sec_pdfDoc.numPages;
+            
+            sec_pageNum = 1;
+            sec_scale = 1.2;
+            sec_renderPage(sec_pageNum);
+        }).catch(function(error) {
+            console.error("Error loading PDF: ", error);
+            alert("Error loading document. The file may be missing or corrupted.");
+        });
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    sec_canvas = document.getElementById('sec_pdfCanvas');
+    if(sec_canvas) sec_ctx = sec_canvas.getContext('2d');
+
+    const prevBtn = document.getElementById('sec_prevPage');
+    if(prevBtn) prevBtn.addEventListener('click', sec_onPrevPage);
+    
+    const nextBtn = document.getElementById('sec_nextPage');
+    if(nextBtn) nextBtn.addEventListener('click', sec_onNextPage);
+    
+    const zoomInBtn = document.getElementById('sec_zoomIn');
+    if(zoomInBtn) zoomInBtn.addEventListener('click', sec_onZoomIn);
+    
+    const zoomOutBtn = document.getElementById('sec_zoomOut');
+    if(zoomOutBtn) zoomOutBtn.addEventListener('click', sec_onZoomOut);
+
+    const closeBtn = document.getElementById('closeSecondaryPdfViewer');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('Secondary_PdfViewer').style.display = 'none';
+            if (sec_ctx && sec_canvas) {
+                sec_ctx.clearRect(0, 0, sec_canvas.width, sec_canvas.height);
+                sec_canvas.height = 0;
+            }
+        });
+    }
+});

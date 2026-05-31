@@ -299,31 +299,80 @@ if (searchInput) {
 }
 
 // PDF Viewer Loading & Closing
+window.openCustomPdfViewer = function(filePath, documentTitle, uploadDate, policyId = null) {
+    if (!filePath || filePath === 'null' || filePath.trim() === '') {
+        alert("No PDF document available to view.");
+        return; 
+    }
+
+    if (policyId) {
+        window.currentSelectedPolicyId = policyId;
+    }
+
+    const viewerTitle = document.getElementById('pdfViewerTitle');
+    if (viewerTitle) {
+        viewerTitle.textContent = documentTitle || "Document Viewer";
+    }
+
+    window.pr_currentUploadDate = uploadDate || "Unknown Date";
+
+    const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
+    
+    if (typeof hideAllPanels === 'function') hideAllPanels();
+    
+    if (pdfViewerContainer) {
+        pdfViewerContainer.style.display = 'flex'; 
+    }
+
+    if (typeof pdfjsLib !== 'undefined') {
+        const encodedUrl = encodeURI(filePath);
+        pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
+            pr_pdfDoc = pdfDoc_;
+            const pageCountEl = document.getElementById('pr_pageCount');
+            if (pageCountEl) pageCountEl.textContent = pr_pdfDoc.numPages;
+            
+            pr_pageNum = 1;
+            pr_scale = 1.2;
+            pr_renderPage(pr_pageNum);
+        }).catch(function(error) {
+            console.error("Error loading PDF: ", error);
+            alert("Error loading document. The file may be missing or corrupted.");
+        });
+    } else {
+        alert("PDF Library failed to load. Please refresh the page.");
+    }
+};
+
 document.querySelectorAll('.PR-Policies').forEach(policy => {
     policy.addEventListener('click', function () {
         const filePath = policy.getAttribute('data-file'); 
-        const pdfViewerContainer = document.getElementById('Policy_Repo_pdfViewer');
-        
-        if(pdfViewerContainer) pdfViewerContainer.style.display = 'flex'; 
-        if(policyRepositoryPanel) policyRepositoryPanel.style.display = 'none';
+        const policyId = this.getAttribute('data-id');
+        const uploadDate = policy.getAttribute('data-upload-date') || "Unknown Date";
 
-        // Load PDF via custom engine
-        if (typeof pdfjsLib !== 'undefined') {
-            const encodedUrl = encodeURI(filePath);
-            pdfjsLib.getDocument(encodedUrl).promise.then(function(pdfDoc_) {
-                pr_pdfDoc = pdfDoc_;
-                const pageCountEl = document.getElementById('pr_pageCount');
-                if (pageCountEl) pageCountEl.textContent = pr_pdfDoc.numPages;
-                
-                pr_pageNum = 1;
-                pr_scale = 1.2;
-                pr_renderPage(pr_pageNum);
-            }).catch(function(error) {
-                console.error("Error loading PDF: ", error);
-                alert("Error loading document.");
-            });
-        }
+        const nameSpan = policy.querySelector('.PR-Policies-Name');
+        const policyTitle = nameSpan ? nameSpan.textContent.trim() : policy.textContent.trim(); 
+
+        window.openCustomPdfViewer(filePath, policyTitle, uploadDate, policyId);
     });
+});
+
+// Event delegation for dynamically added Revised Policy and Change Log buttons
+document.addEventListener('click', function(e) {
+    const revisedBtn = e.target.closest('.revised-policy-btn');
+    if (revisedBtn) {
+        e.preventDefault();
+        const filePath = revisedBtn.getAttribute('data-file'); 
+        const date = revisedBtn.getAttribute('data-date') || "N/A";
+        window.openCustomPdfViewer(filePath, "Revised Policy", date);
+    }
+
+    const changeLogBtn = e.target.closest('.change-log-btn');
+    if (changeLogBtn) {
+        e.preventDefault();
+        const filePath = changeLogBtn.getAttribute('data-file'); 
+        const date = changeLogBtn.getAttribute('data-date') || "N/A";
+        window.openCustomPdfViewer(filePath, "Policy Change Log", date);
+    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -350,7 +399,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closePdfViewerButton) {
         closePdfViewerButton.addEventListener('click', () => {
             if (pdfViewerContainer) pdfViewerContainer.style.display = 'none';
-            if (policyRepositoryPanel) policyRepositoryPanel.style.display = 'block';
+            
+            const savedPanel = localStorage.getItem('activePanel');
+            if (savedPanel === 'workspace' && typeof showWorkspace === 'function') showWorkspace();
+            else if (savedPanel === 'repository' && typeof showPolicyRepository === 'function') showPolicyRepository();
+            else if (savedPanel === 'submission' && typeof showPolicySubmission === 'function') showPolicySubmission();
+            else if (savedPanel === 'department' && typeof showDepartmentManager === 'function') showDepartmentManager();
+            else if (savedPanel === 'policy' && typeof showPolicyManager === 'function') showPolicyManager();
+            else if (savedPanel === 'role' && typeof showRoleManager === 'function') showRoleManager();
+            else if (savedPanel === 'reports' && typeof showReports === 'function') showReports();
+            else {
+                if (typeof policyRepositoryPanel !== 'undefined' && policyRepositoryPanel) {
+                    policyRepositoryPanel.style.display = 'block';
+                }
+            }
+            
+            // ✨ Reset title when closing
+            const viewerTitle = document.getElementById('pdfViewerTitle');
+            if (viewerTitle) viewerTitle.textContent = "Policy Viewer";
             
             // Clear memory when closing
             if (pr_ctx && pr_canvas) {

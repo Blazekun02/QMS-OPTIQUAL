@@ -686,18 +686,25 @@ function populateWorkspaceTable(tasks) {
 
             // ✨ NEW: If it's a revision, append the View Log button to the action cell
             if (isRevision) {
-                const logBtn = document.createElement('a');
-                logBtn.href = task.requestChangeContentPath;
-                logBtn.target = "_blank";
-                logBtn.className = "action-btn-inline";
+                const logBtn = document.createElement('button');
+                logBtn.className = "action-btn-inline change-log-btn";
+                logBtn.setAttribute('data-file', task.requestChangeContentPath);
+                logBtn.setAttribute('data-date', task.dateSubmitted ? new Date(task.dateSubmitted).toLocaleDateString() : 'N/A');
                 logBtn.style.backgroundColor = "#ffffff";
                 logBtn.style.color = "#293A82";
                 logBtn.style.marginLeft = "10px";
-                logBtn.style.textDecoration = "none";
+                logBtn.style.border = "none";
+                logBtn.style.cursor = "pointer";
                 logBtn.innerHTML = '<i class="fas fa-file-pdf"></i> View Log';
                 
                 // Stop the row click event from firing when they click the log button
-                logBtn.onclick = (e) => e.stopPropagation(); 
+                logBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (typeof window.openCustomPdfViewer === 'function') {
+                        window.openCustomPdfViewer(task.requestChangeContentPath, "Policy Change Log", logBtn.getAttribute('data-date'));
+                    } else window.open(task.requestChangeContentPath, '_blank');
+                };
                 actionCell.appendChild(logBtn);
             }
 
@@ -1608,13 +1615,13 @@ window.loadWorkspaceRevisions = function() {
                             <td>${new Date(rev.dateSubmitted).toLocaleDateString()}</td>
                             <td style="font-weight: bold;">${rev.revisionStatus || 'Pending'}</td>
                             <td>
-                                <a href="${rev.revisedFilePath}" target="_blank" class="action-btn-inline" style="background:#293A82; color:white; text-decoration:none; margin-right: 5px;">
+                                <button class="action-btn-inline revised-policy-btn" data-file="${rev.revisedFilePath}" data-date="${new Date(rev.dateSubmitted).toLocaleDateString()}" style="background:#293A82; color:white; border:none; cursor:pointer; margin-right: 5px;">
                                     <i class="fas fa-file-pdf"></i> Revised Policy
-                                </a>
+                                </button>
                                 ${rev.revisionFormPath ? `
-                                <a href="${rev.revisionFormPath}" target="_blank" class="action-btn-inline" style="background:#fbaf41; color:black; text-decoration:none;">
+                                <button class="action-btn-inline change-log-btn" data-file="${rev.revisionFormPath}" data-date="${new Date(rev.dateSubmitted).toLocaleDateString()}" style="background:#fbaf41; color:black; border:none; cursor:pointer;">
                                     <i class="fas fa-file-alt"></i> Change Log
-                                </a>` : ''}
+                                </button>` : ''}
                             </td>
                         </tr>
                     `;
