@@ -95,10 +95,10 @@ if ($updatePolicy->execute()) {
                 if (!empty($revRow['originalPolicyID'])) {
                     $origID = $revRow['originalPolicyID'];
                     
-                    // 1. Inherit the folder (categoryID) of the original policy, but keep the NEW title
-                    $catQuery = $conn->prepare("SELECT categoryID FROM policytbl WHERE policyID = ?");
+                    // 1. Inherit the folder (categoryID) of the original policy family
+                    $catQuery = $conn->prepare("SELECT categoryID FROM policytbl WHERE (policyID = ? OR originalPolicyID = ?) AND categoryID IS NOT NULL ORDER BY policyID DESC LIMIT 1");
                     if ($catQuery) {
-                        $catQuery->bind_param("i", $origID);
+                        $catQuery->bind_param("ii", $origID, $origID);
                         $catQuery->execute();
                         $catResult = $catQuery->get_result();
                         if ($catResult->num_rows > 0) {
@@ -116,14 +116,19 @@ if ($updatePolicy->execute()) {
                                 $updateCat->execute();
                                 $updateCat->close();
                             }
+                        } else {
+                            $updateCat = $conn->prepare("UPDATE policytbl SET categoryID = NULL, policyStatusID = 5, dateUploaded = NOW() WHERE policyID = ?");
+                            $updateCat->bind_param("i", $policyID);
+                            $updateCat->execute();
+                            $updateCat->close();
                         }
                         $catQuery->close();
                     }
                     
-                    // 2. Archive the original policy so it disappears from the repository
-                    $archiveOrig = $conn->prepare("UPDATE policytbl SET policyStatusID = 6 WHERE policyID = ?");
+                    // 2. ✨ Archive ALL older policies in this family (Using Status 6 for now)
+                    $archiveOrig = $conn->prepare("UPDATE policytbl SET policyStatusID = 6 WHERE (policyID = ? OR originalPolicyID = ?) AND policyID != ? AND policyStatusID IN (4, 5)");
                     if ($archiveOrig) {
-                        $archiveOrig->bind_param("i", $origID);
+                        $archiveOrig->bind_param("iii", $origID, $origID, $policyID);
                         $archiveOrig->execute();
                         $archiveOrig->close();
                     }

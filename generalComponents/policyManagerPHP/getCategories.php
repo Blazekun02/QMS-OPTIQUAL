@@ -13,9 +13,9 @@ if ($resultCat) {
     }
 }
 
-// 2. Fetch all Uploaded policies that are inside a folder
-// ✨ THE FIX: Changed to >= 4 so folders can successfully display Uploaded policies!
-    $queryPol = "SELECT policyID, title, categoryID FROM policytbl WHERE categoryID IS NOT NULL AND policyStatusID >= 4";
+// 2. Fetch all active policies
+// ✨ THE FIX: Tightly restrict to IN (4, 5) so we completely hide Archived (Status 6) documents!
+    $queryPol = "SELECT policyID, title, categoryID FROM policytbl WHERE policyStatusID IN (4, 5)";
 $resultPol = mysqli_query($conn, $queryPol);
 $policies = [];
 if ($resultPol) {

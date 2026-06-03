@@ -15,18 +15,42 @@ if ($policyID <= 0) {
 
 // Find the root originalPolicyID for the family lineage
 $rootID = $policyID;
-$stmt = $conn->prepare("SELECT originalPolicyID FROM policytbl WHERE policyID = ?");
-$stmt->bind_param("i", $policyID);
-$stmt->execute();
-$res = $stmt->get_result();
-if ($row = $res->fetch_assoc()) {
-    if (!empty($row['originalPolicyID'])) {
-        $rootID = $row['originalPolicyID'];
+while (true) {
+    $stmt = $conn->prepare("SELECT originalPolicyID FROM policytbl WHERE policyID = ?");
+    $stmt->bind_param("i", $rootID);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $foundParent = false;
+    if ($row = $res->fetch_assoc()) {
+        if (!empty($row['originalPolicyID'])) {
+            $rootID = (int)$row['originalPolicyID'];
+            $foundParent = true;
+        }
     }
+    $stmt->close();
+    if (!$foundParent) break;
 }
-$stmt->close();
+
+// Collect all IDs in the lineage to support legacy nested revisions
+$lineage = [$rootID];
+$currentIndex = 0;
+while ($currentIndex < count($lineage)) {
+    $currentID = $lineage[$currentIndex];
+    $stmt = $conn->prepare("SELECT policyID FROM policytbl WHERE originalPolicyID = ?");
+    $stmt->bind_param("i", $currentID);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        if (!in_array($row['policyID'], $lineage)) {
+            $lineage[] = (int)$row['policyID'];
+        }
+    }
+    $stmt->close();
+    $currentIndex++;
+}
 
 // Fetch the original and all its approved/published revisions
+$placeholders = implode(',', array_fill(0, count($lineage), '?'));
 $sql = "
     SELECT 
         p.policyID, 
@@ -40,13 +64,16 @@ $sql = "
     FROM policytbl p
     LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
     LEFT JOIN accdatatbl ap ON p.policyApprover = ap.accID
-    WHERE (p.policyID = ? OR p.originalPolicyID = ?)
+    WHERE p.policyID IN ($placeholders)
       AND p.policyStatusID >= 4
-    ORDER BY p.versionNo ASC, p.dateUploaded ASC
+    ORDER BY CAST(SUBSTRING_INDEX(p.versionNo, '.', 1) AS UNSIGNED) ASC, 
+             CAST(SUBSTRING_INDEX(p.versionNo, '.', -1) AS UNSIGNED) ASC, 
+             p.dateUploaded ASC
 ";
 
 $stmt2 = $conn->prepare($sql);
-$stmt2->bind_param("ii", $rootID, $rootID);
+$types = str_repeat('i', count($lineage));
+$stmt2->bind_param($types, ...$lineage);
 $stmt2->execute();
 $result = $stmt2->get_result();
 

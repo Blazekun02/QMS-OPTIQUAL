@@ -307,6 +307,14 @@
                         <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="pr_pageNum">1</span> of <span id="pr_pageCount">?</span></span>
                         <button id="pr_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
                     </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="pdf-btn" onclick="openFeedbackModal(window.currentSelectedPolicyId)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px; border-radius: 5px; cursor: pointer; border: none;">
+                            <i class="fas fa-comment-alt"></i> Remark
+                        </button>
+                        <button class="pdf-btn" onclick="openDocumentHistoryModal(window.currentSelectedPolicyId)" style="background-color: #293A82; color: white; font-weight: bold; padding: 5px 15px; border-radius: 5px; cursor: pointer; border: 1px solid #fbaf41;">
+                            <i class="fas fa-history"></i> Document History
+                        </button>
+                    </div>
                     <div class="pdf-tools-right">
                         <button id="pr_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
                         <span id="pr_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
@@ -316,6 +324,14 @@
 
                 <div class="pdf-canvas-container" style="background-color: #525659; height: 68vh; overflow: auto; display: block; text-align: center; padding: 20px 0; border-radius: 0 0 8px 8px;">
                     <canvas id="pr_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
+                </div>
+                <div id="policyRemarksSection" class="policy-remarks-section" style="display:none; background: #ffffff; border-top: 1px solid #d1d5db; padding: 20px;">
+                    <h3 style="margin: 0 0 10px; color: #1a2035;">Remarks</h3>
+                    <textarea id="policyRemarkText" placeholder="Type your feedback here..." style="width: 100%; min-height: 120px; padding: 12px; border-radius: 8px; border: 1px solid #d1d5db; resize: vertical; margin-bottom: 15px;"></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button id="cancelRemarkBtn" class="pdf-btn" style="background: transparent; color: #1a2035; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 18px; cursor: pointer;">Cancel</button>
+                        <button id="submitRemarkBtn" class="pdf-btn" style="background: #fbaf41; color: #1a2035; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; cursor: pointer;">Submit Remark</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -366,7 +382,7 @@
                         <option value="">-- Select a Policy --</option>
                         <?php
                             if(isset($conn)){
-                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3 AND policyStatusID != 6");
+                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID IN (3, 4, 5)");
                                 if($polQ) {
                                     while($p = $polQ->fetch_assoc()){
                                         echo "<option value='".$p['policyID']."'>".htmlspecialchars($p['title'])."</option>";
@@ -440,6 +456,63 @@
             <div class="pm-modal-buttons">
                 <button id="rmCancelAddUser" class="cancel-btn">Cancel</button>
                 <button id="rmConfirmAddUser" class="confirm-btn">Confirm</button>
+            </div>
+        </div>
+
+        <!-- Document History Modal -->
+        <div id="documentHistoryOverlay" class="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;">
+            <div class="confirm-reply-modal" style="background-color: #293A82; width: 70%; max-width: 900px; padding: 2vw; border-radius: 1vw; display: flex; flex-direction: column; color: white; font-family: 'Istok Web', sans-serif;">
+                <h2 style="margin-top: 0; margin-bottom: 10px; font-size: 2vw;">Document History</h2>
+                <p style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;" id="docHistorySubtitle">Loading history...</p>
+                
+                <div style="max-height: 50vh; overflow-y: auto; background-color: white; border-radius: 10px; padding: 15px; color: black; text-align: left;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Version</th>
+                                <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Title</th>
+                                <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Author</th>
+                                <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Approver</th>
+                                <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Published</th>
+                                <th style="background-color: #fbaf41; color: black; padding: 10px; border-bottom: 2px solid #ccc;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentHistoryTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="confirm-actions" style="margin-top: 20px; display: flex; justify-content: center;">
+                    <button class="cancel-button" onclick="document.getElementById('documentHistoryOverlay').style.display='none'" style="padding: 10px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background-color: #D3D3D3; color: black;">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary PDF Viewer for Comparison -->
+        <div id="Secondary_PdfViewer" style="display:none; position: fixed; top: 2%; left: 10%; width: 80%; height: 96%; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); background: #525659; border-radius: 10px; flex-direction: column;">
+            <div class="introduction-header" style="background: #293A82; padding: 15px 20px; display: flex; align-items: center; border-radius: 10px 10px 0 0;">
+                <h2 id="secPdfViewerTitle" style="margin: 0; font-size: 20px; color: white; flex-grow: 1;">Compare Document</h2>
+                <button id="closeSecondaryPdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; transition: color 0.2s;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="custom-pdf-toolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px;">
+                <div class="pdf-tools-left">
+                    <button id="sec_prevPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                    <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="sec_pageNum">1</span> of <span id="sec_pageCount">?</span></span>
+                    <button id="sec_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="pdf-tools-right">
+                    <button id="sec_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
+                    <span id="sec_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
+                    <button id="sec_zoomIn" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-plus"></i></button>
+                </div>
+            </div>
+
+            <div class="pdf-canvas-container" style="flex-grow: 1; overflow: auto; text-align: center; padding: 20px 0;">
+                <canvas id="sec_pdfCanvas" style="box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto;"></canvas>
             </div>
         </div>
 

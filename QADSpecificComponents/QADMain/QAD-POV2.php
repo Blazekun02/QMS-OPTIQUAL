@@ -145,7 +145,7 @@
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
                             // ✨ FIX: Check for policies attached DIRECTLY to this Parent Folder!
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID IN (4, 5)";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if (mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -165,7 +165,7 @@
                                     echo '<p class="PR-Child-Folder-Name">' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID IN (4, 5)";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -186,7 +186,7 @@
                     }
 
                     // Fetch policies that are published directly to the "Main Repository" (No Folder)
-                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4 AND policyStatusID != 6";
+                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID IN (4, 5)";
                     $resultMainPols = mysqli_query($conn, $queryMainPols);
                     if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
                         while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {

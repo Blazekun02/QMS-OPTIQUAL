@@ -51,13 +51,56 @@ if ($isRevision && $logFile && $logFile['error'] === 0) {
     }
 }
 
+// ── Determine ultimate root and version number ───────────────
+$ultimateRootID = $originalPolicyID;
+if ($ultimateRootID) {
+    while (true) {
+        $stmtRoot = $conn->prepare("SELECT originalPolicyID FROM policytbl WHERE policyID = ?");
+        $stmtRoot->bind_param("i", $ultimateRootID);
+        $stmtRoot->execute();
+        $resRoot = $stmtRoot->get_result();
+        $foundParent = false;
+        if ($rowRoot = $resRoot->fetch_assoc()) {
+            if (!empty($rowRoot['originalPolicyID'])) {
+                $ultimateRootID = (int)$rowRoot['originalPolicyID'];
+                $foundParent = true;
+            }
+        }
+        $stmtRoot->close();
+        if (!$foundParent) break;
+    }
+}
+
+$newVersion = null;
+if ($isRevision && $ultimateRootID) {
+    $verStmt = $conn->prepare("
+        SELECT versionNo FROM policytbl 
+        WHERE (policyID = ? OR originalPolicyID = ?) AND versionNo IS NOT NULL AND versionNo != ''
+        ORDER BY CAST(SUBSTRING_INDEX(versionNo, '.', 1) AS UNSIGNED) DESC, 
+                 CAST(SUBSTRING_INDEX(versionNo, '.', -1) AS UNSIGNED) DESC 
+        LIMIT 1
+    ");
+    $verStmt->bind_param("ii", $ultimateRootID, $ultimateRootID);
+    $verStmt->execute();
+    $verRow = $verStmt->get_result()->fetch_assoc();
+    $verStmt->close();
+
+    $lastVersion = (!empty($verRow['versionNo'])) ? $verRow['versionNo'] : '1.0';
+    $parts = explode('.', $lastVersion);
+    $major = (int)($parts[0] ?? 1);
+    $minor = (int)($parts[1] ?? 0);
+    $newVersion = ($revisionType === 'major')
+        ? ($major + 1) . '.0'
+        : $major . '.' . ($minor + 1);
+}
+
 // ── Insert into policytbl ─────────────────────────────────────
 $stmt = $conn->prepare("
     INSERT INTO policytbl
-        (title, contentPath, requestChangeContentPath, policyAuthor, originalPolicyID, policyStatusID)
-    VALUES (?, ?, ?, ?, ?, 1)
+        (title, contentPath, requestChangeContentPath, policyAuthor, originalPolicyID, policyStatusID, versionNo)
+    VALUES (?, ?, ?, ?, ?, 1, ?)
 ");
-$stmt->bind_param("sssii", $policyTitle, $relativePath, $relativeLogPath, $accID, $originalPolicyID);
+$stmt->bind_param("sssiis", $policyTitle, $relativePath, $relativeLogPath, $accID, $ultimateRootID, $newVersion);
 
 if (!$stmt->execute()) {
     echo "❌ Database Error (policytbl): " . $stmt->error;
@@ -73,34 +116,7 @@ $taskStmt->execute();
 $taskStmt->close();
 
 // ── If revision → insert into revisionhistorytbl ───────────────
-if ($isRevision && $originalPolicyID) {
-
-    // Calculate next version number
-    $verStmt = $conn->prepare("
-        SELECT versionNo FROM revisionhistorytbl
-        WHERE originalPolicyID = ?
-        ORDER BY revisionID DESC LIMIT 1
-    ");
-    $verStmt->bind_param("i", $originalPolicyID);
-    $verStmt->execute();
-    $verRow = $verStmt->get_result()->fetch_assoc();
-    $verStmt->close();
-
-    if ($verRow) {
-        $lastVersion = $verRow['versionNo'];
-    } else {
-        // This is the first revision, so start at version 1.0
-        $lastVersion = '1.0';
-    }
-
-    // Bump version
-    $parts = explode('.', $lastVersion);
-    $major = (int)($parts[0] ?? 1);
-    $minor = (int)($parts[1] ?? 0);
-    $newVersion = ($revisionType === 'major')
-        ? ($major + 1) . '.0'
-        : $major . '.' . ($minor + 1);
-
+if ($isRevision && $ultimateRootID) {
     // ✨ FIXED: Now pointing to your actual revisionhistorytbl and correct columns
     $revStmt = $conn->prepare("
         INSERT INTO revisionhistorytbl
@@ -109,7 +125,7 @@ if ($isRevision && $originalPolicyID) {
     ");
     
     $revStmt->bind_param("iissssi",
-        $originalPolicyID,
+        $ultimateRootID,
         $newPolicyID,
         $newVersion,
         $revisionType,

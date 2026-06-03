@@ -1610,7 +1610,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Draw all policies inside their respective hidden containers
                 if (data.policies) {
                     data.policies.forEach(policy => {
-                        renderPMPolicy(policy.title, policy.policyID, policy.categoryID);
+                        if (policy.categoryID) {
+                            renderPMPolicy(policy.title, policy.policyID, policy.categoryID);
+                        } else {
+                            renderPMRootPolicy(policy.title, policy.policyID);
+                        }
                     });
                 }
             } else {
@@ -1973,6 +1977,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 pmFoldersContainer.appendChild(childContainer);
             }
         }
+    }
+
+    // --- RENDER ROOT POLICY FILE FUNCTION ---
+    function renderPMRootPolicy(title, policyId) {
+        const policyDiv = document.createElement('div');
+        policyDiv.classList.add('pm-policy-item');
+        policyDiv.style.marginLeft = '0px'; 
+        policyDiv.style.width = '100%';
+        policyDiv.dataset.policyId = policyId;
+        
+        policyDiv.setAttribute('data-id', policyId);
+        policyDiv.setAttribute('data-type', 'policy');
+        policyDiv.setAttribute('draggable', 'true');
+        policyDiv.addEventListener('dragstart', handleDragStart);
+        policyDiv.addEventListener('dragend', handleDragEnd);
+        
+        policyDiv.innerHTML = `
+            <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: #fbaf41;"></i> ${title}</span>
+            <div class="pm-folder-icons" style="display: flex;">
+                <div class="expandable-btn remove-policy-btn">
+                    <i class="fas fa-trash-alt"></i><span class="btn-text">Remove</span>
+                </div>
+            </div>
+        `;
+
+        const trashIcon = policyDiv.querySelector('.remove-policy-btn');
+        trashIcon.addEventListener('mouseenter', () => trashIcon.style.color = '#f44336');
+        trashIcon.addEventListener('mouseleave', () => trashIcon.style.color = 'black');
+
+        trashIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            policyToRemoveId = policyId;
+            policyToRemoveElement = policyDiv;
+            pmRemovePolicyModal.style.display = 'block';
+            if(globalOverlay) globalOverlay.style.display = 'block';
+        });
+
+        pmFoldersContainer.appendChild(policyDiv);
     }
 
     // --- RENDER POLICY FILE FUNCTION ---

@@ -3,8 +3,8 @@ ob_start();
 session_start();
 include '../../connect.php';
 
-// ✨ THE FIX: Changed to >= 4 so it catches both Approved (4) and Uploaded (5) policies!
-    $query = "SELECT policyID, title FROM policytbl WHERE policyStatusID >= 4 AND categoryID IS NULL";
+// ✨ THE FIX: Use IN (4, 5) so it doesn't accidentally catch Rejected (6) or Archived (7)!
+    $query = "SELECT policyID, title FROM policytbl WHERE policyStatusID IN (4, 5) AND categoryID IS NULL";
 $result = mysqli_query($conn, $query);
 
 $policies = [];
