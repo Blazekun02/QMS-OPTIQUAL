@@ -2623,7 +2623,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.renderReports = function() {
         
-        fetch('../../generalComponents/policyManagerPHP/getReportsData.php')
+        // ✨ THE FIX: Cache-buster guarantees live data is always fetched!
+        fetch(`../../generalComponents/policyManagerPHP/getReportsData.php?action=summary&_=${new Date().getTime()}`)
             .then(response => response.json())
             .then(dbData => {
                 
@@ -3067,6 +3068,22 @@ window.fetchReportDetails = function() {
             const tbody = table.querySelector('tbody');
             
             window.currentReportsData = data; // Store globally for overlays
+            
+            // ✨ THE FIX: Dynamically sync the KPI boxes to exactly match the filtered table data
+            if (currentReportType === 'rejected') {
+                const kpiRejected = document.getElementById('kpi-rejected');
+                if (kpiRejected) kpiRejected.innerText = data.length;
+            } else if (currentReportType === 'pending') {
+                const kpiPending = document.getElementById('kpi-pending');
+                if (kpiPending && !currentStatusId) kpiPending.innerText = data.length;
+            } else if (currentReportType === 'active') {
+                const kpiActive = document.getElementById('kpi-active');
+                if (kpiActive) {
+                    // For active policies, data contains grouped categories with 'total'
+                    const totalActive = data.reduce((sum, item) => sum + parseInt(item.total || 0), 0);
+                    kpiActive.innerText = totalActive;
+                }
+            }
             
             // ✨ Dynamic table headers and rows based on report type
             if (currentReportType === 'pending') {

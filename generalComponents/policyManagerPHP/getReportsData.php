@@ -10,9 +10,35 @@ $year = $_GET['year'] ?? date('Y');
 
 if ($action === 'summary') {
     // --- 1. KPI & Chart Data ---
-    // This query gets the count for ALL statuses in one go for efficiency
-    $status_query = "SELECT policyStatusID, COUNT(*) as cnt FROM policytbl GROUP BY policyStatusID";
-    $status_results = mysqli_query($conn, $status_query);
+    // ✨ THE FIX: We apply date filtering here so that the summary blocks perfectly match the table numbers!
+    $query = "SELECT policyStatusID, COUNT(*) as cnt 
+              FROM policytbl p 
+              WHERE 1=1";
+    $params = [];
+    $types = "";
+
+    if (!empty($month)) {
+        // Fallback to dateSubmitted if dateRejection isn't set yet for old logs
+        $query .= " AND MONTH(COALESCE(p.dateRejection, p.dateUploaded, p.dateSubmitted)) = ?";
+        $params[] = $month;
+        $types .= 'i';
+    }
+    if (!empty($year)) {
+        $query .= " AND YEAR(COALESCE(p.dateRejection, p.dateUploaded, p.dateSubmitted)) = ?";
+        $params[] = $year;
+        $types .= 'i';
+    }
+    
+    $query .= " GROUP BY policyStatusID";
+
+    if (!empty($params)) {
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $status_results = $stmt->get_result();
+    } else {
+        $status_results = mysqli_query($conn, $query);
+    }
     
     // Initialize arrays to hold the data for the dashboard components
     $kpiCounts = [
@@ -30,20 +56,23 @@ if ($action === 'summary') {
     ];
     
     // Loop through the query results and populate our data arrays
-    while($row = mysqli_fetch_assoc($status_results)) {
-        // For KPI boxes
-        if (in_array($row['policyStatusID'], [4, 5])) $kpiCounts['active'] += $row['cnt'];
-        if (in_array($row['policyStatusID'], [1, 2, 3])) $kpiCounts['pending'] += $row['cnt'];
-        if ($row['policyStatusID'] == 6) $kpiCounts['rejected'] += $row['cnt'];
+    if ($status_results) {
+        while($row = mysqli_fetch_assoc($status_results)) {
+            $statusID = (int)$row['policyStatusID'];
+            // For KPI boxes
+            if (in_array($statusID, [4, 5])) $kpiCounts['active'] += $row['cnt'];
+            if (in_array($statusID, [1, 2, 3])) $kpiCounts['pending'] += $row['cnt'];
+            if ($statusID === 6) $kpiCounts['rejected'] += $row['cnt'];
 
-        // For Status Donut Chart
-        if (in_array($row['policyStatusID'], [4, 5])) $statusCounts['approved'] += $row['cnt'];
-        if (in_array($row['policyStatusID'], [2, 3])) $statusCounts['under_review'] += $row['cnt'];
-        if ($row['policyStatusID'] == 1) $statusCounts['draft'] = $row['cnt'];
-        if ($row['policyStatusID'] == 6) $statusCounts['archived'] = $row['cnt'];
+            // For Status Donut Chart
+            if (in_array($statusID, [4, 5])) $statusCounts['approved'] += $row['cnt'];
+            if (in_array($statusID, [2, 3])) $statusCounts['under_review'] += $row['cnt'];
+            if ($statusID === 1) $statusCounts['draft'] += $row['cnt'];
+            if ($statusID === 6) $statusCounts['archived'] += $row['cnt'];
+        }
     }
 
-    // --- Assemble the final response to match the new dashboard's expectations ---
+    // --- Assemble the final response to match the dashboard's expectations ---
     $response = [
         'kpiData' => $kpiCounts,
         'workflowData' => [5, 8, 4, 2], // Placeholder data for workflow chart
@@ -52,6 +81,7 @@ if ($action === 'summary') {
     ];
     
     echo json_encode($response);
+    exit;
 
 } else if ($action === 'pendingChart') {
     $query = "SELECT 
@@ -106,7 +136,6 @@ if ($action === 'summary') {
     // 2. Fetch detailed breakdown for the table
     if ($type === 'pending') {
         $statusId = $_GET['statusId'] ?? '';
-        // ✨ THE FIX: Query specific to Pending Tasks showing the policy name, current task, and days assigned
         $query = "SELECT p.title, 
                          CASE 
                              WHEN p.policyStatusID = 1 THEN 'To be Reviewed'
@@ -126,7 +155,6 @@ if ($action === 'summary') {
             $params[] = $statusId;
             $types .= 'i';
         }
-
         if (!empty($month)) {
             $query .= " AND MONTH(p.dateSubmitted) = ?";
             $params[] = $month;
@@ -139,10 +167,10 @@ if ($action === 'summary') {
         }
         $query .= " ORDER BY daysAssigned DESC";
     } else if ($type === 'rejected') {
-        // ✨ NEW: Fetch specific details for Rejected policies including the latest feedback
+        // ✨ THE FIX: We fallback to dateSubmitted here as well so old rejections match the card counts!
         $query = "SELECT p.policyID, p.title, a.fullName as authorName, 
                          p.dateSubmitted as submissionDate, 
-                         p.dateRejection as rejectionDate,
+                         COALESCE(p.dateRejection, p.dateSubmitted) as rejectionDate,
                          f.content as reason
                   FROM policytbl p
                   LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
@@ -157,18 +185,17 @@ if ($action === 'summary') {
         $types = "";
 
         if (!empty($month)) {
-            $query .= " AND MONTH(p.dateSubmitted) = ?";
+            $query .= " AND MONTH(COALESCE(p.dateRejection, p.dateSubmitted)) = ?";
             $params[] = $month;
             $types .= 'i';
         }
         if (!empty($year)) {
-            $query .= " AND YEAR(p.dateSubmitted) = ?";
+            $query .= " AND YEAR(COALESCE(p.dateRejection, p.dateSubmitted)) = ?";
             $params[] = $year;
             $types .= 'i';
         }
         $query .= " ORDER BY p.dateSubmitted DESC";
     } else {
-        // ✨ Map to arrays so we can catch 4 and 5 as Active.
         $statusMap = ['active' => [4, 5]];
         $statusIDs = $statusMap[$type] ?? [4, 5];
         
