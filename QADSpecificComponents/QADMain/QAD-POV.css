@@ -2295,9 +2295,9 @@ body {
     color: white;
     padding: 20px;
     border-radius: 10px;
-    cursor: eointer;
+    cursor: pointer;
     transition: transform 0.2s, background 0.2s;
-    tert-align: center;
+    text-align: center;
 }
 
 

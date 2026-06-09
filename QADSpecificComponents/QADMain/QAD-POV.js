@@ -2589,33 +2589,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateReportDateFilters() {
         const monthSelect = document.getElementById('filterMonth');
         const yearSelect = document.getElementById('filterYear');
-        if (!monthSelect || !yearSelect) return;
+        const chartMonthSelect = document.getElementById('chartFilterMonth');
+        const chartYearSelect = document.getElementById('chartFilterYear');
 
         const currentYear = new Date().getFullYear();
 
         // Populate months
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        // Clear existing options except the first one ("All Months")
-        while (monthSelect.options.length > 1) {
-            monthSelect.remove(1);
-        }
-        months.forEach((month, index) => {
-            const option = document.createElement('option');
-            option.value = index + 1;
-            option.textContent = month;
-            monthSelect.appendChild(option);
+        
+        [monthSelect, chartMonthSelect].forEach(select => {
+            if (!select) return;
+            while (select.options.length > 1) select.remove(1);
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = month;
+                select.appendChild(option);
+            });
         });
 
-        // Populate years (e.g., last 5 years + next 2)
-        yearSelect.innerHTML = ''; // Clear all existing options
-        for (let y = currentYear + 2; y >= currentYear - 5; y--) {
-            const option = document.createElement('option');
-            option.value = y;
-            option.textContent = y;
-            yearSelect.appendChild(option);
+        if (yearSelect) {
+            yearSelect.innerHTML = ''; 
+            for (let y = currentYear + 2; y >= currentYear - 5; y--) {
+                yearSelect.appendChild(new Option(y, y));
+            }
+            yearSelect.value = currentYear;
         }
-        // Set current year as selected
-        yearSelect.value = currentYear;
+
+        if (chartYearSelect) {
+            chartYearSelect.innerHTML = '<option value="">All Years</option>'; 
+            for (let y = currentYear + 2; y >= currentYear - 5; y--) {
+                chartYearSelect.appendChild(new Option(y, y));
+            }
+            chartYearSelect.value = currentYear;
+        }
     }
     populateReportDateFilters();
 
@@ -2631,6 +2638,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('kpi-pending').innerText = dbData.kpiData.pending;
                     document.getElementById('kpi-speed').innerHTML = `${dbData.kpiData.speed} <span style="font-size: 14px; color: #64748b;">Days</span>`;
                     document.getElementById('kpi-expiring').innerText = dbData.kpiData.expiring;
+                    if (document.getElementById('kpi-rejected')) {
+                        document.getElementById('kpi-rejected').innerText = dbData.kpiData.rejected || 0;
+                    }
+
+                    // ✨ Rename "Pending Review" to "Pending Tasks"
+                    document.querySelectorAll('.kpi-box h3, .kpi-box h4, .kpi-box div, .kpi-box p, .kpi-box span').forEach(el => {
+                        if (el.innerText.trim() === 'Pending Review') {
+                            el.innerText = 'Pending Tasks';
+                        }
+                    });
+
+                    // ✨ Ensure KPI boxes are clickable and load the correct report details
+                    const pendingKpiBox = document.getElementById('kpi-pending')?.closest('.kpi-box');
+                    if (pendingKpiBox) pendingKpiBox.onclick = () => loadReportDetails('pending');
+                    
+                    const activeKpiBox = document.getElementById('kpi-active')?.closest('.kpi-box');
+                    if (activeKpiBox) activeKpiBox.onclick = () => loadReportDetails('active');
                 }
 
                 // 2. WORKFLOW BAR CHART (Dynamic)
@@ -2822,10 +2846,134 @@ window.toggleFbDetails = function(index) {
     if (el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
 };
 
+/* =====================================================================
+// ✨ ACTIVE POLICIES CHART & TOGGLE ENGINE ✨
+// ===================================================================== */
+let activePoliciesChartInstance = null;
+let currentChartParentId = null;
+
+window.toggleActivePoliciesChart = function() {
+    const chartContainer = document.getElementById('activePoliciesChartContainer');
+    const detailsContainer = document.getElementById('reportDetailsArea');
+    
+    if (detailsContainer) detailsContainer.style.display = 'none';
+
+    if (chartContainer.style.display === 'none' || chartContainer.style.display === '') {
+        chartContainer.style.display = 'block';
+        currentChartParentId = null;
+        renderActivePoliciesChart();
+    } else {
+        chartContainer.style.display = 'none';
+    }
+};
+
+window.renderActivePoliciesChart = function(drilldownId = undefined) {
+    const ctx = document.getElementById('activePoliciesChart');
+    if (!ctx) return;
+
+    if (drilldownId !== undefined) {
+        currentChartParentId = drilldownId;
+    }
+
+    const month = document.getElementById('chartFilterMonth') ? document.getElementById('chartFilterMonth').value : '';
+    const year = document.getElementById('chartFilterYear') ? document.getElementById('chartFilterYear').value : '';
+
+    let url = `../../generalComponents/policyManagerPHP/getActivePoliciesChartData.php?month=${month}&year=${year}`;
+    if (currentChartParentId !== null) {
+        url += `&parentID=${currentChartParentId}`;
+    }
+
+    fetch(url)
+        .then(res => res.text())
+        .then(text => {
+            try {
+                const data = JSON.parse(text);
+                if (!data.success) {
+                    alert("Error loading chart data: " + data.message);
+                    return;
+                }
+                if (activePoliciesChartInstance) activePoliciesChartInstance.destroy();
+
+                const backBtn = document.getElementById('chartBackBtn');
+                if (currentChartParentId !== null) {
+                    if (!backBtn) {
+                        const btn = document.createElement('button');
+                        btn.id = 'chartBackBtn';
+                        btn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to All Folders';
+                        btn.style.cssText = 'margin-bottom: 15px; padding: 5px 15px; background: #293A82; color: white; border: none; border-radius: 5px; cursor: pointer; display: inline-block;';
+                        btn.onclick = () => renderActivePoliciesChart(null);
+                        document.getElementById('activePoliciesChartContainer').insertBefore(btn, document.getElementById('activePoliciesChart').parentNode);
+                    } else {
+                        backBtn.style.display = 'inline-block';
+                    }
+                } else if (backBtn) {
+                    backBtn.style.display = 'none';
+                }
+
+                activePoliciesChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Active Policies',
+                            data: data.active,
+                            backgroundColor: '#fbaf41',
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8,
+                            categoryIds: data.categoryIds
+                        }]
+                    },
+                    options: { 
+                        indexAxis: 'y', 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    footer: (tooltipItems) => {
+                                        const index = tooltipItems[0].dataIndex;
+                                        const catId = data.categoryIds[index];
+                                        if (catId !== null && currentChartParentId === null) {
+                                            return 'Click to view child folders';
+                                        }
+                                        return null;
+                                    }
+                                }
+                            }
+                        }, 
+                        scales: { x: { beginAtZero: true }, y: { grid: { display: false } } },
+                        onClick: (event, elements, chart) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const catId = chart.data.datasets[0].categoryIds[index];
+                                
+                                if (catId !== null && currentChartParentId === null) {
+                                    renderActivePoliciesChart(catId);
+                                }
+                            }
+                        },
+                        onHover: (event, elements, chart) => {
+                            if (elements.length > 0 && currentChartParentId === null && chart.data.datasets[0].categoryIds[elements[0].index] !== null) {
+                                event.native.target.style.cursor = 'pointer';
+                            } else {
+                                event.native.target.style.cursor = 'default';
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                alert("Database Error: Could not render chart. Press F12 to check console for details.");
+            }
+        }).catch(err => console.error("Network Error:", err));
+};
+
 let currentReportType = '';
 
 function loadReportDetails(type) {
     currentReportType = type;
+    const chartContainer = document.getElementById('activePoliciesChartContainer');
+    if (chartContainer) chartContainer.style.display = 'none';
     document.getElementById('reportDetailsArea').style.display = 'block';
     fetchReportDetails();
 }
@@ -2837,12 +2985,87 @@ function fetchReportDetails() {
     fetch(`../../generalComponents/policyManagerPHP/getReportsData.php?action=details&type=${currentReportType}&month=${month}&year=${year}`)
         .then(res => res.json())
         .then(data => {
-            const tbody = document.querySelector('#detailsTable tbody');
-            tbody.innerHTML = data.map(item => `
-                <tr><td>${item.categoryName}</td><td>${item.total}</td></tr>
-            `).join('');
+            const table = document.getElementById('detailsTable');
+            if (!table) return;
+            
+            let thead = table.querySelector('thead');
+            if (!thead) {
+                thead = document.createElement('thead');
+                table.insertBefore(thead, table.firstChild);
+            }
+            
+            const tbody = table.querySelector('tbody');
+            
+            window.currentReportsData = data; // Store globally for overlays
+            
+            // ✨ Dynamic table headers and rows based on report type
+            if (currentReportType === 'pending') {
+                thead.innerHTML = `
+                    <tr>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Policy Name</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Current Task</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Days Assigned</th>
+                    </tr>
+                `;
+                tbody.innerHTML = data.map(item => `<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.title || 'Untitled'}</td><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.taskName}</td><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.daysAssigned} days</td></tr>`).join('');
+            } else if (currentReportType === 'rejected') {
+                thead.innerHTML = `
+                    <tr>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Policy Title</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Policy Author</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Submission Date</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Rejection Date</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Reason</th>
+                    </tr>
+                `;
+                tbody.innerHTML = data.map((item, index) => `
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.title || 'Untitled'}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.authorName || 'Unknown'}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.submissionDate ? new Date(item.submissionDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A'}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.rejectionDate ? new Date(item.rejectionDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A'}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;"><button onclick="showRejectedReason(${index})" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s;"><i class="fas fa-comment-alt"></i> View Reason</button></td>
+                    </tr>
+                `).join('');
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Folder / Category</th>
+                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Total Policies</th>
+                    </tr>
+                `;
+                tbody.innerHTML = data.map(item => `<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.categoryName || 'Main Repository'}</td><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.total}</td></tr>`).join('');
+            }
         });
 }
+
+// ✨ MODAL OVERLAY: Display Reason for Rejection
+window.showRejectedReason = function(index) {
+    const data = window.currentReportsData[index];
+    const reason = data.reason || "No specific feedback or reason was provided for this rejection.";
+    
+    let modal = document.getElementById('rejectedReasonModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'rejectedReasonModal';
+        modal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;';
+        modal.innerHTML = `
+            <div style="background:white; padding:30px; border-radius:10px; width:450px; max-width:90%; color:#333; position:relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                <h3 style="margin-top:0; color:#ef4444; font-family: 'Istok Web', sans-serif; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Rejection Reason</h3>
+                <p style="margin: 10px 0; font-size: 14px; color: #666;"><strong>Policy:</strong> <span id="rrModalTitle"></span></p>
+                <div id="rejectedReasonText" style="margin-bottom:20px; white-space:pre-wrap; max-height:250px; overflow-y:auto; border:1px solid #e2e8f0; padding:15px; border-radius:8px; background:#f8fafc; font-size: 15px; line-height: 1.5;"></div>
+                <div style="text-align:right;">
+                    <button onclick="document.getElementById('rejectedReasonModal').style.display='none'" style="background:#64748b; color:white; border:none; padding:10px 25px; border-radius:5px; cursor:pointer; font-weight: bold; font-family: 'Istok Web', sans-serif; transition: background 0.2s;">Close</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    document.getElementById('rrModalTitle').textContent = data.title || 'Untitled';
+    document.getElementById('rejectedReasonText').textContent = reason;
+    modal.style.display = 'flex';
+};
 
 window.openDocumentHistoryModal = function(policyId) {
     if (!policyId) {

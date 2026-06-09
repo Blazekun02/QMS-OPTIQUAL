@@ -347,17 +347,35 @@ function toggleRevision(checkbox) {
         <h1 style="color: #1a2035; margin-bottom: 25px; font-family: 'Istok Web', sans-serif;">Quality Assurance Reports</h1>
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-            <div class="kpi-box" onclick="loadReportDetails('active')" data-type="active" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+            <div class="kpi-box" onclick="toggleActivePoliciesChart()" data-type="active" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
                 <p style="margin: 0; opacity: 0.8;">Active Policies</p>
                 <h2 id="kpi-active" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
             </div>
             <div class="kpi-box" onclick="loadReportDetails('pending')" data-type="pending" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
-                <p style="margin: 0; opacity: 0.8;">Pending Review</p>
+                <p style="margin: 0; opacity: 0.8;">Pending Tasks</p>
                 <h2 id="kpi-pending" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
             </div>
             <div class="kpi-box" onclick="loadReportDetails('rejected')" data-type="rejected" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
                 <p style="margin: 0; opacity: 0.8;">Rejected Policies</p>
                 <h2 id="kpi-rejected" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
+            </div>
+        </div>
+
+        <!-- Active Policies Chart Container (Hidden by default) -->
+        <div id="activePoliciesChartContainer" style="display: none; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #1a2035; margin: 0; font-family: 'Istok Web', sans-serif;">Number of Active Policies</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="chartFilterMonth" onchange="renderActivePoliciesChart()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Istok Web', sans-serif;">
+                        <option value="">All Months</option>
+                    </select>
+                    <select id="chartFilterYear" onchange="renderActivePoliciesChart()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Istok Web', sans-serif;">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+            </div>
+            <div style="position: relative; height: 350px; width: 100%;">
+                <canvas id="activePoliciesChart"></canvas>
             </div>
         </div>
 

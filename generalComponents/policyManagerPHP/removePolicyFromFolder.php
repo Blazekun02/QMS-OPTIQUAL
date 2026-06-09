@@ -5,14 +5,14 @@ include __DIR__ . '/../../connect.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['policyID'])) {
+$policyID = $data['policyID'] ?? $data['policyId'] ?? null;
+
+if (!$policyID) {
     ob_end_clean();
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Missing policy ID']);
     exit;
 }
-
-$policyID = $data['policyID'];
 $currentUserID = isset($_SESSION['accID']) ? $_SESSION['accID'] : 0;
 
 $infoQuery = $conn->prepare("
@@ -35,13 +35,14 @@ if ($infoResult->num_rows > 0) {
 }
 $infoQuery->close();
 
+// Reverted: Set policyStatusID to 4 (Approved) so it goes back to the main repository and can be assigned again.
 $stmt = $conn->prepare("UPDATE policytbl SET categoryID = NULL, policyStatusID = 4 WHERE policyID = ?");
 $stmt->bind_param("i", $policyID);
 
 if ($stmt->execute()) {
     // ✨ NOTIFICATION SYSTEM
     $shortTitle = substr($policyTitle, 0, 20);
-    $message = "Removed: " . $shortTitle . " from folder";
+    $message = "Removed policy from folder: " . $shortTitle;
 
     // ✨ THE FIX: Search the main accounts table for Directors (Role 2) and QA Staff (Role 3)
     $notifyQuery = "SELECT accID FROM accdatatbl WHERE roleID IN (2, 3) AND accID != ?";
