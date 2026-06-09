@@ -379,6 +379,24 @@ function toggleRevision(checkbox) {
             </div>
         </div>
 
+        <!-- Pending Tasks Chart Container (Hidden by default) -->
+        <div id="pendingTasksChartContainer" style="display: none; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #1a2035; margin: 0; font-family: 'Istok Web', sans-serif;">Pending Tasks Breakdown</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="pendingChartFilterMonth" onchange="renderPendingTasksChart()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Istok Web', sans-serif;">
+                        <option value="">All Months</option>
+                    </select>
+                    <select id="pendingChartFilterYear" onchange="renderPendingTasksChart()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Istok Web', sans-serif;">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+            </div>
+            <div style="position: relative; height: 350px; width: 100%;">
+                <canvas id="pendingTasksChart"></canvas>
+            </div>
+        </div>
+
         <div id="reportDetailsArea" style="display:none; border-top: 2px solid #e2e8f0; padding-top: 20px;">
             <div style="display:flex; gap:15px; margin-bottom:20px; align-items: center;">
                 <select id="filterMonth" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">

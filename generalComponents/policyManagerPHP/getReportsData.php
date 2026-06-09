@@ -53,9 +53,59 @@ if ($action === 'summary') {
     
     echo json_encode($response);
 
+} else if ($action === 'pendingChart') {
+    $query = "SELECT 
+                 CASE 
+                     WHEN p.policyStatusID = 1 THEN 'To be Reviewed'
+                     WHEN p.policyStatusID = 2 THEN 'To be Verified'
+                     WHEN p.policyStatusID = 3 THEN 'To be Approved'
+                     WHEN p.policyStatusID = 4 THEN 'To be Uploaded'
+                     ELSE 'Pending'
+                 END as taskName,
+                 p.policyStatusID,
+                 COUNT(*) as total
+              FROM policytbl p
+              WHERE p.policyStatusID IN (1, 2, 3)";
+    $params = [];
+    $types = "";
+
+    if (!empty($month)) {
+        $query .= " AND MONTH(p.dateSubmitted) = ?";
+        $params[] = $month;
+        $types .= 'i';
+    }
+    if (!empty($year)) {
+        $query .= " AND YEAR(p.dateSubmitted) = ?";
+        $params[] = $year;
+        $types .= 'i';
+    }
+    $query .= " GROUP BY p.policyStatusID, taskName";
+
+    if (!empty($params)) {
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else {
+        $result = $conn->query($query);
+    }
+
+    $labels = [];
+    $data = [];
+    $statusIds = [];
+    if ($result) {
+        while($row = $result->fetch_assoc()) {
+            $labels[] = $row['taskName'];
+            $data[] = (int)$row['total'];
+            $statusIds[] = $row['policyStatusID'];
+        }
+    }
+    echo json_encode(['success' => true, 'labels' => $labels, 'data' => $data, 'statusIds' => $statusIds]);
+    exit;
 } else {
     // 2. Fetch detailed breakdown for the table
     if ($type === 'pending') {
+        $statusId = $_GET['statusId'] ?? '';
         // ✨ THE FIX: Query specific to Pending Tasks showing the policy name, current task, and days assigned
         $query = "SELECT p.title, 
                          CASE 
@@ -70,6 +120,12 @@ if ($action === 'summary') {
                   WHERE p.policyStatusID IN (1, 2, 3)";
         $params = [];
         $types = "";
+
+        if (!empty($statusId)) {
+            $query .= " AND p.policyStatusID = ?";
+            $params[] = $statusId;
+            $types .= 'i';
+        }
 
         if (!empty($month)) {
             $query .= " AND MONTH(p.dateSubmitted) = ?";
@@ -86,7 +142,7 @@ if ($action === 'summary') {
         // ✨ NEW: Fetch specific details for Rejected policies including the latest feedback
         $query = "SELECT p.policyID, p.title, a.fullName as authorName, 
                          p.dateSubmitted as submissionDate, 
-                         f.dateSubmitted as rejectionDate,
+                         p.dateRejection as rejectionDate,
                          f.content as reason
                   FROM policytbl p
                   LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID

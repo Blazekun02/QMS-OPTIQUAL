@@ -2591,13 +2591,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearSelect = document.getElementById('filterYear');
         const chartMonthSelect = document.getElementById('chartFilterMonth');
         const chartYearSelect = document.getElementById('chartFilterYear');
+        const pendingChartMonthSelect = document.getElementById('pendingChartFilterMonth');
+        const pendingChartYearSelect = document.getElementById('pendingChartFilterYear');
 
         const currentYear = new Date().getFullYear();
 
         // Populate months
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         
-        [monthSelect, chartMonthSelect].forEach(select => {
+        [monthSelect, chartMonthSelect, pendingChartMonthSelect].forEach(select => {
             if (!select) return;
             while (select.options.length > 1) select.remove(1);
             months.forEach((month, index) => {
@@ -2608,21 +2610,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        if (yearSelect) {
-            yearSelect.innerHTML = ''; 
+        [yearSelect, chartYearSelect, pendingChartYearSelect].forEach(select => {
+            if (!select) return;
+            select.innerHTML = '<option value="">All Years</option>'; 
             for (let y = currentYear + 2; y >= currentYear - 5; y--) {
-                yearSelect.appendChild(new Option(y, y));
+                select.appendChild(new Option(y, y));
             }
-            yearSelect.value = currentYear;
-        }
-
-        if (chartYearSelect) {
-            chartYearSelect.innerHTML = '<option value="">All Years</option>'; 
-            for (let y = currentYear + 2; y >= currentYear - 5; y--) {
-                chartYearSelect.appendChild(new Option(y, y));
-            }
-            chartYearSelect.value = currentYear;
-        }
+            select.value = currentYear;
+        });
     }
     populateReportDateFilters();
 
@@ -2651,7 +2646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // ✨ Ensure KPI boxes are clickable and load the correct report details
                     const pendingKpiBox = document.getElementById('kpi-pending')?.closest('.kpi-box');
-                    if (pendingKpiBox) pendingKpiBox.onclick = () => loadReportDetails('pending');
+                    if (pendingKpiBox) pendingKpiBox.onclick = () => togglePendingTasksChart();
                     
                     const activeKpiBox = document.getElementById('kpi-active')?.closest('.kpi-box');
                     if (activeKpiBox) activeKpiBox.onclick = () => loadReportDetails('active');
@@ -2968,21 +2963,96 @@ window.renderActivePoliciesChart = function(drilldownId = undefined) {
         }).catch(err => console.error("Network Error:", err));
 };
 
-let currentReportType = '';
+let pendingTasksChartInstance = null;
 
-function loadReportDetails(type) {
+window.togglePendingTasksChart = function() {
+    const chartContainer = document.getElementById('pendingTasksChartContainer');
+    const activeChartContainer = document.getElementById('activePoliciesChartContainer');
+    const detailsContainer = document.getElementById('reportDetailsArea');
+    
+    if (activeChartContainer) activeChartContainer.style.display = 'none';
+    if (detailsContainer) detailsContainer.style.display = 'none';
+
+    if (chartContainer.style.display === 'none' || chartContainer.style.display === '') {
+        chartContainer.style.display = 'block';
+        renderPendingTasksChart();
+    } else {
+        chartContainer.style.display = 'none';
+    }
+};
+
+window.renderPendingTasksChart = function() {
+    const ctx = document.getElementById('pendingTasksChart');
+    if (!ctx) return;
+
+    const month = document.getElementById('pendingChartFilterMonth') ? document.getElementById('pendingChartFilterMonth').value : '';
+    const year = document.getElementById('pendingChartFilterYear') ? document.getElementById('pendingChartFilterYear').value : '';
+
+    let url = `../../generalComponents/policyManagerPHP/getReportsData.php?action=pendingChart&month=${month}&year=${year}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                console.error("Error loading chart data", data);
+                return;
+            }
+            if (pendingTasksChartInstance) pendingTasksChartInstance.destroy();
+
+            pendingTasksChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: ['#fbaf41', '#293A82', '#64748b', '#ef4444', '#10b981'],
+                        statusIds: data.statusIds
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'right' },
+                        tooltip: { callbacks: { footer: () => 'Click to view policies under this task' } }
+                    }, 
+                    onClick: (event, elements, chart) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const statusId = chart.data.datasets[0].statusIds[index];
+                            loadReportDetails('pending', statusId);
+                        }
+                    },
+                    onHover: (event, elements, chart) => {
+                        event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
+                }
+            });
+        }).catch(err => console.error("Network Error:", err));
+};
+
+let currentReportType = '';
+let currentStatusId = '';
+
+window.loadReportDetails = function(type, statusId = '') {
     currentReportType = type;
+    currentStatusId = statusId;
     const chartContainer = document.getElementById('activePoliciesChartContainer');
+    const pendingChartContainer = document.getElementById('pendingTasksChartContainer');
     if (chartContainer) chartContainer.style.display = 'none';
+    if (pendingChartContainer) pendingChartContainer.style.display = 'none';
     document.getElementById('reportDetailsArea').style.display = 'block';
     fetchReportDetails();
 }
 
-function fetchReportDetails() {
+window.fetchReportDetails = function() {
     const month = document.getElementById('filterMonth').value;
     const year = document.getElementById('filterYear').value;
     
-    fetch(`../../generalComponents/policyManagerPHP/getReportsData.php?action=details&type=${currentReportType}&month=${month}&year=${year}`)
+    let url = `../../generalComponents/policyManagerPHP/getReportsData.php?action=details&type=${currentReportType}&month=${month}&year=${year}`;
+    if (currentStatusId) url += `&statusId=${currentStatusId}`;
+    
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const table = document.getElementById('detailsTable');

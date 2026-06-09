@@ -88,6 +88,20 @@
     text-align: center;
     margin-top: 20px;
 }
+
+.notif-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff3b30;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
 </style>
 
 <div class="notif-wrapper">
@@ -155,6 +169,43 @@
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const notifBtn = document.getElementById('notifButton');
+        if (notifBtn) {
+            // Ensure the button is relatively positioned so the absolute badge sticks to it
+            notifBtn.style.position = 'relative';
+            let badge = document.getElementById('notifBadge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.id = 'notifBadge';
+                badge.className = 'notif-badge';
+                notifBtn.appendChild(badge);
+            }
+            
+            updateNotifBadgeCount();
+
+            // Automatically update the badge if unread notifications change in the DOM
+            const unreadList = document.getElementById('notif-unread-list');
+            if (unreadList) {
+                const observer = new MutationObserver(updateNotifBadgeCount);
+                observer.observe(unreadList, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+            }
+        }
+    });
+
+    function updateNotifBadgeCount() {
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            const unreadCount = document.querySelectorAll('#notif-unread-list .notification-item.unread').length;
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
     function toggleNotifications() {
         const notifBox = document.querySelector('.notif-wrapper');
         if (notifBox.style.display === 'none' || notifBox.style.display === '') {
