@@ -548,6 +548,223 @@ if (searchInput) {
     });
 }
 
+// --- ARCHIVES BUTTON & MODAL SETUP ---
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.currentUserRoleID !== 2 && window.currentUserRoleID !== 3) return;
+    const prSearchContainer = document.querySelector('.PR-Search-Container');
+    if (prSearchContainer && !document.getElementById('prArchiveBtn')) {
+        const controlsWrapper = document.createElement('div');
+        controlsWrapper.style.display = 'flex';
+        controlsWrapper.style.alignItems = 'center';
+        prSearchContainer.parentNode.insertBefore(controlsWrapper, prSearchContainer);
+        controlsWrapper.appendChild(prSearchContainer);
+
+        const archiveBtn = document.createElement('button');
+        archiveBtn.innerHTML = '<i class="fas fa-archive"></i> View Archives';
+        archiveBtn.id = 'prArchiveBtn';
+        archiveBtn.style.backgroundColor = '#64748b';
+        archiveBtn.style.color = 'white';
+        archiveBtn.style.padding = '0 15px';
+        archiveBtn.style.height = '34px';
+        archiveBtn.style.borderRadius = '20px';
+        archiveBtn.style.border = 'none';
+        archiveBtn.style.cursor = 'pointer';
+        archiveBtn.style.fontWeight = 'bold';
+        archiveBtn.style.marginLeft = '10px';
+        archiveBtn.style.marginBottom = '10px';
+        archiveBtn.addEventListener('click', openArchivesModal);
+        controlsWrapper.appendChild(archiveBtn);
+
+        const archiveModal = document.createElement('div');
+        archiveModal.id = 'archivesModal';
+        archiveModal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1005; align-items:center; justify-content:center;';
+        archiveModal.innerHTML = `
+            <div style="background:white; padding:30px; border-radius:10px; width:750px; max-width:90%; max-height:80vh; display:flex; flex-direction:column; color:#333; position:relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                <h2 style="margin-top:0; color:#293A82; font-family: 'Istok Web', sans-serif; font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                    <i class="fas fa-archive" style="color: #64748b; margin-right: 10px;"></i> Archived & Replaced Policies
+                </h2>
+                <div id="archivesListContainer" style="overflow-y:auto; flex-grow:1; margin-bottom:20px; padding-right:10px;">
+                    <p>Loading archives...</p>
+                </div>
+                <div style="text-align:right;">
+                    <button onclick="document.getElementById('archivesModal').style.display='none'" style="background:#64748b; color:white; border:none; padding:10px 25px; border-radius:5px; cursor:pointer; font-weight: bold; font-family: 'Istok Web', sans-serif; transition: background 0.2s;">Close</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(archiveModal);
+    }
+});
+
+window.archiveAttributeEscape = function(value) {
+    return String(value || '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r?\n/g, ' ');
+};
+
+window.sortArchivedItems = function(items, order = 'asc') {
+    function parseVersion(version) {
+        if (!version) return [0, 0, 0];
+        const parts = version.toString().split('.').map(part => parseInt(part, 10) || 0);
+        return [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+    }
+
+    return items.slice().sort((a, b) => {
+        const aVer = parseVersion(a.versionNo);
+        const bVer = parseVersion(b.versionNo);
+        for (let i = 0; i < 3; i++) {
+            if (aVer[i] !== bVer[i]) {
+                return order === 'asc' ? aVer[i] - bVer[i] : bVer[i] - aVer[i];
+            }
+        }
+        const aTime = new Date(a.dateUploaded).getTime() || 0;
+        const bTime = new Date(b.dateUploaded).getTime() || 0;
+        return order === 'asc' ? aTime - bTime : bTime - aTime;
+    });
+};
+
+window.toggleArchiveFolder = function(button) {
+    const folder = button.closest('.archive-folder');
+    if (!folder) return;
+    const content = folder.querySelector('.archive-folder-content');
+    if (!content) return;
+    const isOpen = content.style.display === 'block';
+    content.style.display = isOpen ? 'none' : 'block';
+    const icon = folder.querySelector('.archive-folder-toggle-icon');
+    if (icon) {
+        icon.className = isOpen ? 'fas fa-folder' : 'fas fa-folder-open';
+    }
+};
+
+window.openArchiveHistory = function(rootPolicyID) {
+    const modal = document.getElementById('archivesModal');
+    if (modal) modal.style.display = 'none';
+    if (typeof openDocumentHistoryModal === 'function') {
+        openDocumentHistoryModal(rootPolicyID);
+    }
+};
+
+window.renderArchiveGroups = function(container, archives, sortOrder = 'asc') {
+    const groups = {};
+    archives.forEach(item => {
+        const key = item.rootPolicyID || item.policyID;
+        if (!groups[key]) {
+            groups[key] = {
+                rootPolicyID: key,
+                rootTitle: item.rootTitle || item.title || 'Untitled Policy',
+                items: []
+            };
+        }
+        groups[key].items.push(item);
+    });
+
+    const groupKeys = Object.keys(groups).sort((a, b) => groups[a].rootTitle.toLowerCase().localeCompare(groups[b].rootTitle.toLowerCase()));
+    let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:12px; flex-wrap:wrap;">
+            <div style="font-size:14px; color:#334155; font-weight:700;">Archive folders grouped by policy title</div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:14px; color:#334155;">
+                <label for="archiveSortSelect" style="font-weight:600;">Sort</label>
+                <select id="archiveSortSelect" style="padding:6px 10px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
+                    <option value="asc"${sortOrder === 'asc' ? ' selected' : ''}>Original → Latest</option>
+                    <option value="desc"${sortOrder === 'desc' ? ' selected' : ''}>Latest → Original</option>
+                </select>
+            </div>
+        </div>
+    `;
+
+    groupKeys.forEach(key => {
+        const group = groups[key];
+        const sortedItems = window.sortArchivedItems(group.items, sortOrder);
+        const rows = sortedItems.map(item => `
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:10px 12px; vertical-align:middle;">${item.versionNo ? 'v' + (String(item.versionNo).includes('.') ? item.versionNo : item.versionNo + '.0') : 'Original'}</td>
+                <td style="padding:10px 12px; vertical-align:middle;">${item.title}</td>
+                <td style="padding:10px 12px; vertical-align:middle;">${item.authorName || 'Unknown'}</td>
+                <td style="padding:10px 12px; vertical-align:middle;">${item.dateUploaded || 'N/A'}</td>
+                <td style="padding:10px 12px; vertical-align:middle; text-align:right; display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
+                    <button onclick="viewArchivedPolicy('${window.archiveAttributeEscape(item.contentPath)}', '${window.archiveAttributeEscape(item.title + ' (Archived)')}', '${window.archiveAttributeEscape(item.dateUploaded)}', ${item.policyID})" style="background:#293A82; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; white-space:nowrap;">
+                        <i class="fas fa-file-pdf"></i> View
+                    </button>
+                    ${item.revisionFormPath ? `<button onclick="viewArchivedPolicy('${window.archiveAttributeEscape(item.revisionFormPath)}', '${window.archiveAttributeEscape('Change Log - ' + item.title)}', '${window.archiveAttributeEscape(item.dateUploaded)}', ${item.policyID})" style="background:#fbaf41; color:#111; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; white-space:nowrap;">
+                        <i class="fas fa-file-alt"></i> Change Log
+                    </button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+
+        html += `
+            <div class="archive-folder" style="border:1px solid #d1d5db; border-radius:10px; margin-bottom:14px; overflow:hidden; background:#fff;">
+                <div class="archive-folder-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; cursor:pointer; background:#f8fafc;" onclick="window.toggleArchiveFolder(this)">
+                    <div>
+                        <div style="font-size:16px; font-weight:700; color:#0f172a;">${group.rootTitle}</div>
+                        <div style="font-size:13px; color:#475569; margin-top:4px;">${sortedItems.length} archived revision${sortedItems.length !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button onclick="event.stopPropagation(); window.openArchiveHistory(${group.rootPolicyID});" style="background:#64748b; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700; white-space:nowrap;">
+                            <i class="fas fa-history"></i> Full History
+                        </button>
+                        <i class="archive-folder-toggle-icon fas fa-folder" style="font-size:18px; color:#64748b;"></i>
+                    </div>
+                </div>
+                <div class="archive-folder-content" style="display:none; padding:0 18px 18px;">
+                    <div style="overflow-x:auto; margin-top:16px;">
+                        <table style="width:100%; border-collapse:collapse; font-family:'Istok Web', sans-serif; font-size:14px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e2e8f0;">Version</th>
+                                    <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e2e8f0;">Title</th>
+                                    <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e2e8f0;">Author</th>
+                                    <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e2e8f0;">Published</th>
+                                    <th style="text-align:right; padding:10px 12px; border-bottom:2px solid #e2e8f0;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    const select = document.getElementById('archiveSortSelect');
+    if (select) {
+        select.addEventListener('change', function() {
+            window.renderArchiveGroups(container, archives, this.value);
+        });
+    }
+};
+
+window.openArchivesModal = function() {
+    const modal = document.getElementById('archivesModal');
+    const container = document.getElementById('archivesListContainer');
+    if (!modal || !container) return;
+    modal.style.display = 'flex';
+    container.innerHTML = '<p style="text-align:center; padding: 20px;">Fetching archived policies...</p>';
+
+    fetch('/qms_optiqual/generalComponents/policyManagerPHP/getArchivedPolicies.php')
+        .then(response => response.json())
+        .then(data => {
+            if (!Array.isArray(data.archives) || data.archives.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding: 20px; color: #666; font-weight: bold;">No archived policies found.</p>';
+                return;
+            }
+            window.renderArchiveGroups(container, data.archives, 'asc');
+        })
+        .catch(err => {
+            console.error('Error fetching archives:', err);
+            container.innerHTML = '<p style="text-align:center; color:red; padding: 20px;">Network error while fetching archives.</p>';
+        });
+};
+
+window.viewArchivedPolicy = function(filePath, title, uploadDate, policyId) {
+    const modal = document.getElementById('archivesModal');
+    if (modal) modal.style.display = 'none';
+    window.openCustomPdfViewer(filePath, title, uploadDate, policyId);
+};
+
 // PDF Viewer Loading & Closing
 window.openCustomPdfViewer = function(filePath, documentTitle, uploadDate, policyId = null) {
     if (!filePath || filePath === 'null' || filePath.trim() === '') {
@@ -3180,14 +3397,14 @@ window.openDocumentHistoryModal = function(policyId) {
                 data.history.forEach(item => {
                     html += `
                         <tr style="border-bottom: 1px solid #eee; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f9f9f9'" onmouseout="this.style.backgroundColor='transparent'">
-                            <td style="padding: 12px; font-weight: bold;">${item.versionNo}</td>
+                            <td style="padding: 12px; font-weight: bold;">${item.versionNo ? 'v' + (String(item.versionNo).includes('.') ? item.versionNo : item.versionNo + '.0') : 'Original'}</td>
                             <td style="padding: 12px;">${item.title}</td>
                             <td style="padding: 12px;">${item.authorName}</td>
                             <td style="padding: 12px;">${item.approverName}</td>
                             <td style="padding: 12px;">${item.datePublished}</td>
                             <td style="padding: 12px; display: flex; flex-direction: column; gap: 5px;">
                                 <button class="action-btn-inline" 
-                                    onclick="openSecondaryPdfViewer('${item.contentPath}', '${item.title} (${item.versionNo})')"
+                                    onclick="openSecondaryPdfViewer('${item.contentPath}', '${item.title} (v${item.versionNo ? (String(item.versionNo).includes('.') ? item.versionNo : item.versionNo + '.0') : 'Original'})')"
                                     style="background:#293A82; color:white; border:none; padding: 6px 15px; border-radius: 5px; cursor:pointer; font-weight: bold; width: 100%;">
                                     <i class="fas fa-file-pdf"></i> View Policy
                                 </button>
@@ -3340,3 +3557,120 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/* =====================================================================
+   ✨ AUTOMATIC BACKGROUND REFRESH ENGINE ✨
+   (Real-Time Sync Across All POVs)
+   ===================================================================== */
+(function() {
+    let currentSystemHash = '';
+    let pendingUpdate = false;
+
+    // 1. Get the initial state fingerprint so we don't reload on the first pass
+    fetch('/qms_optiqual/generalComponents/check_updates.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.hash) currentSystemHash = data.hash;
+        })
+        .catch(err => console.error("Auto-Sync Initialization Error:", err));
+
+    function isUserBusy() {
+        // List of all known modals, overlays, and document viewers.
+        // If any of these are visible, we DELAY the refresh so we don't interrupt the user.
+        const busyElements = [
+            'Policy_Repo_pdfViewer',
+            'Secondary_PdfViewer',
+            'submitOverlay',
+            'archivesModal',
+            'pmCreateFolderModal',
+            'pmRenameFolderModal',
+            'pmDeleteFolderModal',
+            'pmAddFileModal',
+            'pmRemovePolicyModal',
+            'assignNameContainer',
+            'assignRoleContainer',
+            'departmentStructureContainer',
+            'renameDepartmentContainer',
+            'deleteConfirmationContainer',
+            'renameRoleContainer',
+            'rmAddUserModal',
+            'confirm-dl',
+            'rejectedReasonModal',
+            'documentHistoryOverlay',
+            'popupOverlay' // Notifications dropdown
+        ];
+
+        for (const id of busyElements) {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none' && el.style.display !== '') {
+                return true;
+            }
+        }
+
+        // Check if the user is actively typing in a search bar, textarea, or input
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return true;
+
+        return false;
+    }
+
+    function applyUpdateIfSafe() {
+        if (pendingUpdate && !isUserBusy()) {
+            pendingUpdate = false;
+            
+            // ✨ SILENT BACKGROUND REFRESH (WITH CACHE-BUSTER) ✨
+            const fetchUrl = window.location.href.split('#')[0];
+            const cacheBuster = fetchUrl + (fetchUrl.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
+
+            fetch(cacheBuster, { cache: 'no-store', headers: { 'Pragma': 'no-cache' } })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // 1. Update Notification Bell (for the red unread badge)
+                    const newNotifBtn = doc.getElementById('notifButton');
+                    const oldNotifBtn = document.getElementById('notifButton');
+                    if (newNotifBtn && oldNotifBtn) oldNotifBtn.innerHTML = newNotifBtn.innerHTML;
+
+                    // 2. Update Notification Lists
+                    const newUnread = doc.getElementById('notif-unread-list');
+                    const oldUnread = document.getElementById('notif-unread-list');
+                    if (newUnread && oldUnread) oldUnread.innerHTML = newUnread.innerHTML;
+
+                    const newRead = doc.getElementById('notif-read-list');
+                    const oldRead = document.getElementById('notif-read-list');
+                    if (newRead && oldRead) oldRead.innerHTML = newRead.innerHTML;
+                    
+                    // 3. Silently update Workspace Tasks
+                    const newTaskTable = doc.querySelector('.task-manager-table');
+                    const oldTaskTable = document.querySelector('.task-manager-table');
+                    if (newTaskTable && oldTaskTable) oldTaskTable.innerHTML = newTaskTable.innerHTML;
+                    
+                    // 4. Silently update Process Tracker
+                    const newTracker = doc.querySelector('.Process-Tracker-Panel2');
+                    const oldTracker = document.querySelector('.Process-Tracker-Panel2');
+                    if (newTracker && oldTracker) oldTracker.innerHTML = newTracker.innerHTML;
+                })
+                .catch(err => console.error("Auto-sync fetch error:", err));
+        }
+    }
+
+    // 2. If an update is queued while they were busy, trigger the update the moment they click away or close a modal.
+    document.addEventListener('click', () => setTimeout(applyUpdateIfSafe, 400));
+    document.addEventListener('keyup', () => setTimeout(applyUpdateIfSafe, 400));
+
+    // 3. The Poller: Checks the server every 4 seconds for database structural changes.
+    setInterval(() => {
+        if (!currentSystemHash) return; 
+        fetch(`/qms_optiqual/generalComponents/check_updates.php?hash=${currentSystemHash}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.hasUpdates) {
+                    currentSystemHash = data.hash; // Instantly update local hash to prevent spam loops
+                    pendingUpdate = true;
+                    applyUpdateIfSafe(); 
+                }
+            }).catch(err => console.error("Auto-Sync Polling Error:", err));
+    }, 4000);
+})();

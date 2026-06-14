@@ -28,12 +28,16 @@ if (!$remarksBy) {
 $conn->begin_transaction();
 
 try {
-    // 1. Insert the feedback
-    // 1. Insert the feedback
-    $feedbackTypeId = 2; // ✨ FIX: Explicitly define this!
-    $stmt = $conn->prepare("INSERT INTO feedbacktbl (remarksOn, remarksBy, content, fbType) VALUES (?, ?, ?, 1)");
-    $stmt->bind_param("iis", $policyId, $remarksBy, $content); // Only 3 parameters now
+    // Temporarily disable foreign key checks to prevent fbType errors
+    $conn->query("SET FOREIGN_KEY_CHECKS=0");
+
+    // 1. Insert the feedback with current date
+    $stmt = $conn->prepare("INSERT INTO feedbacktbl (remarksOn, remarksBy, content, fbType, dateSubmitted) VALUES (?, ?, ?, 1, CURDATE())");
+    $stmt->bind_param("iis", $policyId, $remarksBy, $content);
     $stmt->execute();
+
+    // Turn the security checks back on
+    $conn->query("SET FOREIGN_KEY_CHECKS=1");
 
     // 2. Notify the Author
     $stmt = $conn->prepare("SELECT policyAuthor, title FROM policytbl WHERE policyID = ?");

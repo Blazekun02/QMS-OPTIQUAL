@@ -31,10 +31,28 @@
             $stmt->close();
         }
     }
+
+    $roleID = $_SESSION['roleID'] ?? null;
+    if ($roleID === null && isset($_SESSION['accID'])) {
+        $roleStmt = $conn->prepare("SELECT roleID FROM accdatatbl WHERE accID = ?");
+        if ($roleStmt) {
+            $roleStmt->bind_param("i", $_SESSION['accID']);
+            $roleStmt->execute();
+            $roleResult = $roleStmt->get_result();
+            if ($roleResult && $roleResult->num_rows > 0) {
+                $roleRow = $roleResult->fetch_assoc();
+                $roleID = (int)$roleRow['roleID'];
+                $_SESSION['roleID'] = $roleID;
+            }
+            $roleStmt->close();
+        }
+    }
+    $roleID = (int)($roleID ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <script>window.currentUserRoleID = <?php echo $roleID; ?>;</script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Quality Assurance Staff</title>

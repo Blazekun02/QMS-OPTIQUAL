@@ -719,7 +719,13 @@ function populateWorkspaceTable(tasks) {
             const actionCell = row.insertCell();
             
             let feedbackBtnHtml = '';
-            if (task.activeFeedback) {
+            if (task.statusCode == 6) { // 6 is the status code for Rejected
+                feedbackBtnHtml = `
+                    <button class="action-btn-inline" style="background:#ef4444; color:white; margin-left: 5px;" onclick="showRejectedReason(${task.policyID})">
+                        <i class="fas fa-comment-alt"></i> View Reason
+                    </button>
+                `;
+            } else if (task.activeFeedback) {
                 const safeFeedback = task.activeFeedback.replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 feedbackBtnHtml = `
                     <button class="action-btn-inline" style="background:#f44336; color:white; margin-left: 5px;" onclick="openFeedbackModal('${task.policyTitle}', '${safeFeedback}')">

@@ -19,6 +19,36 @@ $changesDesc      = trim($_POST['changesDescription'] ?? '');
 $file    = $_FILES['policyFile']    ?? null;
 $logFile = $_FILES['changeLogFile'] ?? null;
 
+// ── Version Calculation Helper ────────────────────────────────
+function calculateNextVersion(array $historicalVersions, string $revisionType = 'minor'): string {
+    $maxMajor = 1;
+    $maxMinor = 0;
+    
+    foreach ($historicalVersions as $version) {
+        // Strip any accidental 'v' prefix and split the string
+        $cleanVer = str_ireplace('v', '', trim((string)$version));
+        if ($cleanVer === '') continue;
+
+        $parts = explode('.', $cleanVer);
+        
+        $currMajor = (int)($parts[0] ?? 1);
+        $currMinor = isset($parts[1]) ? (int)$parts[1] : 0;
+        
+        if ($currMajor > $maxMajor) {
+            $maxMajor = $currMajor;
+            $maxMinor = $currMinor;
+        } elseif ($currMajor === $maxMajor && $currMinor > $maxMinor) {
+            $maxMinor = $currMinor;
+        }
+    }
+
+    if (strtolower($revisionType) === 'major') {
+        return ($maxMajor + 1) . '.0';
+    } else {
+        return $maxMajor . '.' . ($maxMinor + 1);
+    }
+}
+
 // ── Basic validation ──────────────────────────────────────────
 if (!$policyTitle || !$file || $file['error'] !== 0) {
     echo "<script>alert('Missing title or file. Please try again.'); history.back();</script>";
@@ -73,25 +103,47 @@ if ($ultimateRootID) {
 
 $newVersion = null;
 if ($isRevision && $ultimateRootID) {
-    $verStmt = $conn->prepare("
-        SELECT versionNo FROM policytbl 
-        WHERE (policyID = ? OR originalPolicyID = ?) AND versionNo IS NOT NULL AND versionNo != ''
-        ORDER BY CAST(SUBSTRING_INDEX(versionNo, '.', 1) AS UNSIGNED) DESC, 
-                 CAST(SUBSTRING_INDEX(versionNo, '.', -1) AS UNSIGNED) DESC 
-        LIMIT 1
-    ");
-    $verStmt->bind_param("ii", $ultimateRootID, $ultimateRootID);
+    $lineage = [$ultimateRootID];
+    for ($i = 0; $i < count($lineage); $i++) {
+        $currentID = $lineage[$i];
+        $childStmt = $conn->prepare("SELECT policyID FROM policytbl WHERE originalPolicyID = ?");
+        $childStmt->bind_param("i", $currentID);
+        $childStmt->execute();
+        $childRes = $childStmt->get_result();
+        while ($childRow = $childRes->fetch_assoc()) {
+            $childID = (int)$childRow['policyID'];
+            if (!in_array($childID, $lineage, true)) {
+                $lineage[] = $childID;
+            }
+        }
+        $childStmt->close();
+    }
+
+    $placeholders = implode(',', array_fill(0, count($lineage), '?'));
+    // Extract all versions for this lineage and parse them dynamically in PHP 
+    // to completely avoid MySQL string-casting limitations.
+    // ✨ FIXED: Also check revisionhistorytbl in case legacy policies only stored versions there!
+    $sql = "SELECT COALESCE(r.versionNo, p.versionNo) as versionNo 
+            FROM policytbl p
+            LEFT JOIN revisionhistorytbl r ON r.currentPolicyID = p.policyID
+            WHERE p.policyID IN ($placeholders) 
+              AND COALESCE(r.versionNo, p.versionNo) IS NOT NULL AND COALESCE(r.versionNo, p.versionNo) != ''";
+    $verStmt = $conn->prepare($sql);
+    $types = str_repeat('i', count($lineage));
+    $verStmt->bind_param($types, ...$lineage);
     $verStmt->execute();
-    $verRow = $verStmt->get_result()->fetch_assoc();
+    $verRes = $verStmt->get_result();
+    
+    $historicalVersions = [];
+    while ($verRow = $verRes->fetch_assoc()) {
+        $historicalVersions[] = $verRow['versionNo'];
+    }
     $verStmt->close();
 
-    $lastVersion = (!empty($verRow['versionNo'])) ? $verRow['versionNo'] : '1.0';
-    $parts = explode('.', $lastVersion);
-    $major = (int)($parts[0] ?? 1);
-    $minor = (int)($parts[1] ?? 0);
-    $newVersion = ($revisionType === 'major')
-        ? ($major + 1) . '.0'
-        : $major . '.' . ($minor + 1);
+    $newVersion = calculateNextVersion($historicalVersions, $revisionType);
+} else if (!$isRevision) {
+    // New original policy starts at version 1.0
+    $newVersion = '1.0';
 }
 
 // ── Insert into policytbl ─────────────────────────────────────

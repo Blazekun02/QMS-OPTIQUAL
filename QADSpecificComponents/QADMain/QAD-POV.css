@@ -811,14 +811,14 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    /* ✨ FIX: Replaced pointer with default, and added user-select: none to kill the text line! */
+    /*  FIX: Replaced pointer with default, and added user-select: none to kill the text line! */
     cursor: default; 
     user-select: none; 
     -webkit-user-select: none; /* For Safari */
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* ✨ NEW: Only turn the mouse into a clickable hand when Delete Mode is ON */
+/*  NEW: Only turn the mouse into a clickable hand when Delete Mode is ON */
 .delete-mode-active .rm-user-card {
     cursor: pointer;
 }
@@ -1904,7 +1904,7 @@ body {
 }
 
 /* ======================================================= */
-/* ✨ ANIMATED WELCOME DASHBOARD ✨                        */
+/*  ANIMATED WELCOME DASHBOARD                         */
 /* ======================================================= */
 .Welcome-Panel {
     position: absolute;
@@ -2038,12 +2038,12 @@ body {
 }
 
 /* ========================================= */
-/* ✨ BRANDED FOLDER STYLING ✨              */
+/*  BRANDED FOLDER STYLING               */
 /* ========================================= */
 
 /* 1. Main Parent Folders */
 .department-item, .pm-folder-item, .PR-Parent-Folders, .PR-Child-Folders {
-    background-color: #293A82;       /* ✨ Navy Blue Base */
+    background-color: #293A82;       /*  Navy Blue Base */
     border: 1px solid #4963D4;       /* Royal Blue Border */
     border-radius: 8px;
     padding: 12px 18px;
@@ -2059,14 +2059,14 @@ body {
 
 /* 2. Main Folder Hover State */
 .department-item:hover, .pm-folder-item:hover, .PR-Parent-Folders:hover, .PR-Child-Folders:hover {
-    background-color: #4963D4;       /* ✨ Brightens to Royal Blue on Hover */
+    background-color: #4963D4;       /*  Brightens to Royal Blue on Hover */
     border-color: #FBAF41;           /* Pops with the Yellow/Orange Accent Border */
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }
 
 /* 3. Nested Child Folders */
 .dpt-child-folder, .pm-child-folder, .PR-Child-Folders {
-    background-color: #4963D4;       /* ✨ Royal Blue Base (Matches the parent's hover state) */
+    background-color: #4963D4;       /*  Royal Blue Base (Matches the parent's hover state) */
     border-left: 5px solid #FBAF41;  /* Thick Yellow/Orange Accent Line */
     border-radius: 0 8px 8px 0;      
     margin-left: 20px;
@@ -2079,7 +2079,7 @@ body {
 
 /* 4. Child Folder Hover State */
 .dpt-child-folder:hover, .pm-child-folder:hover, .PR-Child-Folders:hover {
-    background-color: #BFE6F8;       /* ✨ Illuminates to Light Blue Hover */
+    background-color: #BFE6F8;       /*  Illuminates to Light Blue Hover */
     color: #293A82;                  /* Navy Blue Text for sharp contrast */
     border-left: 5px solid #293A82;  /* Switch accent line to Navy */
 }
@@ -2099,7 +2099,7 @@ body {
     color: #293A82; /* Keeps the action buttons visible when the background turns light blue */
 }
 
-/* ✨ THE GHOST PLACEHOLDER ✨ */
+/*  THE GHOST PLACEHOLDER  */
 .drop-placeholder {
     border: 2px dashed #fbaf41 !important;
     background-color: rgba(41, 58, 130, 0.4) !important; /* Semi-transparent Navy */
@@ -2121,7 +2121,7 @@ body {
 }
 
 /* ========================================= */
-/* ✨ EMPLOYEE (USER) TAG STYLING ✨         */
+/*  EMPLOYEE (USER) TAG STYLING          */
 /* ========================================= */
 
 /* 1. Base User Pill Design */
@@ -2151,15 +2151,15 @@ body {
 /* 3. Users assigned to Main Folders (Level 1) */
 .parent-employee {
     margin-left: 45px;               /* Indent past the parent folder icon */
-    margin-right: 15px;              /* ✨ NEW: Push the right side in! */
-    width: auto;                     /* ✨ NEW: Let the margins squeeze the box */
+    margin-right: 15px;              /*  NEW: Push the right side in! */
+    width: auto;                     /*  NEW: Let the margins squeeze the box */
 }
 
 /* 4. Users assigned to Child Folders (Level 2) */
 .nested-employee {
     margin-left: 75px;               /* Deep indent past the child folder */
-    margin-right: 30px;              /* ✨ NEW: Push the right side in even further! */
-    width: auto;                     /* ✨ NEW: Let the margins squeeze the box */
+    margin-right: 30px;              /*  NEW: Push the right side in even further! */
+    width: auto;                     /*  NEW: Let the margins squeeze the box */
 }
 
 /* Optional: Make the pill slightly thinner to emphasize hierarchy */
@@ -2179,7 +2179,7 @@ body {
 }
 
 /* ========================================= */
-/* ✨ FORCED EMPLOYEE TAG INDENTATION ✨     */
+/*  FORCED EMPLOYEE TAG INDENTATION      */
 /* ========================================= */
 
 /* 1. Force the Pill Shape and override the old square borders */
@@ -2202,7 +2202,7 @@ body {
     width: auto !important;          /* Let margins dictate width */
 }
 
-/* ✨ FOLDER TOGGLE TRIANGLES ✨ */
+/*  FOLDER TOGGLE TRIANGLES  */
 .folder-toggle-icon {
     margin-right: 10px;
     font-size: 1.2em;

@@ -1767,3 +1767,120 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/* =====================================================================
+   ✨ AUTOMATIC BACKGROUND REFRESH ENGINE ✨
+   (Real-Time Sync Across All POVs)
+   ===================================================================== */
+(function() {
+    let currentSystemHash = '';
+    let pendingUpdate = false;
+
+    // 1. Get the initial state fingerprint so we don't reload on the first pass
+    fetch('/qms_optiqual/generalComponents/check_updates.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.hash) currentSystemHash = data.hash;
+        })
+        .catch(err => console.error("Auto-Sync Initialization Error:", err));
+
+    function isUserBusy() {
+        // List of all known modals, overlays, and document viewers.
+        // If any of these are visible, we DELAY the refresh so we don't interrupt the user.
+        const busyElements = [
+            'Policy_Repo_pdfViewer',
+            'Secondary_PdfViewer',
+            'submitOverlay',
+            'archivesModal',
+            'pmCreateFolderModal',
+            'pmRenameFolderModal',
+            'pmDeleteFolderModal',
+            'pmAddFileModal',
+            'pmRemovePolicyModal',
+            'assignNameContainer',
+            'assignRoleContainer',
+            'departmentStructureContainer',
+            'renameDepartmentContainer',
+            'deleteConfirmationContainer',
+            'renameRoleContainer',
+            'rmAddUserModal',
+            'confirm-dl',
+            'rejectedReasonModal',
+            'documentHistoryOverlay',
+            'popupOverlay' // Notifications dropdown
+        ];
+
+        for (const id of busyElements) {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none' && el.style.display !== '') {
+                return true;
+            }
+        }
+
+        // Check if the user is actively typing in a search bar, textarea, or input
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return true;
+
+        return false;
+    }
+
+    function applyUpdateIfSafe() {
+        if (pendingUpdate && !isUserBusy()) {
+            pendingUpdate = false;
+            
+            // ✨ SILENT BACKGROUND REFRESH (WITH CACHE-BUSTER) ✨
+            const fetchUrl = window.location.href.split('#')[0];
+            const cacheBuster = fetchUrl + (fetchUrl.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
+
+            fetch(cacheBuster, { cache: 'no-store', headers: { 'Pragma': 'no-cache' } })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // 1. Update Notification Bell (for the red unread badge)
+                    const newNotifBtn = doc.getElementById('notifButton');
+                    const oldNotifBtn = document.getElementById('notifButton');
+                    if (newNotifBtn && oldNotifBtn) oldNotifBtn.innerHTML = newNotifBtn.innerHTML;
+
+                    // 2. Update Notification Lists
+                    const newUnread = doc.getElementById('notif-unread-list');
+                    const oldUnread = document.getElementById('notif-unread-list');
+                    if (newUnread && oldUnread) oldUnread.innerHTML = newUnread.innerHTML;
+
+                    const newRead = doc.getElementById('notif-read-list');
+                    const oldRead = document.getElementById('notif-read-list');
+                    if (newRead && oldRead) oldRead.innerHTML = newRead.innerHTML;
+                    
+                    // 3. Silently update Workspace Tasks
+                    const newTaskTable = doc.querySelector('.task-manager-table');
+                    const oldTaskTable = document.querySelector('.task-manager-table');
+                    if (newTaskTable && oldTaskTable) oldTaskTable.innerHTML = newTaskTable.innerHTML;
+                    
+                    // 4. Silently update Process Tracker
+                    const newTracker = doc.querySelector('.Process-Tracker-Panel2');
+                    const oldTracker = document.querySelector('.Process-Tracker-Panel2');
+                    if (newTracker && oldTracker) oldTracker.innerHTML = newTracker.innerHTML;
+                })
+                .catch(err => console.error("Auto-sync fetch error:", err));
+        }
+    }
+
+    // 2. If an update is queued while they were busy, trigger the update the moment they click away or close a modal.
+    document.addEventListener('click', () => setTimeout(applyUpdateIfSafe, 400));
+    document.addEventListener('keyup', () => setTimeout(applyUpdateIfSafe, 400));
+
+    // 3. The Poller: Checks the server every 4 seconds for database structural changes.
+    setInterval(() => {
+        if (!currentSystemHash) return; 
+        fetch(`/qms_optiqual/generalComponents/check_updates.php?hash=${currentSystemHash}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.hasUpdates) {
+                    currentSystemHash = data.hash; // Instantly update local hash to prevent spam loops
+                    pendingUpdate = true;
+                    applyUpdateIfSafe(); 
+                }
+            }).catch(err => console.error("Auto-Sync Polling Error:", err));
+    }, 4000);
+})();

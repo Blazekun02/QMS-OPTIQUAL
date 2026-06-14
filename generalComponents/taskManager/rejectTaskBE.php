@@ -26,7 +26,7 @@ if ($authorResult->num_rows > 0) {
     $authorID = $row['policyAuthor'];
     $policyTitle = $row['title'];
     
-    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = 6, reviewedBy = NULL, policyVerifier = NULL, policyApprover = NULL WHERE policyID = ?");
+    $updatePolicy = $conn->prepare("UPDATE policytbl SET policyStatusID = 6, policyReviewer = NULL, reviewedBy = NULL, policyVerifier = NULL, policyApprover = NULL WHERE policyID = ?");
     
     if (!$updatePolicy) {
         ob_end_clean();
@@ -58,7 +58,7 @@ if ($authorResult->num_rows > 0) {
     // ✨ NEW: Temporarily disable foreign key checks to prevent crashes from empty config tables!
     $conn->query("SET FOREIGN_KEY_CHECKS=0");
 
-    $feedbackStmt = $conn->prepare("INSERT INTO feedbacktbl (remarksOn, remarksBy, content, fbType) VALUES (?, ?, ?, 1)");
+    $feedbackStmt = $conn->prepare("INSERT INTO feedbacktbl (remarksOn, remarksBy, content, fbType, dateSubmitted) VALUES (?, ?, ?, 1, CURDATE())");
     if ($feedbackStmt) {
         $feedbackStmt->bind_param("iis", $policyID, $qadID, $reason);
         $feedbackStmt->execute();

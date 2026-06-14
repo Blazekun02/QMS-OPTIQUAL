@@ -71,9 +71,10 @@ if (isset($_POST["signInButton"])) {
                     exit;
                 }
 
-                // Store accID in session
+                // Store accID and roleID in session
                 $accID = $row['accID'];
                 $_SESSION['accID'] = $accID;
+                $_SESSION['roleID'] = $row['roleID'];
                 // Unset attempts on successful login
                 unset($_SESSION['attempts']);
                 // Call the function to redirect based on role

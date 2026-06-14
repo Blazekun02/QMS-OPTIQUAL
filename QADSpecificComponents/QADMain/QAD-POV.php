@@ -18,12 +18,30 @@
             $_SESSION['fullName'] = $row['fullName'];
         }
     }
+
+    $roleID = $_SESSION['roleID'] ?? null;
+    if ($roleID === null && isset($_SESSION['accID'])) {
+        $roleStmt = $conn->prepare("SELECT roleID FROM accdatatbl WHERE accID = ?");
+        if ($roleStmt) {
+            $roleStmt->bind_param("i", $_SESSION['accID']);
+            $roleStmt->execute();
+            $roleResult = $roleStmt->get_result();
+            if ($roleResult && $roleResult->num_rows > 0) {
+                $roleRow = $roleResult->fetch_assoc();
+                $roleID = (int)$roleRow['roleID'];
+                $_SESSION['roleID'] = $roleID;
+            }
+            $roleStmt->close();
+        }
+    }
+    $roleID = (int)($roleID ?? 0);
 ?>
 
 <!DOCTYPE html>
 <?php include '../../generalComponents/Refresh/Policy_Repo_Refresh.php';?>
 <html>
     <head>
+        <script>window.currentUserRoleID = <?php echo $roleID; ?>;</script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Quality Assurance Director</title>
@@ -141,7 +159,7 @@
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
-                            // ✨ FIX 1: Add data-upload-date to Parent Folder Policies
+                            //  FIX 1: Add data-upload-date to Parent Folder Policies
                             $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID IN (4, 5)";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if (mysqli_num_rows($resultParentPols) > 0) {
@@ -169,7 +187,7 @@
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
                             
-                                    // ✨ FIX 2: Add data-upload-date to Child Folder Policies
+                                    //  FIX 2: Add data-upload-date to Child Folder Policies
                                     if (mysqli_num_rows($resultPol) > 0) {
                                         while ($rowPol = mysqli_fetch_assoc($resultPol)) {
                                             // ADDED DATA ATTRIBUTE HERE:
@@ -187,7 +205,7 @@
                         }
                     }
 
-                    // ✨ FIX 3: Fetch policies that are published directly to the "Main Repository" (No Folder)
+                    //  FIX 3: Fetch policies that are published directly to the "Main Repository" (No Folder)
                     $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID IN (4, 5)";
                     $resultMainPols = mysqli_query($conn, $queryMainPols);
                     if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
@@ -346,18 +364,22 @@ function toggleRevision(checkbox) {
         
         <h1 style="color: #1a2035; margin-bottom: 25px; font-family: 'Istok Web', sans-serif;">Quality Assurance Reports</h1>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
             <div class="kpi-box" onclick="toggleActivePoliciesChart()" data-type="active" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
                 <p style="margin: 0; opacity: 0.8;">Active Policies</p>
                 <h2 id="kpi-active" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
             </div>
-            <div class="kpi-box" onclick="loadReportDetails('pending')" data-type="pending" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+            <div class="kpi-box" onclick="togglePendingTasksChart()" data-type="pending" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
                 <p style="margin: 0; opacity: 0.8;">Pending Tasks</p>
                 <h2 id="kpi-pending" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
             </div>
             <div class="kpi-box" onclick="loadReportDetails('rejected')" data-type="rejected" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
                 <p style="margin: 0; opacity: 0.8;">Rejected Policies</p>
                 <h2 id="kpi-rejected" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
+            </div>
+            <div class="kpi-box" onclick="loadReportDetails('feedbacks')" data-type="feedbacks" style="background: #293A82; color: white; padding: 25px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;">
+                <p style="margin: 0; opacity: 0.8;">Number of Feedbacks</p>
+                <h2 id="kpi-feedbacks" style="margin: 5px 0 0 0; font-size: 32px;">0</h2>
             </div>
         </div>
 

@@ -125,8 +125,8 @@ if ($updatePolicy->execute()) {
                         $catQuery->close();
                     }
                     
-                    // 2. ✨ Archive ALL older policies in this family (Using Status 6 for now)
-                    $archiveOrig = $conn->prepare("UPDATE policytbl SET policyStatusID = 6 WHERE (policyID = ? OR originalPolicyID = ?) AND policyID != ? AND policyStatusID IN (4, 5)");
+                    // 2. ✨ Archive ALL older policies in this family (use Status 7 = Archived)
+                    $archiveOrig = $conn->prepare("UPDATE policytbl SET policyStatusID = 7 WHERE (policyID = ? OR originalPolicyID = ?) AND policyID != ? AND policyStatusID IN (4, 5)");
                     if ($archiveOrig) {
                         $archiveOrig->bind_param("iii", $origID, $origID, $policyID);
                         $archiveOrig->execute();
