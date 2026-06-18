@@ -1,16 +1,16 @@
 <?php
 
-//Localhost Database Connection
-// $host = "localhost";
-// $dbUsername = "root";
-// $dbPassword = "";
-// $dbname = "qms";
-
-//Airhub Database Connection
+// Localhost Database Connection
 $host = "localhost";
-$dbUsername = "jdrizal";
-$dbPassword = "SOETiny1!";
+$dbUsername = "root";
+$dbPassword = "";
 $dbname = "qms";
+
+// //Airhub Database Connection
+// $host = "localhost";
+// $dbUsername = "jdrizal";
+// $dbPassword = "SOETiny1!";
+// $dbname = "qms";
 
 try {
     $conn = new mysqli($host, $dbUsername, $dbPassword, $dbname);

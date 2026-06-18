@@ -94,8 +94,8 @@
                     <img src="../../assets/QAP Sidebar/Not Clicked/reports.png" alt="Icon 9">                    
                     <span class="icon-label">Reports</span>
                 </li>
-                <li>
-                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 10" onclick="showInformation()">
+                <li class="menu-icons" onclick="showInformation()">
+                    <img src="../QAP Sidebar Images/Not Clicked/Info.png" alt="Icon 10">
                     <span class="icon-label">Information</span>
                 </li>
             </ul>
@@ -780,8 +780,117 @@ function toggleRevision(checkbox) {
             
 </div>
 
+<!-- Information Panel -->
+<div class="information Main-Panel" id="Information-Panel" style="display: none; position: absolute; top: 75px; left: 0.9in; width: calc(100% - 1.1in); height: calc(100vh - 130px); background-color: #293A82; padding: 2vw; color: white; border-radius: 20px; box-sizing: border-box; z-index: 1; overflow-y: auto;">
+    <h2 class="info-header" style="font-size: 1.8em; font-weight: bold; margin-top: 0;"> System Guidelines & Modules </h2>
+    <div class="infoWhite-line" style="width: 100%; height: 2px; background-color: white; margin-bottom: 20px;"></div>
+
+    <!-- Policies Repository -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-book" style="margin-right: 10px;"></i> Policies Repository</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">The Policies Repository is the centralized library containing all approved and active policies. You can search, view, and download official documents here.</p>
+        </div>
+    </div>
+
+    <!-- Policy Submission -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-upload" style="margin-right: 10px;"></i> Policy Submission</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">This module allows users to propose new policies or submit revisions. It provides downloadable templates and routes submissions directly to the QA team.</p>
+        </div>
+    </div>
+
+    <!-- My Workspace -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-tasks" style="margin-right: 10px;"></i> My Workspace</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">This is your personal action center. As a QAD, you will manage, review, assign, verify, approve, and publish policy tasks here.</p>
+        </div>
+    </div>
+
+    <!-- Manage Roles -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-user-shield" style="margin-right: 10px;"></i> Manage Roles</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">Use this module to define and manage system roles for employees, giving them specific permissions as QAP or general staff within the OPTIQUAL system.</p>
+        </div>
+    </div>
+
+    <!-- Department Manager -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-sitemap" style="margin-right: 10px;"></i> Department Manager</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">This module lets you build and maintain the organizational structure. You can create departments, assign employees to specific departments, and manage hierarchy.</p>
+        </div>
+    </div>
+
+    <!-- Policy Manager -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-folder-open" style="margin-right: 10px;"></i> Policy Manager</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">This administrative module is where you manage the category folders within the Policy Repository. You can create folders, sub-folders, and organize published policies securely.</p>
+        </div>
+    </div>
+
+    <!-- Reports -->
+    <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="width: 100%; padding: 15px 20px; background-color: #4963D4; color: white; border-radius: 5px; cursor: pointer; display: flex; flex-direction: column; margin-top: 15px; font-size: 18px; transition: background-color 0.2s; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="module-text"><i class="fas fa-chart-bar" style="margin-right: 10px;"></i> Reports</div>
+            <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+        </div>
+        <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; background-color: #a3b8f7; color: black; padding: 20px; border-radius: 5px; width: 100%; box-sizing: border-box; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+            <div style="height: 2px; background-color: black; margin-bottom: 10px;"></div>
+            <p style="margin: 0; font-size: 16px;">The Reports dashboard provides a statistical overview of the QMS. View metrics on active policies, pending reviews, returned documents, and generated system feedbacks.</p>
+        </div>
+    </div>
+</div>
+
 <script src="QAD-POV.js?v=<?php echo filemtime(__DIR__ . '/QAD-POV.js'); ?>"></script>
 <script>
+    window.toggleInfoAccordion = function(element) {
+        const content = element.querySelector('.nested-moduleSubcategory-content');
+        const icon = element.querySelector('.expand-icon');
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            if(icon) icon.style.transform = 'rotate(90deg)';
+        } else {
+            content.style.display = 'none';
+            if(icon) icon.style.transform = 'rotate(0deg)';
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
         const confirmDlPopup = document.getElementById('confirm-dl');

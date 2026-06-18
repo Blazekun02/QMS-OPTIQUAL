@@ -84,7 +84,9 @@ if ($isRevision && $logFile && $logFile['error'] === 0) {
 // ── Determine ultimate root and version number ───────────────
 $ultimateRootID = $originalPolicyID;
 if ($ultimateRootID) {
-    while (true) {
+    $maxDepth = 20; // Prevent infinite loops from circular references
+    $currentDepth = 0;
+    while ($currentDepth < $maxDepth) {
         $stmtRoot = $conn->prepare("SELECT originalPolicyID FROM policytbl WHERE policyID = ?");
         $stmtRoot->bind_param("i", $ultimateRootID);
         $stmtRoot->execute();
@@ -98,6 +100,7 @@ if ($ultimateRootID) {
         }
         $stmtRoot->close();
         if (!$foundParent) break;
+        $currentDepth++;
     }
 }
 
@@ -161,11 +164,31 @@ if (!$stmt->execute()) {
 $newPolicyID = $conn->insert_id;
 $stmt->close();
 
-// ── Insert into tasktbl (puts it in QAD's workspace inbox) ───
-$taskStmt = $conn->prepare("INSERT INTO tasktbl (policyAssigned, assignedBy) VALUES (?, ?)");
-$taskStmt->bind_param("ii", $newPolicyID, $accID);
-$taskStmt->execute();
-$taskStmt->close();
+// ── Assign task and send notifications to ALL Quality Assurance Personnel (Role ID 3) ───
+$qapQuery = $conn->query("SELECT accID FROM accdatatbl WHERE roleID = 3");
+if ($qapQuery && $qapQuery->num_rows > 0) {
+    $taskStmt = $conn->prepare("INSERT INTO tasktbl (policyAssigned, assignedTo, assignedBy, taskTypeID, taskStatus) VALUES (?, ?, ?, 2, 0)");
+    $notifStmt = $conn->prepare("INSERT INTO notiftbl (receivedBy, message, notifStatus) VALUES (?, ?, 0)");
+    
+    $notifMsg = "A new policy is pending your review: " . $policyTitle;
+    
+    while ($qapRow = $qapQuery->fetch_assoc()) {
+        $qapID = (int)$qapRow['accID'];
+        
+        if ($taskStmt) {
+            $taskStmt->bind_param("iii", $newPolicyID, $qapID, $accID);
+            $taskStmt->execute();
+        }
+        
+        if ($notifStmt) {
+            $notifStmt->bind_param("is", $qapID, $notifMsg);
+            $notifStmt->execute();
+        }
+    }
+    
+    if ($taskStmt) $taskStmt->close();
+    if ($notifStmt) $notifStmt->close();
+}
 
 // ── If revision → insert into revisionhistorytbl ───────────────
 if ($isRevision && $ultimateRootID) {

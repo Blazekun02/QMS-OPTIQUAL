@@ -17,10 +17,10 @@ $parentID = isset($_GET['parentID']) && is_numeric($_GET['parentID']) ? (int)$_G
 $dateCondition = "";
 
 if ($month > 0) {
-    $dateCondition .= " AND MONTH(p.dateUploaded) = $month";
+    $dateCondition .= " AND MONTH(COALESCE(p.dateUploaded, p.dateSubmitted)) = $month";
 }
 if ($year > 0) {
-    $dateCondition .= " AND YEAR(p.dateUploaded) = $year";
+    $dateCondition .= " AND YEAR(COALESCE(p.dateUploaded, p.dateSubmitted)) = $year";
 }
 
 if ($parentID === null) {

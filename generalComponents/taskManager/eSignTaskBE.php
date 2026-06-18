@@ -50,6 +50,43 @@ if ($statusResult->num_rows > 0) {
 }
 $statusQuery->close();
 
+// ✨ Verify Authorization to Prevent Race Conditions
+$isAuthorized = false;
+
+// Check if they are explicitly assigned in tasktbl
+$taskCheck = $conn->prepare("SELECT taskID FROM tasktbl WHERE policyAssigned = ? AND assignedTo = ?");
+$taskCheck->bind_param("ii", $policyID, $accID);
+$taskCheck->execute();
+if ($taskCheck->get_result()->num_rows > 0) {
+    $isAuthorized = true;
+}
+$taskCheck->close();
+
+// If not in tasktbl, check roles for implicit authorization
+if (!$isAuthorized) {
+    $roleQuery = $conn->prepare("SELECT roleID FROM accdatatbl WHERE accID = ?");
+    $roleQuery->bind_param("i", $accID);
+    $roleQuery->execute();
+    $roleRes = $roleQuery->get_result();
+    if ($roleRes->num_rows > 0) {
+        $userRole = $roleRes->fetch_assoc()['roleID'];
+        // QAP (Role 3) can universally review Status 1 policies
+        if ($userRole == 3 && $currentStatus == 1) {
+            $isAuthorized = true;
+        }
+        // QAD (Role 2) can universally approve Status 3 policies
+        else if ($userRole == 2 && $currentStatus == 3) {
+            $isAuthorized = true;
+        }
+    }
+    $roleQuery->close();
+}
+
+if (!$isAuthorized) {
+    echo json_encode(['success' => false, 'message' => 'Task is no longer available or you are not authorized to sign this document at its current stage.']);
+    exit;
+}
+
 // ✨ 4. THE 4-STEP WORKFLOW LOGIC (Now with Name Tracking AND Date Stamping!)
 if ($currentStatus == 1) {
     $newStatus = 2; // QA Staff signs -> becomes 2 (Reviewed)
@@ -77,8 +114,8 @@ if ($currentStatus == 1) {
 }
 if ($updatePolicy->execute()) {
     // Clear from tasktbl so it leaves the inbox
-    $completeTask = $conn->prepare("DELETE FROM tasktbl WHERE policyAssigned = ? AND assignedTo = ?");
-    $completeTask->bind_param("ii", $policyID, $accID);
+    $completeTask = $conn->prepare("DELETE FROM tasktbl WHERE policyAssigned = ?");
+    $completeTask->bind_param("i", $policyID);
     $completeTask->execute();
     
     // ====================================================================

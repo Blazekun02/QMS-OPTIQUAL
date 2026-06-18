@@ -15,7 +15,9 @@ if ($policyID <= 0) {
 
 // Find the root originalPolicyID for the family lineage
 $rootID = $policyID;
-while (true) {
+$maxDepth = 20; // Prevent infinite loop in case of circular references
+$currentDepth = 0;
+while ($currentDepth < $maxDepth) {
     $stmt = $conn->prepare("SELECT originalPolicyID FROM policytbl WHERE policyID = ?");
     $stmt->bind_param("i", $rootID);
     $stmt->execute();
@@ -29,6 +31,7 @@ while (true) {
     }
     $stmt->close();
     if (!$foundParent) break;
+    $currentDepth++;
 }
 
 // Collect all IDs in the lineage to support legacy nested revisions

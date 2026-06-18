@@ -298,6 +298,150 @@ if (searchInput) {
     });
 }
 
+// ✨ NEW: Sort & Filter Policies Engine ✨
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Tag all existing elements with their original index so we can restore "Default" order
+    let globalIndex = 0;
+    document.querySelectorAll('.Parent-Block, .PR-Child-Folders, .PR-Policies').forEach(el => {
+        el.setAttribute('data-original-index', globalIndex++);
+    });
+
+    const prSearchContainer = document.querySelector('.PR-Search-Container');
+    if (prSearchContainer && !document.getElementById('prSortSelect')) {
+        const sortSelect = document.createElement('select');
+        sortSelect.id = 'prSortSelect';
+        sortSelect.style.padding = '0 15px';
+        sortSelect.style.height = '34px';
+        sortSelect.style.borderRadius = '20px';
+        sortSelect.style.border = '1px solid #ccc';
+        sortSelect.style.marginLeft = '10px';
+        sortSelect.style.fontFamily = "'Istok Web', sans-serif";
+        sortSelect.style.outline = 'none';
+        sortSelect.style.backgroundColor = 'white';
+        sortSelect.style.cursor = 'pointer';
+        
+        let wrapper = prSearchContainer.parentElement;
+        if (wrapper.id !== 'prControlsWrapper') {
+            wrapper = document.createElement('div');
+            wrapper.id = 'prControlsWrapper';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.flexWrap = 'wrap';
+            wrapper.style.marginBottom = '10px';
+            prSearchContainer.parentNode.insertBefore(wrapper, prSearchContainer);
+            wrapper.appendChild(prSearchContainer);
+            prSearchContainer.style.marginBottom = '0';
+        }
+
+        sortSelect.innerHTML = `
+            <option value="default">Sort: Default</option>
+            <option value="alpha_asc">Alphabetical (A-Z)</option>
+            <option value="alpha_desc">Alphabetical (Z-A)</option>
+            <option value="date_desc">Newest Uploads</option>
+            <option value="date_asc">Oldest Uploads</option>
+        `;
+        
+        sortSelect.addEventListener('change', () => {
+            const sortValue = sortSelect.value;
+            
+            const sortNodes = (nodeList, type) => {
+                return Array.from(nodeList).sort((a, b) => {
+                    if (sortValue === 'default') {
+                        return parseInt(a.getAttribute('data-original-index') || 0) - parseInt(b.getAttribute('data-original-index') || 0);
+                    }
+                    
+                    if (type === 'policy') {
+                        if (sortValue.startsWith('alpha')) {
+                            const nameA = (a.querySelector('.PR-Policies-Name') || a).textContent.trim().toLowerCase();
+                            const nameB = (b.querySelector('.PR-Policies-Name') || b).textContent.trim().toLowerCase();
+                            return sortValue === 'alpha_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                        } else if (sortValue.startsWith('date')) {
+                            const dateA = new Date(a.getAttribute('data-upload-date') || 0).getTime();
+                            const dateB = new Date(b.getAttribute('data-upload-date') || 0).getTime();
+                            return sortValue === 'date_desc' ? dateB - dateA : dateA - dateB;
+                        }
+                    } else if (type === 'folder') {
+                        if (sortValue.startsWith('alpha')) {
+                            const pA = a.querySelector('.PR-Parent-Folder-Name') || a.querySelector('p');
+                            const pB = b.querySelector('.PR-Parent-Folder-Name') || b.querySelector('p');
+                            const nameA = pA ? pA.textContent.trim().toLowerCase() : '';
+                            const nameB = pB ? pB.textContent.trim().toLowerCase() : '';
+                            return sortValue === 'alpha_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                        } else {
+                            return parseInt(a.getAttribute('data-original-index') || 0) - parseInt(b.getAttribute('data-original-index') || 0);
+                        }
+                    }
+                    return 0;
+                });
+            };
+
+            // 1. Sort Parent Blocks
+            const prFoldersContainer = document.querySelector('.PR-Folders');
+            if (prFoldersContainer) {
+                const parentBlocks = prFoldersContainer.querySelectorAll(':scope > .Parent-Block');
+                const sortedParentBlocks = sortNodes(parentBlocks, 'folder');
+                sortedParentBlocks.forEach(block => prFoldersContainer.appendChild(block));
+                
+                // Sort Main Repository Policies (Policies not in any folder)
+                const globalPolicies = prFoldersContainer.querySelectorAll(':scope > .PR-Policies');
+                if (globalPolicies.length > 0) {
+                     const sortedGlobalPolicies = sortNodes(globalPolicies, 'policy');
+                     sortedGlobalPolicies.forEach(pol => prFoldersContainer.appendChild(pol));
+                }
+            }
+
+            // 2. Sort Child Folders and their immediate Policies
+            document.querySelectorAll('.child-folders').forEach(childContainer => {
+                const childFoldersAndPolicies = Array.from(childContainer.children);
+                
+                const childFolderPairs = [];
+                for (let i = 0; i < childFoldersAndPolicies.length; i++) {
+                    const el = childFoldersAndPolicies[i];
+                    if (el.classList.contains('PR-Child-Folders')) {
+                        const nextEl = childFoldersAndPolicies[i+1];
+                        if (nextEl && nextEl.classList.contains('Policies-Folder')) {
+                            childFolderPairs.push({ folder: el, content: nextEl });
+                            i++; // Skip the Policies-Folder since we grouped it
+                        } else {
+                            childFolderPairs.push({ folder: el, content: null });
+                        }
+                    }
+                }
+                
+                childFolderPairs.sort((a, b) => {
+                    if (sortValue === 'default' || sortValue.startsWith('date')) {
+                         return parseInt(a.folder.getAttribute('data-original-index') || 0) - parseInt(b.folder.getAttribute('data-original-index') || 0);
+                    } else {
+                         const nameA = a.folder.textContent.trim().toLowerCase();
+                         const nameB = b.folder.textContent.trim().toLowerCase();
+                         return sortValue === 'alpha_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                    }
+                });
+                
+                childFolderPairs.forEach(pair => {
+                    childContainer.appendChild(pair.folder);
+                    if (pair.content) childContainer.appendChild(pair.content);
+                });
+                
+                const directPolicies = childFoldersAndPolicies.filter(el => el.classList.contains('PR-Policies'));
+                if (directPolicies.length > 0) {
+                    const sortedDirectPolicies = sortNodes(directPolicies, 'policy');
+                    sortedDirectPolicies.forEach(pol => childContainer.appendChild(pol));
+                }
+            });
+
+            // 3. Sort Policies inside sub-folders
+            document.querySelectorAll('.Policies-Folder').forEach(policiesContainer => {
+                const policies = policiesContainer.querySelectorAll('.PR-Policies');
+                const sortedPolicies = sortNodes(policies, 'policy');
+                sortedPolicies.forEach(pol => policiesContainer.appendChild(pol));
+            });
+        });
+        
+        wrapper.appendChild(sortSelect);
+    }
+});
+
 // PDF Viewer Loading & Closing
 window.openCustomPdfViewer = function(filePath, documentTitle, uploadDate, policyId = null) {
     if (!filePath || filePath === 'null' || filePath.trim() === '') {

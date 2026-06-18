@@ -49,6 +49,20 @@
         </script>
 
         <link rel="stylesheet" href="STAFFs-POV.css?v=<?php echo time(); ?>">
+        <style>
+            /* Visually center the sidebar icons and spread them out */
+            .Sidebar-Menu {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                gap: 10vh !important; /* Adjust this value to increase or decrease the gap */
+                height: calc(100vh - 100px) !important; /* Constrain to the remaining height below the logo */
+            }
+            .Sidebar-Menu li.menu-icons {
+                height: auto !important; /* Prevent the default 100% height stretching from breaking alignment */
+                width: 100%;
+            }
+        </style>
     </head>
 
     <body>
@@ -93,6 +107,7 @@
                     </button>
                     <div class="signOut-overlay" id="signOutOverlay">
                         <div class="signOut-content" onclick="window.location.href='/qms_optiqual/auth/log_out/logout.php'" style="cursor: pointer;">
+                        <div class="signOut-content" onclick="window.location.href='../../auth/log_out/logout.php'" style="cursor: pointer;">
                             Sign out
                         </div>
                     </div>
@@ -279,6 +294,7 @@
             <div class="submit-popUp">
                 <h2>Submission</h2>
                 <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
+                <form action="../../generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
                 <div class="submit-field">
                     <p>Policy Title</p>
                 </div>
@@ -337,18 +353,45 @@
         </div>
 
         <div class="information" style="display: none;">
-            <h2 class="info-header"> Guidelines <br> </h2>
-            <div class="infoWhite-line" style="display:flex;"></div>
+            <h2 class="info-header" style="margin-top:0;"> System Guidelines & Modules </h2>
+            <div class="infoWhite-line" style="display:flex; position: relative; top: 0; width: 100%; margin-bottom: 20px;"></div>
 
-            <div class="moduleCategory" data-category="policyRepository">
-                <div class="module-text">Policy Repository</div>
-                <i class="fas fa-chevron-right expand-icon"></i>
-                <div class="nested-moduleSubcategory-content" style="display: none;">
-                    <div class="nested-moduleSubcategory" data-subcategory="about">
-                        <h4 style="margin-bottom:1.5vh;font-weight: Bold; margin-top: -0.5vh;">About<br></h4>
-                        <div class="nested-blackLine" style="margin-top:1vh; display:flex;"><br></div>
-                        <p style="padding-left: 2.5vw; padding-top:4vh; color: black; font-size: 18px; font-weight: normal;">It contains all the policies of Asia Pacific College</p>
-                    </div>
+            <!-- Policies Repository -->
+            <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="display: flex; flex-direction: column; align-items: stretch; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="module-text"><i class="fas fa-book" style="margin-right: 10px;"></i> Policies Repository</div>
+                    <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+                </div>
+                <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; width: 100%; box-sizing: border-box; text-align: left;">
+                    <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+                    <div class="nested-blackLine" style="width: 100%;"></div>
+                    <p style="color: black; font-size: 16px; font-weight: normal; margin-top: 10px;">The Policies Repository is the centralized library containing all approved and active policies of the institution. You can use this module to search, read, and download official documents.</p>
+                </div>
+            </div>
+
+            <!-- Policy Submission -->
+            <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="display: flex; flex-direction: column; align-items: stretch; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="module-text"><i class="fas fa-upload" style="margin-right: 10px;"></i> Policy Submission</div>
+                    <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+                </div>
+                <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; width: 100%; box-sizing: border-box; text-align: left;">
+                    <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+                    <div class="nested-blackLine" style="width: 100%;"></div>
+                    <p style="color: black; font-size: 16px; font-weight: normal; margin-top: 10px;">This module allows faculty and staff to propose new policies or submit revisions to existing ones. It provides downloadable templates and an upload form that automatically routes your submission to the Quality Assurance team.</p>
+                </div>
+            </div>
+
+            <!-- My Workspace -->
+            <div class="moduleCategory" onclick="toggleInfoAccordion(this)" style="display: flex; flex-direction: column; align-items: stretch; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="module-text"><i class="fas fa-tasks" style="margin-right: 10px;"></i> My Workspace</div>
+                    <i class="fas fa-chevron-right expand-icon" style="transition: transform 0.3s;"></i>
+                </div>
+                <div class="nested-moduleSubcategory-content" style="display: none; margin-top: 15px; width: 100%; box-sizing: border-box; text-align: left;">
+                    <h4 style="margin: 0 0 10px 0; font-weight: bold; font-size: 18px;">Purpose & Function</h4>
+                    <div class="nested-blackLine" style="width: 100%;"></div>
+                    <p style="color: black; font-size: 16px; font-weight: normal; margin-top: 10px;">My Workspace is your personal task management area. Here, you can track the status of your submitted policies, respond to feedback or revision requests, and sign documents that require your authorization.</p>
                 </div>
             </div>
         </div>
@@ -545,6 +588,18 @@
                 document.getElementById('sec_zoomOut').addEventListener('click', () => { if(sec_scale <= 0.6) return; sec_scale -= 0.2; sec_queueRenderPage(sec_pageNum); });
             });
 
+            window.toggleInfoAccordion = function(element) {
+                const content = element.querySelector('.nested-moduleSubcategory-content');
+                const icon = element.querySelector('.expand-icon');
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                    if(icon) icon.style.transform = 'rotate(90deg)';
+                } else {
+                    content.style.display = 'none';
+                    if(icon) icon.style.transform = 'rotate(0deg)';
+                }
+            };
+
             document.addEventListener('DOMContentLoaded', function() {
                 const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
                 const confirmDlPopup = document.getElementById('confirm-dl');
@@ -567,6 +622,7 @@
                     confirmDownloadBtn.addEventListener('click', function() {
                         const link = document.createElement('a');
                         link.href = '/qms_optiqual/Policy_Templates/QMS Template.docx'; // Make sure this path points to your actual template file
+                        link.href = '../../Policy_Templates/QMS Template.docx';
                         link.download = 'QMS Template.docx';
                         document.body.appendChild(link);
                         link.click();

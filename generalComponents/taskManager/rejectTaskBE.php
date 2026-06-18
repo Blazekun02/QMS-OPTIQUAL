@@ -58,7 +58,7 @@ if ($authorResult->num_rows > 0) {
     // ✨ NEW: Temporarily disable foreign key checks to prevent crashes from empty config tables!
     $conn->query("SET FOREIGN_KEY_CHECKS=0");
 
-    $feedbackStmt = $conn->prepare("INSERT INTO feedbacktbl (remarksOn, remarksBy, content, fbType, dateSubmitted) VALUES (?, ?, ?, 1, CURDATE())");
+    $feedbackStmt = $conn->prepare("INSERT INTO feedbacktbl (remarksOn, remarksBy, content, fbType, dateSubmitted) VALUES (?, ?, ?, 2, CURDATE())");
     if ($feedbackStmt) {
         $feedbackStmt->bind_param("iis", $policyID, $qadID, $reason);
         $feedbackStmt->execute();

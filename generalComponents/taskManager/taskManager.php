@@ -189,6 +189,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
                     <option value="status_3">Verified</option>
                     <option value="status_4">Approved</option>
                 </select>
+                <button id="btnToggleFinishedTasks" onclick="toggleFinishedTasks()" class="action-btn-inline" style="background:#293A82; color:white; border: 1px solid #fbaf41;"><i class="fas fa-check-circle"></i> Finished Tasks</button>
             </div>
         </div>
         
@@ -256,6 +257,24 @@ if(isset($_SESSION['accID']) && isset($conn)){
     <div id="workspaceFeedbackList">
         <p>Loading...</p>
     </div>
+</div>
+
+<div id="finishedContent" style="display: none; background: white; padding: 20px; border-radius: 10px; color: black; min-height: 300px;">
+    <h2 style="color: #293A82; margin-top:0;">Finished Tasks</h2>
+    <table class="task-manager-table" style="width:100%; margin-top:10px;">
+        <thead>
+            <tr>
+                <th>Policy Title</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="finishedTableBody">
+            <tr><td colspan="5" style="text-align:center; padding: 20px;">Loading finished tasks...</td></tr>
+        </tbody>
+    </table>
 </div>
 
 <div id="revisionsContent" style="display: none; background: white; padding: 20px; border-radius: 10px; color: black; min-height: 300px;">
@@ -438,8 +457,9 @@ var userRole = "<?php echo isset($_SESSION['accID']) ? $_SESSION['accID'] : ''; 
 var systemRoleID = <?php echo $roleID; ?>; 
 
 // ✨ WORKSPACE DATA & STATE ✨
-let workspaceData = { actionRequired: [], mySubmissions: [] };
-let currentTab = 'action'; // 'action' or 'track'
+let workspaceData = { actionRequired: [], mySubmissions: [], finishedTasks: [] };
+let currentTab = 'action'; 
+let showingFinishedTasks = false;
 
 var currentTaskPolicyID = null;
 var currentTaskStatus = null;
@@ -448,6 +468,25 @@ var currentTaskPolicyTitle = null;
 let assignSelectedAccID = null;
 
 var tm_pdfDoc = null, tm_pageNum = 1, tm_pageRendering = false, tm_pageNumPending = null, tm_scale = 1.2, tm_canvas = null, tm_ctx = null;
+
+// ✨ LOCALSTORAGE TRACKER: Automatically marks and removes "NEW" badges upon interaction
+window.markTaskAsViewed = function(policyID) {
+    if (!policyID) return;
+    const storageKey = 'viewedTasks_' + userRole;
+    let viewedTasks = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    if (!viewedTasks.includes(policyID)) {
+        viewedTasks.push(policyID);
+        localStorage.setItem(storageKey, JSON.stringify(viewedTasks));
+    }
+    
+    // Dynamically change the NEW badge to OLD in the UI immediately
+    const badge = document.getElementById('badge-' + policyID);
+    if (badge) {
+        badge.style.backgroundColor = '#6b7280';
+        badge.textContent = 'OLD';
+        badge.removeAttribute('id'); 
+    }
+};
 
 function tm_renderPage(num) {
     tm_pageRendering = true;
@@ -549,6 +588,17 @@ window.switchWorkspaceTab = function(tabId) {
     // 1. Reset active button states
     document.querySelectorAll('.ws-tab').forEach(b => b.classList.remove('active'));
     
+    // ✨ Reset toggle finished tasks if we switch away or switch back to action
+    if (typeof showingFinishedTasks !== 'undefined') {
+        showingFinishedTasks = false;
+        const btn = document.getElementById('btnToggleFinishedTasks');
+        if (btn) btn.innerHTML = '<i class="fas fa-check-circle"></i> Finished Tasks';
+        const filterSelect = document.getElementById('taskSortFilter');
+        const filterLabel = document.querySelector('label[for="taskSortFilter"]');
+        if (filterSelect) filterSelect.style.display = 'inline-block';
+        if (filterLabel) filterLabel.style.display = 'inline-block';
+    }
+
     // 2. Determine which button to highlight
     let activeBtnId = 'tabActionRequired';
     if (tabId === 'track') activeBtnId = 'tabMySubmissions';
@@ -562,6 +612,7 @@ window.switchWorkspaceTab = function(tabId) {
     const headerRow = document.getElementById('workspaceTableHeaders');
     const table = document.getElementById('workspaceTable');
     const feedbacksContent = document.getElementById('feedbacksContent');
+    const finishedContent = document.getElementById('finishedContent');
     const revisionsContent = document.getElementById('revisionsContent');
     const taskControls = document.getElementById('task-list-controls');
 
@@ -571,6 +622,7 @@ window.switchWorkspaceTab = function(tabId) {
         if(table) table.style.display = 'none';
         if(feedbacksContent) feedbacksContent.style.display = 'block';
         if(revisionsContent) revisionsContent.style.display = 'none';
+        if(finishedContent) finishedContent.style.display = 'none';
         if(taskControls) taskControls.style.display = 'none';
         
         // Load data
@@ -580,6 +632,7 @@ window.switchWorkspaceTab = function(tabId) {
     } else if (tabId === 'revisions') {
         if(table) table.style.display = 'none';
         if(feedbacksContent) feedbacksContent.style.display = 'none';
+        if(finishedContent) finishedContent.style.display = 'none';
         if(revisionsContent) revisionsContent.style.display = 'block';
         if(taskControls) taskControls.style.display = 'none';
         if (typeof window.loadWorkspaceRevisions === 'function') {
@@ -590,6 +643,7 @@ window.switchWorkspaceTab = function(tabId) {
         if(table) table.style.display = 'table';
         if(feedbacksContent) feedbacksContent.style.display = 'none';
         if(revisionsContent) revisionsContent.style.display = 'none';
+        if(finishedContent) finishedContent.style.display = 'none';
 
         if (tabId === 'action') {
             if(taskControls) taskControls.style.display = 'flex';
@@ -603,6 +657,29 @@ window.switchWorkspaceTab = function(tabId) {
     }
 };
 
+window.toggleFinishedTasks = function() {
+    showingFinishedTasks = !showingFinishedTasks;
+    const table = document.getElementById('workspaceTable');
+    const finishedContent = document.getElementById('finishedContent');
+    const btn = document.getElementById('btnToggleFinishedTasks');
+    const filterSelect = document.getElementById('taskSortFilter');
+    const filterLabel = document.querySelector('label[for="taskSortFilter"]');
+    
+    if (showingFinishedTasks) {
+        if(table) table.style.display = 'none';
+        if(finishedContent) finishedContent.style.display = 'block';
+        if(btn) btn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to My Tasks';
+        if(filterSelect) filterSelect.style.display = 'none';
+        if(filterLabel) filterLabel.style.display = 'none';
+        populateFinishedTasksTable(workspaceData.finishedTasks || []);
+    } else {
+        if(finishedContent) finishedContent.style.display = 'none';
+        if(table) table.style.display = 'table';
+        if(btn) btn.innerHTML = '<i class="fas fa-check-circle"></i> Finished Tasks';
+        if(filterSelect) filterSelect.style.display = 'inline-block';
+        if(filterLabel) filterLabel.style.display = 'inline-block';
+    }
+}
 
 function populateWorkspaceTable(tasks) {
     const tableBody = document.getElementById('taskTableBody');
@@ -614,6 +691,21 @@ function populateWorkspaceTable(tasks) {
         return; 
     }
 
+    function getTaskAgeBadge(dateString, policyID) {
+        if (!dateString) return '';
+        const taskDate = new Date(dateString);
+        if (isNaN(taskDate.getTime())) return '';
+        const daysOld = Math.floor((Date.now() - taskDate.getTime()) / 86400000);
+
+        const storageKey = 'viewedTasks_' + userRole;
+        let viewedTasks = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        
+        if (daysOld <= 7 && !viewedTasks.includes(policyID)) {
+            return `<span id="badge-${policyID}" style="background-color: #22c55e; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-left: 5px; transition: 0.3s;">NEW</span>`;
+        }
+        return `<span style="background-color: #6b7280; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-left: 5px;">OLD</span>`;
+    }
+
     tasks.forEach(task => {
         const row = tableBody.insertRow();
         
@@ -622,13 +714,19 @@ function populateWorkspaceTable(tasks) {
         const revisionBadge = isRevision 
             ? `<span style="background-color: #fbaf41; color: black; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-left: 5px;">REVISION</span>` 
             : '';
+        const taskDate = task.taskDate || task.dateSubmitted;
+        const ageBadge = getTaskAgeBadge(taskDate, task.policyID);
 
         if (currentTab === 'action') {
-            row.onclick = function() { showTaskIntroduction(task.policyID, task.policyTitle, task.author, task.pdfPath, task.status, task.originalFilePath); };
+            const isTaskAssigned = (task.status === 'Reviewed' && task.verifierName);
+            row.onclick = function() { 
+                window.markTaskAsViewed(task.policyID);
+                showTaskIntroduction(task.policyID, task.policyTitle, task.author, task.pdfPath, task.status, task.originalFilePath, isTaskAssigned); 
+            };
             
             // ✨ ADDED: ${revisionBadge} next to the policyTitle
             row.innerHTML = `
-                <td>${task.policyTitle} ${revisionBadge}</td>
+                <td>${task.policyTitle} ${revisionBadge} ${ageBadge}</td>
                 <td>${task.author}</td>
                 <td>${task.dateSubmitted ? new Date(task.dateSubmitted).toLocaleDateString() : '---'}</td>
                 <td>${task.reviewerName || '---'}</td>
@@ -653,14 +751,29 @@ function populateWorkspaceTable(tasks) {
                     actionBtn.textContent = 'Upload';
                     actionBtn.onclick = (e) => {
                         e.stopPropagation(); // Prevent opening the document viewer
+                        window.markTaskAsViewed(task.policyID);
                         window.uploadPolicyAction(task.policyID, actionBtn);
                     };
                 } else if (task.status === 'Reviewed') {
-                    actionBtn.textContent = 'Assign';
-                    actionBtn.onclick = () => openAssignModalForTask(task.policyID, task.status, task.policyTitle);
+                    if (task.verifierName) {
+                        actionBtn.textContent = 'Assigned';
+                        actionBtn.disabled = true;
+                        actionBtn.style.backgroundColor = '#A0A0A0';
+                        actionBtn.style.color = 'white';
+                        actionBtn.style.cursor = 'not-allowed';
+                    } else {
+                        actionBtn.textContent = 'Assign';
+                        actionBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            window.markTaskAsViewed(task.policyID);
+                            openAssignModalForTask(task.policyID, task.status, task.policyTitle);
+                        };
+                    }
                 } else if (task.status === 'Verified') {
                     actionBtn.textContent = 'Approve';
-                    actionBtn.onclick = () => {
+                    actionBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        window.markTaskAsViewed(task.policyID);
                         currentTaskPolicyID = task.policyID;
                         currentTaskStatus = task.status;
                         document.getElementById('eSignPasswordInput').value = '';
@@ -675,7 +788,9 @@ function populateWorkspaceTable(tasks) {
                 else if (task.status === 'Reviewed') actionBtn.textContent = 'Verify';
                 else actionBtn.textContent = 'Approve';
                 
-                actionBtn.onclick = () => {
+                actionBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    window.markTaskAsViewed(task.policyID);
                     currentTaskPolicyID = task.policyID;
                     currentTaskStatus = task.status;
                     document.getElementById('eSignPasswordInput').value = '';
@@ -701,6 +816,7 @@ function populateWorkspaceTable(tasks) {
                 logBtn.onclick = (e) => {
                     e.stopPropagation();
                     e.preventDefault();
+                    window.markTaskAsViewed(task.policyID);
                     if (typeof window.openCustomPdfViewer === 'function') {
                         window.openCustomPdfViewer(task.requestChangeContentPath, "Policy Change Log", logBtn.getAttribute('data-date'));
                     } else window.open(task.requestChangeContentPath, '_blank');
@@ -744,7 +860,59 @@ function populateWorkspaceTable(tasks) {
     });
 }
 // ==========================================
-// VISUAL TRACKER & MINI PDF LOGIC
+// FINISHED TASKS TABLE RENDERER
+// ==========================================
+function populateFinishedTasksTable(finishedItems) {
+    const tableBody = document.getElementById('finishedTableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
+    if (!Array.isArray(finishedItems) || finishedItems.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No finished tasks found.</td></tr>`;
+        return;
+    }
+
+    finishedItems.forEach(item => {
+        const row = document.createElement('tr');
+        const dateValue = item.dateUploaded || item.dateApproved || item.dateVerified || item.dateReviewed || item.dateSubmitted || '';
+
+        const titleCell = document.createElement('td');
+        titleCell.style.fontWeight = 'bold';
+        titleCell.textContent = item.policyTitle || 'Untitled';
+
+        const authorCell = document.createElement('td');
+        authorCell.textContent = item.author || 'Unknown';
+
+        const statusCell = document.createElement('td');
+        statusCell.style.fontWeight = 'bold';
+        statusCell.textContent = item.status || 'Unknown';
+
+        const dateCell = document.createElement('td');
+        dateCell.textContent = dateValue ? new Date(dateValue).toLocaleDateString() : '---';
+
+        const actionCell = document.createElement('td');
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'action-btn-inline';
+        viewBtn.style.background = '#293A82';
+        viewBtn.style.color = 'white';
+        viewBtn.textContent = 'View';
+        viewBtn.onclick = () => {
+            if (item.pdfPath && item.pdfPath !== 'null') {
+                window.open(item.pdfPath, '_blank');
+            }
+        };
+        actionCell.appendChild(viewBtn);
+
+        row.appendChild(titleCell);
+        row.appendChild(authorCell);
+        row.appendChild(statusCell);
+        row.appendChild(dateCell);
+        row.appendChild(actionCell);
+        tableBody.appendChild(row);
+    });
+}
+
+// ==========================================
 // ==========================================
 let mini_pdfDoc = null, mini_pageNum = 1, mini_pageRendering = false, mini_pageNumPending = null, mini_scale = 1.0, mini_canvas = null, mini_ctx = null;
 
@@ -825,7 +993,7 @@ function closeTracker() {
 // ==========================================
 // PDF VIEWER / DOCUMENT INTRODUCTION LOGIC
 // ==========================================
-function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, policyStatus, originalFilePath = null) {
+function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, policyStatus, originalFilePath = null, isAssigned = false) {
     currentTaskPolicyID = policyID;
     currentTaskStatus = policyStatus;
     currentTaskPolicyTitle = policyTitle; 
@@ -876,7 +1044,16 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
         }
 
         if (policyStatus === 'Reviewed') {
-            if (assignBtn) assignBtn.style.display = 'flex';
+            if (assignBtn) {
+                assignBtn.style.display = 'flex';
+                if (isAssigned) {
+                    assignBtn.disabled = true;
+                    if (assignBtn.querySelector('span')) assignBtn.querySelector('span').textContent = 'Assigned';
+                } else {
+                    assignBtn.disabled = false;
+                    if (assignBtn.querySelector('span')) assignBtn.querySelector('span').textContent = 'Assign';
+                }
+            }
         } else if (policyStatus === 'Verified') {
             if (eSignBtn) {
                 eSignBtn.style.display = 'flex';

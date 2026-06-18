@@ -27,6 +27,7 @@ try {
 
     $actionRequired = [];
     $mySubmissions  = [];
+    $finishedTasks  = [];
 
     // ==========================================
     // 1. FETCH "ACTION REQUIRED" (Tasks to do)
@@ -71,9 +72,9 @@ try {
                 NULL             AS assignedBy,
                 p.contentPath    AS pdfPath,
                 p.requestChangeContentPath,
-                CASE WHEN p.policyStatusID >= 2 THEN r.fullName ELSE NULL END AS reviewerName,
-                CASE WHEN p.policyStatusID >= 3 THEN v.fullName ELSE NULL END AS verifierName,
-                CASE WHEN p.policyStatusID >= 4 THEN ap.fullName ELSE NULL END AS approverName,
+                r.fullName       AS reviewerName,
+                v.fullName       AS verifierName,
+                ap.fullName      AS approverName,
                 p.originalPolicyID,
                 (SELECT contentPath FROM policytbl WHERE policyID = p.originalPolicyID) AS originalFilePath
             FROM policytbl p
@@ -92,17 +93,20 @@ try {
         // Handle status-specific filter
         if (strpos($sort, 'status_') === 0) {
             $statusID = (int) substr($sort, 7);
-            if      ($statusID == 2) $whereClauses[] = "p.policyStatusID = 2";
-            elseif  ($statusID == 3) $whereClauses[] = "p.policyStatusID = 3";
-            elseif  ($statusID == 4) $whereClauses[] = "p.policyStatusID = 4 AND p.categoryID IS NULL";
-            else                     $whereClauses[] = "p.policyStatusID = 1";
+            $whereClauses[] = "p.policyStatusID = " . $statusID;
+            if ($statusID == 2) {
+                $whereClauses[] = "p.policyVerifier IS NULL";
+            } elseif ($statusID == 3) {
+                $whereClauses[] = "p.policyApprover IS NULL";
+            }
         } else {
             // Default: all active policies the QAD still needs to act on.
-            // This is now more specific to prevent showing tasks that are already delegated.
             $whereClauses[] = "
-                (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR 
-                (p.policyStatusID = 3) OR
-                (p.policyStatusID = 4 AND p.categoryID IS NULL)
+                (p.policyStatusID = 1) OR
+                (p.policyStatusID = 2 AND p.policyVerifier IS NULL) OR
+                (p.policyStatusID = 3 AND p.policyApprover IS NULL) OR
+                (p.policyStatusID = 4) OR
+                (p.policyStatusID = 5 AND p.dateUploaded IS NULL)
             ";
         }
 
@@ -110,6 +114,7 @@ try {
         // -----------------------------------------------------------------
         // REGULAR USERS (QAP, Staff, Verifier, Approver):
         // Tasks are explicitly assigned via tasktbl.
+        // QAP (Role 1) also automatically sees all Pending (Status 1) policies.
         // -----------------------------------------------------------------
         $selectCore = "
             SELECT
@@ -120,18 +125,18 @@ try {
                 ps.policyStatusName AS status,
                 p.policyStatusID AS statusCode,
                 t.taskID,
-                t.dateCreated    AS taskDate,
+                COALESCE(t.dateCreated, p.dateSubmitted) AS taskDate,
                 t.taskStatus,
                 t.assignedBy,
                 p.contentPath    AS pdfPath,
                 p.requestChangeContentPath,
-                CASE WHEN p.policyStatusID >= 2 THEN r.fullName ELSE NULL END AS reviewerName,
-                CASE WHEN p.policyStatusID >= 3 THEN v.fullName ELSE NULL END AS verifierName,
-                CASE WHEN p.policyStatusID >= 4 THEN ap.fullName ELSE NULL END AS approverName,
+                r.fullName       AS reviewerName,
+                v.fullName       AS verifierName,
+                ap.fullName      AS approverName,
                 p.originalPolicyID,
                 (SELECT contentPath FROM policytbl WHERE policyID = p.originalPolicyID) AS originalFilePath
-            FROM tasktbl t
-            JOIN policytbl p     ON t.policyAssigned = p.policyID
+            FROM policytbl p
+            LEFT JOIN tasktbl t      ON t.policyAssigned = p.policyID AND t.assignedTo = ? AND t.taskStatus = 0
             LEFT JOIN accdatatbl a   ON p.policyAuthor   = a.accID
             LEFT JOIN accdatatbl r   ON p.policyReviewer = r.accID
             LEFT JOIN accdatatbl v   ON p.policyVerifier = v.accID
@@ -139,10 +144,17 @@ try {
             LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
         ";
 
-        $dateColumn   = "t.dateCreated";
-        $whereClauses = ["t.assignedTo = ?", "t.taskStatus = 0"];
+        $dateColumn   = "COALESCE(t.dateCreated, p.dateSubmitted)";
         $params       = [$accID];
         $types        = "i";
+
+        if ($userRole == 3) {
+            // QAP sees all Pending (1) tasks + explicitly assigned tasks
+            $whereClauses = ["(p.policyStatusID = 1 OR t.taskID IS NOT NULL)"];
+        } else {
+            // Others only see explicitly assigned tasks
+            $whereClauses = ["t.taskID IS NOT NULL"];
+        }
 
         // Handle status-specific filter
         if (strpos($sort, 'status_') === 0) {
@@ -182,7 +194,11 @@ try {
     }
 
     if ($res) {
-        while ($row = $res->fetch_assoc()) { $actionRequired[] = $row; }
+        while ($row = $res->fetch_assoc()) { 
+            $dateForNewCheck = $row['taskDate'] ?? $row['dateSubmitted'];
+            $row['isNewTask'] = (strtotime($dateForNewCheck) >= strtotime('-2 days'));
+            $actionRequired[] = $row; 
+        }
     }
     if (isset($stmt)) { $stmt->close(); }
 
@@ -211,9 +227,57 @@ try {
     while ($trackRow = $trackRes->fetch_assoc()) { $mySubmissions[] = $trackRow; }
     $trackStmt->close();
 
+    // =====================================================================
+    // 3. FETCH "FINISHED TASKS" (Completed / archived items)
+    // =====================================================================
+    if ($userRole == 2) {
+        $historyStmt = $conn->prepare("SELECT p.policyID,
+                p.title AS policyTitle,
+                a.fullName AS author,
+                p.dateSubmitted,
+                p.dateUploaded,
+                p.dateReviewed,
+                p.dateVerified,
+                p.dateApproved,
+                ps.policyStatusName AS status,
+                p.policyStatusID AS statusCode,
+                p.contentPath AS pdfPath
+            FROM policytbl p
+            LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
+            LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+            WHERE p.policyStatusID IN (6, 7) OR (p.policyStatusID = 5 AND p.dateUploaded IS NOT NULL)
+            ORDER BY COALESCE(p.dateUploaded, p.dateApproved, p.dateVerified, p.dateReviewed, p.dateSubmitted) DESC");
+    } else {
+        $historyStmt = $conn->prepare("SELECT p.policyID,
+                p.title AS policyTitle,
+                a.fullName AS author,
+                p.dateSubmitted,
+                p.dateUploaded,
+                p.dateReviewed,
+                p.dateVerified,
+                p.dateApproved,
+                ps.policyStatusName AS status,
+                p.policyStatusID AS statusCode,
+                p.contentPath AS pdfPath
+            FROM policytbl p
+            LEFT JOIN accdatatbl a ON p.policyAuthor = a.accID
+            LEFT JOIN policystatus ps ON p.policyStatusID = ps.policyStatusID
+            WHERE p.policyStatusID IN (5, 6, 7)
+              AND (p.policyAuthor = ? OR p.policyReviewer = ? OR p.policyVerifier = ? OR p.policyApprover = ?)
+            ORDER BY COALESCE(p.dateUploaded, p.dateApproved, p.dateVerified, p.dateReviewed, p.dateSubmitted) DESC");
+        $historyStmt->bind_param("iiii", $accID, $accID, $accID, $accID);
+    }
+    if ($historyStmt) {
+        $historyStmt->execute();
+        $historyRes = $historyStmt->get_result();
+        while ($historyRow = $historyRes->fetch_assoc()) { $finishedTasks[] = $historyRow; }
+        $historyStmt->close();
+    }
+
     echo json_encode([
         'actionRequired' => $actionRequired,
         'mySubmissions'  => $mySubmissions,
+        'finishedTasks'  => $finishedTasks,
     ]);
 
 } catch (Exception $e) {

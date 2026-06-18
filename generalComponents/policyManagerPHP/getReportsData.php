@@ -45,8 +45,8 @@ if ($action === 'summary') {
         'archived' => 0      
     ];
 
-    // Fetch Feedback KPI Count
-    $fbQuery = "SELECT COUNT(*) as cnt FROM feedbacktbl f WHERE 1=1";
+    // Fetch Feedback KPI Count (Only General Feedbacks for valid policies)
+    $fbQuery = "SELECT COUNT(f.feedbackID) as cnt FROM feedbacktbl f JOIN policytbl p ON f.remarksOn = p.policyID WHERE f.fbType = 1";
     $fbParams = [];
     $fbTypes = "";
     if (!empty($month)) {
@@ -330,12 +330,12 @@ if ($action === 'summary') {
         $types = str_repeat('i', count($statusIDs));
 
         if (!empty($month)) {
-            $query .= " AND MONTH(p.dateUploaded) = ?";
+            $query .= " AND MONTH(COALESCE(p.dateUploaded, p.dateSubmitted)) = ?";
             $params[] = $month;
             $types .= 'i';
         }
         if (!empty($year)) {
-            $query .= " AND YEAR(p.dateUploaded) = ?";
+            $query .= " AND YEAR(COALESCE(p.dateUploaded, p.dateSubmitted)) = ?";
             $params[] = $year;
             $types .= 'i';
         }

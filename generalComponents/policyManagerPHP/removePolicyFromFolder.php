@@ -35,8 +35,8 @@ if ($infoResult->num_rows > 0) {
 }
 $infoQuery->close();
 
-// Reverted: Set policyStatusID to 4 (Approved) so it goes back to the main repository and can be assigned again.
-$stmt = $conn->prepare("UPDATE policytbl SET categoryID = NULL, policyStatusID = 4 WHERE policyID = ?");
+// Keep the policy as Published (5), but move it to the Main Repository (NULL folder)
+$stmt = $conn->prepare("UPDATE policytbl SET categoryID = NULL, policyStatusID = 5 WHERE policyID = ?");
 $stmt->bind_param("i", $policyID);
 
 if ($stmt->execute()) {

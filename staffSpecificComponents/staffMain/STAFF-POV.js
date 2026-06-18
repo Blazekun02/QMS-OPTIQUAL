@@ -287,17 +287,167 @@ if (searchInput) {
     });
 }
 
+// ✨ NEW: Sort & Filter Policies Engine ✨
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Tag all existing elements with their original index so we can restore "Default" order
+    let globalIndex = 0;
+    document.querySelectorAll('.Parent-Block, .PR-Child-Folders, .PR-Policies').forEach(el => {
+        el.setAttribute('data-original-index', globalIndex++);
+    });
+
+    const prSearchContainer = document.querySelector('.PR-Search-Container');
+    if (prSearchContainer && !document.getElementById('prSortSelect')) {
+        let wrapper = prSearchContainer.parentElement;
+        if (wrapper.id !== 'prControlsWrapper') {
+            wrapper = document.createElement('div');
+            wrapper.id = 'prControlsWrapper';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.flexWrap = 'wrap';
+            wrapper.style.marginBottom = '10px';
+            prSearchContainer.parentNode.insertBefore(wrapper, prSearchContainer);
+            wrapper.appendChild(prSearchContainer);
+            prSearchContainer.style.marginBottom = '0';
+        }
+
+        const sortSelect = document.createElement('select');
+        sortSelect.id = 'prSortSelect';
+        sortSelect.style.padding = '0 15px';
+        sortSelect.style.height = '34px';
+        sortSelect.style.borderRadius = '20px';
+        sortSelect.style.border = '1px solid #ccc';
+        sortSelect.style.marginLeft = '10px';
+        sortSelect.style.fontFamily = "'Istok Web', sans-serif";
+        sortSelect.style.outline = 'none';
+        sortSelect.style.backgroundColor = 'white';
+        sortSelect.style.cursor = 'pointer';
+        
+        sortSelect.innerHTML = `
+            <option value="default">Sort: Default</option>
+            <option value="alpha_asc">Alphabetical (A-Z)</option>
+            <option value="alpha_desc">Alphabetical (Z-A)</option>
+            <option value="date_desc">Newest Uploads</option>
+            <option value="date_asc">Oldest Uploads</option>
+        `;
+        
+        sortSelect.addEventListener('change', () => {
+            const sortValue = sortSelect.value;
+            
+            const sortNodes = (nodeList, type) => {
+                return Array.from(nodeList).sort((a, b) => {
+                    if (sortValue === 'default') {
+                        return parseInt(a.getAttribute('data-original-index') || 0) - parseInt(b.getAttribute('data-original-index') || 0);
+                    }
+                    
+                    if (type === 'policy') {
+                        if (sortValue.startsWith('alpha')) {
+                            const nameA = (a.querySelector('.PR-Policies-Name') || a).textContent.trim().toLowerCase();
+                            const nameB = (b.querySelector('.PR-Policies-Name') || b).textContent.trim().toLowerCase();
+                            return sortValue === 'alpha_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                        } else if (sortValue.startsWith('date')) {
+                            const dateA = new Date(a.getAttribute('data-upload-date') || 0).getTime();
+                            const dateB = new Date(b.getAttribute('data-upload-date') || 0).getTime();
+                            return sortValue === 'date_desc' ? dateB - dateA : dateA - dateB;
+                        }
+                    } else if (type === 'folder') {
+                        if (sortValue.startsWith('alpha')) {
+                            const pA = a.querySelector('.PR-Parent-Folder-Name') || a.querySelector('p');
+                            const pB = b.querySelector('.PR-Parent-Folder-Name') || b.querySelector('p');
+                            const nameA = pA ? pA.textContent.trim().toLowerCase() : '';
+                            const nameB = pB ? pB.textContent.trim().toLowerCase() : '';
+                            return sortValue === 'alpha_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                        } else {
+                            return parseInt(a.getAttribute('data-original-index') || 0) - parseInt(b.getAttribute('data-original-index') || 0);
+                        }
+                    }
+                    return 0;
+                });
+            };
+
+            // 1. Sort Parent Blocks
+            const prFoldersContainer = document.querySelector('.PR-Folders');
+            if (prFoldersContainer) {
+                const parentBlocks = prFoldersContainer.querySelectorAll(':scope > .Parent-Block');
+                const sortedParentBlocks = sortNodes(parentBlocks, 'folder');
+                sortedParentBlocks.forEach(block => prFoldersContainer.appendChild(block));
+                
+                // Sort Main Repository Policies (Policies not in any folder)
+                const globalPolicies = prFoldersContainer.querySelectorAll(':scope > .PR-Policies');
+                if (globalPolicies.length > 0) {
+                     const sortedGlobalPolicies = sortNodes(globalPolicies, 'policy');
+                     sortedGlobalPolicies.forEach(pol => prFoldersContainer.appendChild(pol));
+                }
+            }
+
+            // 2. Sort Child Folders and their immediate Policies
+            document.querySelectorAll('.child-folders').forEach(childContainer => {
+                const childFoldersAndPolicies = Array.from(childContainer.children);
+                
+                const childFolderPairs = [];
+                for (let i = 0; i < childFoldersAndPolicies.length; i++) {
+                    const el = childFoldersAndPolicies[i];
+                    if (el.classList.contains('PR-Child-Folders')) {
+                        const nextEl = childFoldersAndPolicies[i+1];
+                        if (nextEl && nextEl.classList.contains('Policies-Folder')) {
+                            childFolderPairs.push({ folder: el, content: nextEl });
+                            i++; // Skip the Policies-Folder since we grouped it
+                        } else {
+                            childFolderPairs.push({ folder: el, content: null });
+                        }
+                    }
+                }
+                
+                childFolderPairs.sort((a, b) => {
+                    if (sortValue === 'default' || sortValue.startsWith('date')) {
+                         return parseInt(a.folder.getAttribute('data-original-index') || 0) - parseInt(b.folder.getAttribute('data-original-index') || 0);
+                    } else {
+                         const nameA = a.folder.textContent.trim().toLowerCase();
+                         const nameB = b.folder.textContent.trim().toLowerCase();
+                         return sortValue === 'alpha_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                    }
+                });
+                
+                childFolderPairs.forEach(pair => {
+                    childContainer.appendChild(pair.folder);
+                    if (pair.content) childContainer.appendChild(pair.content);
+                });
+                
+                const directPolicies = childFoldersAndPolicies.filter(el => el.classList.contains('PR-Policies'));
+                if (directPolicies.length > 0) {
+                    const sortedDirectPolicies = sortNodes(directPolicies, 'policy');
+                    sortedDirectPolicies.forEach(pol => childContainer.appendChild(pol));
+                }
+            });
+
+            // 3. Sort Policies inside sub-folders
+            document.querySelectorAll('.Policies-Folder').forEach(policiesContainer => {
+                const policies = policiesContainer.querySelectorAll('.PR-Policies');
+                const sortedPolicies = sortNodes(policies, 'policy');
+                sortedPolicies.forEach(pol => policiesContainer.appendChild(pol));
+            });
+        });
+        
+        wrapper.appendChild(sortSelect);
+    }
+});
+
     // --- ARCHIVES BUTTON & MODAL SETUP ---
     document.addEventListener('DOMContentLoaded', () => {
         if (window.currentUserRoleID !== 2 && window.currentUserRoleID !== 3) return;
         const prSearchContainer = document.querySelector('.PR-Search-Container');
         if (prSearchContainer && !document.getElementById('prArchiveBtn')) {
-            const controlsWrapper = document.createElement('div');
-            controlsWrapper.style.display = 'flex';
-            controlsWrapper.style.alignItems = 'center';
-            
-            prSearchContainer.parentNode.insertBefore(controlsWrapper, prSearchContainer);
-            controlsWrapper.appendChild(prSearchContainer);
+            let controlsWrapper = prSearchContainer.parentElement;
+            if (controlsWrapper.id !== 'prControlsWrapper') {
+                controlsWrapper = document.createElement('div');
+                controlsWrapper.id = 'prControlsWrapper';
+                controlsWrapper.style.display = 'flex';
+                controlsWrapper.style.alignItems = 'center';
+                controlsWrapper.style.flexWrap = 'wrap';
+                controlsWrapper.style.marginBottom = '10px';
+                prSearchContainer.parentNode.insertBefore(controlsWrapper, prSearchContainer);
+                controlsWrapper.appendChild(prSearchContainer);
+                prSearchContainer.style.marginBottom = '0';
+            }
             
             const archiveBtn = document.createElement('button');
             archiveBtn.innerHTML = '<i class="fas fa-archive"></i> View Archives';
@@ -311,7 +461,6 @@ if (searchInput) {
             archiveBtn.style.cursor = 'pointer';
             archiveBtn.style.fontWeight = 'bold';
             archiveBtn.style.marginLeft = '10px';
-            archiveBtn.style.marginBottom = '10px'; // Align with search container's margin
             
             archiveBtn.addEventListener('click', openArchivesModal);
             controlsWrapper.appendChild(archiveBtn);
@@ -876,3 +1025,148 @@ if (submitForm && formSubmitBtn) {
             }).catch(err => console.error("Auto-Sync Polling Error:", err));
     }, 4000);
 })();
+
+/* =====================================================================
+// ✨ WORKSPACE FEEDBACK ENGINE ✨
+// ===================================================================== */
+window.loadWorkspaceFeedbacks = function() {
+    const container = document.getElementById('workspaceFeedbackList');
+    if (!container) return;
+
+    fetch('../../generalComponents/policyManagerPHP/getFeedbacks.php')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            container.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+            return;
+        }
+
+        if (data.feedbacks.length === 0) {
+            container.innerHTML = '<p style="padding: 20px;">No feedbacks found.</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="margin-bottom: 15px; text-align: right;">
+                <button onclick="expandAllFeedbackReplies(event)" style="background: #293A82; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-reply-all"></i> Reply to all Feedbacks
+                </button>
+            </div>
+        ` + data.feedbacks.map((fb, index) => {
+            const badge = fb.fbType == 2 ? '<span style="background-color: #ef4444; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-left: 10px;">REJECTED</span>' : '<span style="background-color: #10b981; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-left: 10px;">GENERAL</span>';
+            return `
+        <div class="fb-item" style="background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer;" onclick="toggleFbDetails(${index})">
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Policy: ${fb.policyTitle || 'Untitled'} ${badge}</strong>
+                <span>${fb.dateSubmitted}</span>
+            </div>
+            <div>Submitted by: ${fb.submittedBy}</div>
+            
+            <div id="fb-details-${index}" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid #eee;" onclick="event.stopPropagation()">
+                <p><strong>Feedback Content:</strong></p>
+                <div style="background: #f9f9f9; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #eee;">
+                    ${fb.content}
+                </div>
+                ${fb.replyContent ? `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                        <p style="margin:0 0 5px 0; font-weight:bold; color: #293A82; font-size: 14px;">
+                            <i class="fas fa-level-up-alt fa-rotate-90" style="margin-right: 8px;"></i>Response from ${fb.replierName || 'Author'} on ${new Date(fb.dateReplied).toLocaleDateString()}:
+                        </p>
+                        <div style="background: #eef2ff; padding: 12px; border-radius: 5px; white-space: pre-wrap; border-left: 3px solid #293A82;">${fb.replyContent}</div>
+                    </div>
+                ` : `
+                    <div style="text-align: right; margin-top: 15px;" id="reply-container-${fb.feedbackID}" class="reply-container-block" data-fbid="${fb.feedbackID}">
+                        <button onclick="showReplyForm(${fb.feedbackID})" style="background: #fbaf41; color: black; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-reply"></i> Address Feedback
+                        </button>
+                    </div>
+                `}
+            </div>
+        </div>
+            `;
+        }).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        container.innerHTML = '<p>Error loading feedbacks.</p>';
+    });
+};
+
+window.expandAllFeedbackReplies = function(e) {
+    if (e) e.stopPropagation();
+    document.querySelectorAll('[id^="fb-details-"]').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('.reply-container-block').forEach(container => {
+        const fbId = container.getAttribute('data-fbid');
+        if (fbId) showReplyForm(fbId);
+    });
+};
+
+window.toggleFbDetails = function(index) {
+    const el = document.getElementById(`fb-details-${index}`);
+    if (el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
+};
+
+window.showReplyForm = function(feedbackID) {
+    if (event) event.stopPropagation(); 
+    const container = document.getElementById(`reply-container-${feedbackID}`);
+    if (!container) return;
+
+    container.innerHTML = `
+        <textarea id="reply-text-${feedbackID}" placeholder="Type your reply to the feedback submitter..." style="width: 100%; min-height: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-family: inherit; resize: vertical;"></textarea>
+        <div style="text-align: right;">
+            <button onclick="cancelReply(${feedbackID})" style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; font-weight: bold;">Cancel</button>
+            <button id="submit-reply-btn-${feedbackID}" onclick="submitFeedbackReply(${feedbackID})" style="background: #293A82; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Submit Reply</button>
+        </div>
+    `;
+    const textarea = document.getElementById(`reply-text-${feedbackID}`);
+    if (textarea) textarea.focus();
+};
+
+window.cancelReply = function(feedbackID) {
+    if (event) event.stopPropagation();
+    const container = document.getElementById(`reply-container-${feedbackID}`);
+    if (!container) return;
+    container.innerHTML = `
+        <button onclick="showReplyForm(${feedbackID})" style="background: #fbaf41; color: black; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+           <i class="fas fa-reply"></i> Address Feedback
+        </button>
+    `;
+};
+
+window.submitFeedbackReply = function(feedbackID) {
+    if (event) event.stopPropagation();
+    const replyContent = document.getElementById(`reply-text-${feedbackID}`).value.trim();
+    if (!replyContent) {
+        alert("Please enter a reply.");
+        return;
+    }
+
+    const btn = document.getElementById(`submit-reply-btn-${feedbackID}`);
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+    fetch('../../generalComponents/policyManagerPHP/submitFeedbackReply.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedbackID: feedbackID, replyContent: replyContent })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Reply submitted successfully!');
+            if (typeof loadWorkspaceFeedbacks === 'function') {
+                loadWorkspaceFeedbacks();
+            }
+        } else {
+            alert('Error: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = 'Submit Reply';
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("A network error occurred.");
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Reply';
+    });
+};

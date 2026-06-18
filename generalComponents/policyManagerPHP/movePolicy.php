@@ -15,11 +15,20 @@ $policyID = $data['policyId'];
 $newFolderID = $data['newFolderId'];
 $currentUserID = isset($_SESSION['accID']) ? $_SESSION['accID'] : 0;
 
-$titleQuery = $conn->prepare("SELECT title FROM policytbl WHERE policyID = ?");
+$titleQuery = $conn->prepare("SELECT title, policyStatusID, policyAuthor FROM policytbl WHERE policyID = ?");
 $titleQuery->bind_param("i", $policyID);
 $titleQuery->execute();
 $titleResult = $titleQuery->get_result();
-$policyTitle = $titleResult->num_rows > 0 ? $titleResult->fetch_assoc()['title'] : "A document";
+
+$policyTitle = "A document";
+$currentStatus = 0;
+$policyAuthorID = null;
+if ($titleResult->num_rows > 0) {
+    $row = $titleResult->fetch_assoc();
+    $policyTitle = $row['title'];
+    $currentStatus = (int)$row['policyStatusID'];
+    $policyAuthorID = $row['policyAuthor'];
+}
 $titleQuery->close();
 
 if ($newFolderID === null) {
@@ -31,6 +40,27 @@ if ($newFolderID === null) {
 }
 
 if ($stmt->execute()) {
+    // If it was just "Approved" (Status 4), mark as Published (5), clear tasks
+    if ($currentStatus === 4 || $currentStatus === 5) {
+        $updateStatus = $conn->prepare("UPDATE policytbl SET policyStatusID = 5, dateUploaded = COALESCE(dateUploaded, NOW()) WHERE policyID = ?");
+        $updateStatus->bind_param("i", $policyID);
+        $updateStatus->execute();
+        $updateStatus->close();
+        
+        $deleteTask = $conn->prepare("DELETE FROM tasktbl WHERE policyAssigned = ?");
+        $deleteTask->bind_param("i", $policyID);
+        $deleteTask->execute();
+        $deleteTask->close();
+        
+        if ($currentStatus === 4) { // Only notify if it wasn't already published
+            $notifMessage = "Your policy '" . substr($policyTitle, 0, 50) . (strlen($policyTitle) > 50 ? '...' : '') . "' has been published!";
+            $notifStmt = $conn->prepare("INSERT INTO notiftbl (receivedBy, message, notifStatus, dateTimeSent) VALUES (?, ?, 0, NOW())");
+            $notifStmt->bind_param("is", $policyAuthorID, $notifMessage);
+            $notifStmt->execute();
+            $notifStmt->close();
+        }
+    }
+
     // ✨ NOTIFICATION SYSTEM
     $safeTitle = substr($policyTitle, 0, 25);
     $message = "Document moved: " . $safeTitle;
