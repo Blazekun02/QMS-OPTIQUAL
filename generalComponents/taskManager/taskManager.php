@@ -147,7 +147,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
     .pdf-btn:hover { background-color: #fbaf41; color: black; }
     .page-info, #tm_zoomLevel { margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif; }
     .pdf-canvas-container { background-color: #525659; height: 60vh; overflow: auto; display: block; text-align: center; padding: 20px 0; border-radius: 0 0 8px 8px; }
-    #tm_pdfCanvas { box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto; }
+    #tm_pdfCanvas { display: block; box-shadow: 0 4px 8px rgba(0,0,0,0.5); margin: 0 auto; }
 
     /* ========================================= */
     /* MODALS & OVERLAYS                         */
@@ -225,6 +225,12 @@ if(isset($_SESSION['accID']) && isset($conn)){
             <div class="timeline-line"></div>
             <div class="timeline-step" id="step-approve"><div class="circle"><i class="fas fa-stamp"></i></div><span>Approved</span></div>
         </div>
+
+        <div id="rejectedBanner" style="display: none; margin: 20px auto 10px; max-width: 480px; background: #fef2f2; border: 2px solid #ef4444; border-radius: 10px; padding: 18px 24px; text-align: center;">
+            <i class="fas fa-times-circle" style="font-size: 2.5rem; color: #ef4444; margin-bottom: 10px;"></i>
+            <div style="font-size: 1.3rem; font-weight: bold; color: #b91c1c;">Policy Rejected</div>
+            <div style="font-size: 0.95rem; color: #6b0d0d; margin-top: 6px;">This submission was reviewed and returned to the author.</div>
+        </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
             <button onclick="closeTracker()" class="action-btn-inline" style="background:#293A82; color:white; padding: 10px 20px; font-size: 16px;"><i class="fas fa-arrow-left"></i> Back to List</button>
@@ -247,7 +253,10 @@ if(isset($_SESSION['accID']) && isset($conn)){
 
     <table class="task-manager-table" id="workspaceTable">
     <thead>
-        <tr id="workspaceTableHeaders"></tr>
+        <!-- ✨ ADDED: Added sortable-header class and data-sort attributes for JS targeting -->
+        <tr id="workspaceTableHeaders" class="sortable-header">
+            <!-- Headers will be populated by JavaScript -->
+        </tr>
     </thead>
     <tbody id="taskTableBody"></tbody>
 </table>
@@ -334,12 +343,6 @@ if(isset($_SESSION['accID']) && isset($conn)){
         <button id="tm_nextPage" class="pdf-btn"><i class="fas fa-chevron-right"></i></button>
     </div>
 
-    <div class="pdf-tools-center">
-        <button class="pdf-btn" onclick="openFeedbackModal(currentTaskPolicyID)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px;">
-            <i class="fas fa-comment-alt"></i> Remark
-        </button>
-    </div>
-
     <div class="pdf-tools-right">
         <button id="tm_zoomOut" class="pdf-btn"><i class="fas fa-search-minus"></i></button>
         <span id="tm_zoomLevel">120%</span>
@@ -357,7 +360,7 @@ if(isset($_SESSION['accID']) && isset($conn)){
             <h2>E-Signature Required</h2>
             <p style="margin-bottom: 20px; font-size: 16px; color: #d3d3d3;">Please enter your account password to officially sign and verify this document.</p>
             
-            <input type="password" id="eSignPasswordInput" placeholder="Enter Password..." style="width: 100%; padding: 12px; border-radius: 10px; margin-bottom: 25px; color: black; font-size: 16px; border: none; text-align: center;">
+            <input type="password" id="eSignPasswordInput" placeholder="Enter Password..." oncopy="return false;" onpaste="return false;" oncut="return false;" style="width: 100%; padding: 12px; border-radius: 10px; margin-bottom: 25px; color: black; font-size: 16px; border: none; text-align: center;">
             
             <div class="confirm-actions">
                 <button class="cancel-button" onclick="document.getElementById('eSignOverlay').style.display='none'">Cancel</button>
@@ -946,16 +949,31 @@ function openTracker(statusCode, title, pdfPath = null) {
     document.getElementById('trackerTimelineUI').style.display = 'block';
     document.getElementById('trackerDocTitle').textContent = title;
 
+    // Reset all steps and lines
     document.querySelectorAll('.timeline-step').forEach(s => s.className = 'timeline-step');
     document.querySelectorAll('.timeline-line').forEach(l => l.className = 'timeline-line');
-    const steps = ['submit', 'review', 'verify', 'approve'];
-    for (let i = 0; i < steps.length; i++) {
-        let stepEl = document.getElementById('step-' + steps[i]);
-        if (i < statusCode) {
-            stepEl.classList.add('completed');
-            if (i > 0) document.querySelectorAll('.timeline-line')[i-1].classList.add('completed');
-        } else if (i === statusCode - 1 || (statusCode === 1 && i === 0)) { 
-            stepEl.classList.add('active');
+
+    const rejectedBanner = document.getElementById('rejectedBanner');
+    const progressTimeline = document.getElementById('progressTimeline');
+
+    if (statusCode === 6) {
+        // ✨ FIX: Policy was REJECTED — show the rejected banner, hide normal timeline
+        if (rejectedBanner) rejectedBanner.style.display = 'block';
+        if (progressTimeline) progressTimeline.style.display = 'none';
+    } else {
+        // Normal flow: hide the rejected banner, show normal timeline
+        if (rejectedBanner) rejectedBanner.style.display = 'none';
+        if (progressTimeline) progressTimeline.style.display = '';
+
+        const steps = ['submit', 'review', 'verify', 'approve'];
+        for (let i = 0; i < steps.length; i++) {
+            let stepEl = document.getElementById('step-' + steps[i]);
+            if (i < statusCode) {
+                stepEl.classList.add('completed');
+                if (i > 0) document.querySelectorAll('.timeline-line')[i-1].classList.add('completed');
+            } else if (i === statusCode - 1 || (statusCode === 1 && i === 0)) { 
+                stepEl.classList.add('active');
+            }
         }
     }
 
@@ -980,6 +998,12 @@ function closeTracker() {
     document.getElementById('trackerTimelineUI').style.display = 'none';
     document.getElementById('workspaceHeaderArea').style.display = 'block';
     document.getElementById('workspaceTable').style.display = 'table';
+
+    // Reset rejected banner and restore timeline for next open
+    const rejectedBanner = document.getElementById('rejectedBanner');
+    const progressTimeline = document.getElementById('progressTimeline');
+    if (rejectedBanner) rejectedBanner.style.display = 'none';
+    if (progressTimeline) progressTimeline.style.display = '';
     
     const miniViewer = document.getElementById('miniPdfViewer');
     if(miniViewer) miniViewer.style.display = 'none';
@@ -1102,7 +1126,7 @@ function showTaskIntroduction(policyID, policyTitle, policyContent, pdfPath, pol
         if (pdfPath && pdfPath !== 'null' && pdfPath.trim() !== '') {
             placeholder.style.display = 'none';
             if (customPdfToolbar) customPdfToolbar.style.display = 'flex';
-            if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'flex';
+            if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'block';
 
             if (typeof pdfjsLib !== 'undefined') {
                 const encodedUrl = encodeURI(pdfPath);
@@ -1172,7 +1196,7 @@ function openAssignModalForTask(policyID, status, policyTitle) {
     
     assignSelectedAccID = null;
 
-    fetch('/qms_optiqual/generalComponents/taskManager/fetchAssignees.php?t=' + new Date().getTime())
+    fetch('/qms_optiqual/generalComponents/taskManager/fetchAssignees.php?policyID=' + policyID + '&t=' + new Date().getTime())
         .then(res => res.text()) 
         .then(text => {
             try {
@@ -1308,30 +1332,49 @@ function buildEmpDiv(emp, isNested) {
         empDiv.style.width = 'calc(100% - 20px)';
     }
 
-    empDiv.innerHTML = `
-        <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82;"></i>
-        <div style="display: flex; flex-direction: column;">
-            <span style="font-weight: bold; font-size: 16px;">${emp.fullName}</span>
-            <span style="font-size: 13px; color: #444; margin-top:2px;">${emp.email}</span>
-        </div>
-        <i class="fas fa-check-circle check-icon" style="margin-left: auto; font-size: 24px; color: #293A82; display: none;"></i>
-    `;
-
-    empDiv.onclick = (e) => {
-        e.stopPropagation(); 
-        document.querySelectorAll('.assign-emp-item').forEach(el => { 
-            el.classList.remove('selected'); 
-            el.querySelector('.check-icon').style.display = 'none'; 
-        });
-        empDiv.classList.add('selected'); 
-        empDiv.querySelector('.check-icon').style.display = 'block';
+    if (emp.isAuthor) {
+        empDiv.style.opacity = '0.55';
+        empDiv.style.cursor = 'not-allowed';
         
-        assignSelectedAccID = emp.accID;
-        const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
-        confirmAssignTaskBtn.disabled = false; 
-        confirmAssignTaskBtn.style.opacity = '1'; 
-        confirmAssignTaskBtn.style.cursor = 'pointer';
-    };
+        empDiv.innerHTML = `
+            <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82; opacity: 0.5;"></i>
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: bold; font-size: 16px; color: gray;">${emp.fullName}</span>
+                <span style="font-size: 13px; color: #777; margin-top:2px;">${emp.email}</span>
+                <span style="font-size: 12px; color: #cc0000; font-weight: bold; margin-top: 4px;"><i class="fas fa-exclamation-circle"></i> Author (Cannot assign as verifier/approver)</span>
+            </div>
+        `;
+        empDiv.onclick = (e) => {
+            e.stopPropagation();
+        };
+    } else {
+        empDiv.innerHTML = `
+            <i class="fas fa-user-circle" style="font-size: 32px; margin-right: 15px; color: #293A82;"></i>
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: bold; font-size: 16px;">${emp.fullName}</span>
+                <span style="font-size: 13px; color: #444; margin-top:2px;">${emp.email}</span>
+            </div>
+            <i class="fas fa-check-circle check-icon" style="margin-left: auto; font-size: 24px; color: #293A82; display: none;"></i>
+        `;
+
+        empDiv.onclick = (e) => {
+            e.stopPropagation(); 
+            document.querySelectorAll('.assign-emp-item').forEach(el => { 
+                el.classList.remove('selected'); 
+                const checkIcon = el.querySelector('.check-icon');
+                if (checkIcon) checkIcon.style.display = 'none'; 
+            });
+            empDiv.classList.add('selected'); 
+            const checkIcon = empDiv.querySelector('.check-icon');
+            if (checkIcon) checkIcon.style.display = 'block';
+            
+            assignSelectedAccID = emp.accID;
+            const confirmAssignTaskBtn = document.getElementById('confirmAssignTaskBtn');
+            confirmAssignTaskBtn.disabled = false; 
+            confirmAssignTaskBtn.style.opacity = '1'; 
+            confirmAssignTaskBtn.style.cursor = 'pointer';
+        };
+    }
     return empDiv;
 }
 
@@ -1746,7 +1789,7 @@ function showAuthorDocument(title, pdfPath) {
         
         if (pdfPath && pdfPath !== 'null' && pdfPath.trim() !== '') {
             if (customPdfToolbar) customPdfToolbar.style.display = 'flex';
-            if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'flex';
+            if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'block';
             
             if (typeof pdfjsLib !== 'undefined') {
                 pdfjsLib.getDocument(encodeURI(pdfPath)).promise.then(function(pdfDoc_) {

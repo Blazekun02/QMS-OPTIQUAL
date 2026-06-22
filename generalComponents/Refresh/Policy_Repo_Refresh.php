@@ -1,8 +1,13 @@
 <?php
+// $host = "localhost";
+// $port = "3306";
+// $dbUsername = "root";
+// $dbPassword = "";
+// $dbname = "qms";
+
 $host = "localhost";
-$port = "3306";
-$dbUsername = "root";
-$dbPassword = "";
+$dbUsername = "jdrizal";
+$dbPassword = "SOETiny1!";
 $dbname = "qms";
 
 // ✨ FIX: Renamed variable to $refresh_conn so it doesn't destroy the main page's $conn!

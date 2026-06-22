@@ -1,3 +1,6 @@
+<?php
+    include '../../connect.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,20 +8,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Privacy Agreement</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="dataPrivacy.css">
+  <link rel="stylesheet" href="dataPrivacy.css?v=1.2">
 </head>
 <body>
 
 <div class="dataPriv-overlay">
 <div class="dataPrivy-container">
-  <h1 style="color: white; font-size:20px; text-align: center; Margin-top:0px; "> Data Privacy Agreement</h1>
-  <div class="label">
-    This document is composed of Asia Pacific College's (APC) policies and procedures on proper collection, processing, and management of employee and student personal information in accordance with Republic Act 10173, or the Data Privacy Act (DPA) of 2012.
+  <div class="header-group">
+    <img src="/qms_optiqual/assets/logos/logo.png" alt="APC Logo" class="apc-logo">
+    <h1>Data Privacy Agreement</h1>
   </div>
-  <p style="text-align: left; color: white;">
+
+  <div class="label">
+    <?php
+        $dpaQuery = "SELECT dpaContents FROM dpatbl ORDER BY dpaVersion DESC LIMIT 1";
+        $dpaResult = $conn->query($dpaQuery);
+        if ($dpaResult && $dpaResult->num_rows > 0) {
+            $dpaRow = $dpaResult->fetch_assoc();
+            echo nl2br(htmlspecialchars($dpaRow['dpaContents']));
+        } else {
+            echo 'Data Privacy Agreement content is currently unavailable.';
+        }
+    ?>
+    </div>
+
+  <div class="agree-container">
     <input type="checkbox" id="agree" value="Agree;">
-    <label for="agree"> I agree</label><br>
-  </p>
+    <label for="agree">I agree to the Data Privacy Agreement</label>
+  </div>
 
   <div>
     <button type="button" class="button submit-button" id="submitButton">Submit</button>

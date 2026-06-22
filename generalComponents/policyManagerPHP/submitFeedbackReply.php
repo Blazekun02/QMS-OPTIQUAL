@@ -4,6 +4,20 @@ include '../../connect.php';
 
 header('Content-Type: application/json');
 
+function emitFatalJson(string $message, string $source) {
+    if (ob_get_level()) { ob_end_clean(); }
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+    }
+    echo json_encode([
+        'success'      => false,
+        'message'      => 'Server error',
+        'debug_source' => $source,
+        'debug_error'  => $message,
+    ]);
+}
+
 if (!isset($_SESSION['accID'])) {
     echo json_encode(['success' => false, 'message' => 'User not logged in.']);
     exit;
@@ -59,7 +73,7 @@ try {
 
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+    emitFatalJson($e->getMessage(), 'submitFeedbackReply.php');
 }
 
 $conn->close();

@@ -17,7 +17,7 @@ $(document).ready(function() {
     // Back Button Logic
     $("#backButton").on('click', function() {
         console.log("Back button clicked"); // Check your console (F12) to see if this triggers
-        window.location.href = "/QMS-OPTIQUAL/auth/landing/landingPage.php";
+        window.location.href = "/qms_optiqual/auth/landing/landingPage.php";
     });
 
 });

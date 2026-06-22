@@ -1,3 +1,7 @@
+<?php
+    session_start();
+    include '../../connect.php';
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -59,7 +63,18 @@
                 Review and update the data privacy agreements. Ensure all users are informed and compliant with the latest privacy policies.
             </p>
             <div class="dpa-content-area" id="currentDPAContent">
-                <p>Initial DPA Text: This document outlines Asia Pacific College's policies regarding the collection, processing, and management of employee personal information, in accordance with Republic Act 10173, the Data Privacy Act (DPA) of 2012. It covers data privacy principles, data subject rights, security measures, and procedures for data breaches and inquiries. By continuing to use our services, you acknowledge and agree to the terms herein. For more details, please refer to the complete DPA policy available through official channels.</p>
+                <?php
+                    if (isset($conn)) {
+                        $dpaQuery = "SELECT dpaContents FROM dpatbl ORDER BY dpaVersion DESC LIMIT 1";
+                        $dpaResult = $conn->query($dpaQuery);
+                        if ($dpaResult && $dpaResult->num_rows > 0) {
+                            $dpaRow = $dpaResult->fetch_assoc();
+                            echo '<p>' . nl2br(htmlspecialchars($dpaRow['dpaContents'])) . '</p>';
+                        } else {
+                            echo '<p>No Data Privacy Agreement found. Click "Update" to add one.</p>';
+                        }
+                    }
+                ?>
             </div>
             <button class="update-button" id="openDPAEditPopup">Update</button>
         </div>

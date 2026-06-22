@@ -1,13 +1,14 @@
 // Show Password Functionality
-document.getElementById("showPassword").addEventListener("change", function () {
+function togglePasswordVisibility() {
+    const showPasswordCheckbox = document.getElementById("showPassword");
     const passwordField = document.getElementById("password");
     const confirmPasswordField = document.getElementById("confirmPassword");
 
     // Toggle the type attribute between 'password' and 'text'
-    const type = this.checked ? "text" : "password";
+    const type = showPasswordCheckbox.checked ? "text" : "password";
     passwordField.type = type;
     confirmPasswordField.type = type;
-});
+}
 
 const passwordInput = document.getElementById("password");
 const passReqBox = document.getElementById("passwordRequirements");

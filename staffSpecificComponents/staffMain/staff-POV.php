@@ -107,7 +107,6 @@
                     </button>
                     <div class="signOut-overlay" id="signOutOverlay">
                         <div class="signOut-content" onclick="window.location.href='/qms_optiqual/auth/log_out/logout.php'" style="cursor: pointer;">
-                        <div class="signOut-content" onclick="window.location.href='../../auth/log_out/logout.php'" style="cursor: pointer;">
                             Sign out
                         </div>
                     </div>
@@ -127,7 +126,7 @@
         <div class="Welcome-Panel" id="Welcome-Panel">
             <div class="welcome-text-container">
                 <h1 class="welcome-title">Welcome to OPTIQUAL</h1>
-                <p class="welcome-subtitle">Faculty & Staff Dashboard</p>
+                <p class="welcome-subtitle">Faculty & Staff</p>
             </div>
             <div class="mountain-layer back-mountain"></div>
             <div class="mountain-layer mid-mountain"></div>
@@ -150,7 +149,10 @@
             <div class="Poli-Repo-Header">
                 <h1>Policy Repository</h1>
                 <div class="PR-Search-Container">
-                    <label><input type="text" placeholder="Search" id="searchInput">
+                    <label>
+                        <input type="text" placeholder="Search" id="searchInput" autocomplete="new-password" name="pr_search_input_prevent_autofill">
+                    </label>
+                    <button id="searchButton"><i class="fas fa-search"></i></button>
                 </div>
             </div>
 
@@ -170,7 +172,7 @@
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
                             
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID IN (4, 5)";
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
                                 while ($rowPol = mysqli_fetch_assoc($resultParentPols)) {
@@ -189,7 +191,7 @@
                                     echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID IN (4, 5)";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -210,7 +212,7 @@
                     }
 
                     // Fetch policies that are published directly to the "Main Repository" (No Folder)
-                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4 AND policyStatusID != 6";
+                    $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID IN (4, 5)";
                     $resultMainPols = mysqli_query($conn, $queryMainPols);
                     if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
                         while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
@@ -229,15 +231,16 @@
                 <button id="closePdfViewer" style="background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; transition: color 0.2s;">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <span class="introduction-title" style="color: white; font-size: 28px; font-weight: bold;">Policy Viewer</span>
+                <h2 id="pdfViewerTitle" style="margin: 0; font-size: 24px; color: white;">Policy Viewer</h2>
+                <div style="width: 20px;"></div>
             </div>
 
             <div class="pdf-container-wrapper" style="display: flex; flex-direction: column; flex-grow: 1; background-color: white; border-radius: 8px; overflow: hidden;">
                 <div class="custom-pdf-toolbar" style="display: flex; justify-content: space-between; align-items: center; background-color: #343A40; color: white; padding: 10px 20px; border-radius: 8px 8px 0 0;">
                     <div class="pdf-tools-left">
-                        <button id="pr_prevPage" class="pdf-btn"><i class="fas fa-chevron-left"></i></button>
-                        <span class="page-info">Page <span id="pr_pageNum">1</span> of <span id="pr_pageCount">?</span></span>
-                        <button id="pr_nextPage" class="pdf-btn"><i class="fas fa-chevron-right"></i></button>
+                        <button id="pr_prevPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                        <span class="page-info" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">Page <span id="pr_pageNum">1</span> of <span id="pr_pageCount">?</span></span>
+                        <button id="pr_nextPage" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <button class="pdf-btn" onclick="openFeedbackModal(window.currentSelectedPolicyId)" style="background-color: #fbaf41; color: #1a2035; font-weight: bold; padding: 5px 15px; border-radius: 5px; cursor: pointer; border: none;">
@@ -248,9 +251,9 @@
                         </button>
                     </div>
                     <div class="pdf-tools-right">
-                        <button id="pr_zoomOut" class="pdf-btn"><i class="fas fa-search-minus"></i></button>
-                        <span id="pr_zoomLevel">120%</span>
-                        <button id="pr_zoomIn" class="pdf-btn"><i class="fas fa-search-plus"></i></button>
+                        <button id="pr_zoomOut" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-minus"></i></button>
+                        <span id="pr_zoomLevel" style="margin: 0 15px; font-size: 14px; font-family: 'Istok Web', sans-serif;">120%</span>
+                        <button id="pr_zoomIn" class="pdf-btn" style="background-color: transparent; color: white; border: 1px solid #fbaf41; border-radius: 5px; padding: 5px 12px; cursor: pointer;"><i class="fas fa-search-plus"></i></button>
                     </div>
                 </div>
 
@@ -292,38 +295,40 @@
 
         <div class="submit-overlay" id="submitOverlay">
             <div class="submit-popUp">
-                <h2>Submission</h2>
-                <form action="/qms_optiqual/generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
+                <h2>Policy Submission</h2>
                 <form action="../../generalComponents/submit_policy.php" method="POST" enctype="multipart/form-data">
-                <div class="submit-field">
-                    <p>Policy Title</p>
-                </div>
-        
-                <div class="submit-input">
-                    <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
-                    <input type="file" name="policyFile" accept=".pdf" required>
-                </div>
-                <div class="revision-toggle" style="margin-top: 15px; text-align: left;">
-                    <input type="checkbox" id="staffIsRevision" name="isRevision" onchange="document.getElementById('staffRevFields').style.display = this.checked ? 'block' : 'none';">
-                    <label for="staffIsRevision">Mark as Policy Revision</label>
-                </div>
-                
-                <div id="staffRevFields" style="display: none; text-align: left; margin-top: 10px;">
-                    <label>Select Policy to Revise:</label>
-                    <select name="originalPolicyID" style="width: 100%; padding: 8px; margin-bottom: 10px;" onchange="if(this.value) document.getElementById('policyTitle').value = this.options[this.selectedIndex].text;">
-                        <option value="">-- Select a Policy --</option>
-                        <?php
-                            if(isset($conn)){
-                                $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3 AND policyStatusID != 6");
-                                if($polQ) {
-                                    while($p = $polQ->fetch_assoc()){
-                                        echo "<option value='".$p['policyID']."'>".htmlspecialchars($p['title'])."</option>";
+                    <div class="submit-group">
+                        <label>Policy Title</label>
+                        <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required>
+                    </div>
+
+                    <div class="submit-group">
+                        <label>Upload Policy Document</label>
+                        <input type="file" name="policyFile" accept=".pdf" required>
+                        <p style="font-size: 12px; color: #fbaf41; margin-top: 5px; margin-bottom: 0;">* Only PDF files are accepted. File size must be 2MB and below.</p>
+                    </div>
+
+                    <div class="revision-toggle">
+                        <input type="checkbox" id="staffIsRevision" name="isRevision" onchange="document.getElementById('staffRevFields').style.display = this.checked ? 'block' : 'none';">
+                        <label for="staffIsRevision">Mark as Policy Revision</label>
+                    </div>
+                    
+                    <div id="staffRevFields" class="hidden-revision-fields" style="display: none;">
+                        <label>Select Policy to Revise:</label>
+                        <select name="originalPolicyID" onchange="if(this.value) document.getElementById('policyTitle').value = this.options[this.selectedIndex].text;">
+                            <option value="">-- Select a Policy --</option>
+                            <?php
+                                if(isset($conn)){
+                                    $polQ = $conn->query("SELECT policyID, title FROM policytbl WHERE policyStatusID >= 3 AND policyStatusID != 6");
+                                    if($polQ) {
+                                        while($p = $polQ->fetch_assoc()){
+                                            echo "<option value='".$p['policyID']."'>".htmlspecialchars($p['title'])."</option>";
+                                        }
                                     }
                                 }
-                            }
-                        ?>
-                    </select>
-                    <label>Revision Type:</label>
+                            ?>
+                        </select>
+                        <label>Revision Type:</label>
                     <select name="revisionType" style="width: 100%; padding: 8px; margin-bottom: 10px;">
                         <option value="minor">Minor Revision</option>
                         <option value="major">Major Revision</option>
@@ -333,11 +338,12 @@
 
                     <label>Upload Revision Form (PDF):</label>
                     <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
-                </div>
-                <div class="submit-buttons">
-                    <button type="button" id="cancelBtn">Cancel</button>
-                    <button type="submit" id="submitBtn">Submit</button>
-                </div>
+                    <p style="font-size: 12px; color: #fbaf41; margin-top: 5px; margin-bottom: 0;">* Only PDF files are accepted. File size must be 2MB and below.</p>
+                    </div>
+                    <div class="submit-buttons">
+                        <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
+                        <button type="submit" id="submitBtn" class="btn-primary">Submit</button>
+                    </div>
                 </form> 
             </div>
         </div>
@@ -629,6 +635,51 @@
                         document.body.removeChild(link);
                         confirmDlPopup.style.display = 'none';
                     });
+                }
+            });
+
+            // --- Draggable Popup Logic ---
+            const popup = document.querySelector('.submit-popUp');
+            const popupHeader = popup.querySelector('h2');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            if (popupHeader) {
+                popupHeader.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    // Calculate offset from top-left of the popup
+                    offsetX = e.clientX - popup.offsetLeft;
+                    offsetY = e.clientY - popup.offsetTop;
+
+                    // Add a class to indicate dragging, useful for styling
+                    popup.style.cursor = 'move'; 
+                });
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                // Prevent text selection while dragging
+                e.preventDefault();
+
+                // Calculate new position
+                let newX = e.clientX - offsetX;
+                let newY = e.clientY - offsetY;
+
+                // Boundary checks to keep popup within the viewport
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                newX = Math.max(0, Math.min(newX, viewportWidth - popup.offsetWidth));
+                newY = Math.max(0, Math.min(newY, viewportHeight - popup.offsetHeight));
+
+                popup.style.left = `${newX}px`;
+                popup.style.top = `${newY}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                if (popup) {
+                    popup.style.cursor = 'default';
                 }
             });
         </script>

@@ -65,6 +65,13 @@ function showInformation() {
     localStorage.setItem('activePanel', 'information'); 
 }
 
+function showWelcomePage() {
+    hideAllPanels();
+    const welcome = document.querySelector('#Welcome-Panel');
+    if (welcome) welcome.style.display = 'flex';
+    localStorage.setItem('activePanel', 'welcome');
+}
+
 // Attach Event Listeners to Sidebar Icons & Check Memory
 document.addEventListener('DOMContentLoaded', () => {
     // Map the sidebar icons to their respective functions
@@ -74,6 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (icons[2]) icons[2].addEventListener('click', showWorkspace);
     if (icons[3]) icons[3].addEventListener('click', showRoleManager);
     if (icons[4]) icons[4].addEventListener('click', showInformation);
+
+    const sidebarLogo = document.querySelector('.Sidebar-Logo');
+    if (sidebarLogo) sidebarLogo.addEventListener('click', showWelcomePage);
 
     // 👉 ✨ Check if it was a Human or the Script that reloaded the page
     const savedPanel = localStorage.getItem('activePanel');
@@ -88,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (savedPanel === 'submission') showPolicySubmission();
         else if (savedPanel === 'role') showRoleManager();
         else if (savedPanel === 'information') showInformation();
+        else if (savedPanel === 'welcome') showWelcomePage();
     } else {
         // A human hit F5, or just logged in! Show the Welcome Screen.
         hideAllPanels();
@@ -295,6 +306,33 @@ function pr_renderPage(num) {
 
             renderTask.promise.then(function() {
                 pr_pageRendering = false;
+                
+                // =========================================================
+                // ✨ SECURITY PART 1: DIAGONAL TEXT WATERMARK
+                // =========================================================
+                pr_ctx.save();
+                // Move to the center of the canvas
+                pr_ctx.translate(pr_canvas.width / 2, pr_canvas.height / 2);
+                // Rotate to a diagonal angle
+                pr_ctx.rotate(-Math.PI / 4); 
+                
+                // Draw main watermark text
+                pr_ctx.font = "bold 60px 'Istok Web', Arial, sans-serif";
+                pr_ctx.fillStyle = "rgba(180, 180, 180, 0.4)"; // Semi-transparent gray
+                pr_ctx.textAlign = "center";
+                pr_ctx.textBaseline = "middle";
+                pr_ctx.fillText("OFFICIAL OPTIQUAL DOCUMENT", 0, 0);
+                
+                // Draw a timestamp underneath it
+                pr_ctx.font = "bold 25px 'Istok Web', Arial, sans-serif";
+                // We use window.pr_currentUploadDate which we grabbed when they clicked!
+                pr_ctx.fillText("Date Uploaded: " + (window.pr_currentUploadDate), 0, 60);
+                
+                // Add confidential warning
+                pr_ctx.font = "18px 'Istok Web', Arial, sans-serif";
+                pr_ctx.fillText("DO NOT DISTRIBUTE OR REPRODUCE", 0, 100);
+                pr_ctx.restore();
+
                 if (pr_pageNumPending !== null) {
                     pr_renderPage(pr_pageNumPending);
                     pr_pageNumPending = null;
@@ -345,11 +383,18 @@ const parentFolders = document.querySelectorAll('.PR-Parent-Folders');
 parentFolders.forEach(folder => {
     folder.addEventListener('click', () => {
         const parentId = folder.getAttribute('data-id');
-        document.querySelectorAll('.child-folders').forEach(child => child.style.display = 'none');
-        document.querySelectorAll('.Policies-Folder').forEach(policyFolder => policyFolder.style.display = 'none');
+        const childContainer = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
         
-        const childToShow = document.querySelector(`.child-folders[data-parent-id='${parentId}']`);
-        if (childToShow) childToShow.style.display = 'flex';
+        if (childContainer) {
+            // Check if it is currently hidden
+            const isHidden = childContainer.style.display === 'none' || childContainer.style.display === '';
+            
+            // Toggle the visibility
+            childContainer.style.display = isHidden ? 'flex' : 'none';
+            
+            // ✨ ADDED: Spin the triangle!
+            folder.classList.toggle('folder-open', isHidden);
+        }
     });
 });
 
@@ -357,10 +402,18 @@ const childFolders = document.querySelectorAll('.PR-Child-Folders');
 childFolders.forEach(childFolder => {
     childFolder.addEventListener('click', () => {
         const childId = childFolder.getAttribute('data-id');
-        document.querySelectorAll('.Policies-Folder').forEach(pf => pf.style.display = 'none');
-        
         const policiesFolderToShow = document.querySelector(`.Policies-Folder[data-pol-id='${childId}']`);
-        if (policiesFolderToShow) policiesFolderToShow.style.display = 'flex';
+        
+        if (policiesFolderToShow) {
+            // Check if it is currently hidden
+            const isHidden = policiesFolderToShow.style.display === 'none' || policiesFolderToShow.style.display === '';
+            
+            // Toggle the visibility
+            policiesFolderToShow.style.display = isHidden ? 'flex' : 'none';
+            
+            // ✨ ADDED: Spin the triangle!
+            childFolder.classList.toggle('folder-open', isHidden);
+        }
     });
 });
 
@@ -990,6 +1043,39 @@ if (submitForm && formSubmitBtn) {
         const titleInput = document.getElementById('policyTitle');
         const title = titleInput ? titleInput.value.trim() : '';
         const isRevCheckbox = document.querySelector('input[name="isRevision"]');
+        
+        // File validation: Only PDF and under 2MB
+        const fileInput = document.querySelector('input[name="policyFile"]');
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileSizeMB = file.size / (1024 * 1024);
+            const fileName = file.name.toLowerCase();
+            
+            if (!fileName.endsWith('.pdf')) {
+                alert("Only PDF files are accepted.");
+                return;
+            }
+            if (fileSizeMB > 2) {
+                alert("File size must be 2MB and below.");
+                return;
+            }
+        }
+        
+        const logFileInput = document.querySelector('input[name="changeLogFile"]');
+        if (logFileInput && logFileInput.files.length > 0) {
+            const logFile = logFileInput.files[0];
+            const logFileSizeMB = logFile.size / (1024 * 1024);
+            const logFileName = logFile.name.toLowerCase();
+            
+            if (!logFileName.endsWith('.pdf')) {
+                alert("Only PDF files are accepted for the revision log.");
+                return;
+            }
+            if (logFileSizeMB > 2) {
+                alert("Revision log file size must be 2MB and below.");
+                return;
+            }
+        }
         
         if (!title) return alert("Please enter a policy title.");
         
@@ -1621,117 +1707,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* =====================================================================
    ✨ AUTOMATIC BACKGROUND REFRESH ENGINE ✨
-   (Real-Time Sync Across All POVs)
+   (Lightweight Polling for Tasks & Notifications)
    ===================================================================== */
-(function() {
-    let currentSystemHash = '';
-    let pendingUpdate = false;
+let lastDashboardKpiState = {
+    taskState: null
+};
 
-    // 1. Get the initial state fingerprint so we don't reload on the first pass
-    fetch('/qms_optiqual/generalComponents/check_updates.php')
-        .then(res => res.json())
-        .then(data => {
-            if (data.hash) currentSystemHash = data.hash;
-        })
-        .catch(err => console.error("Auto-Sync Initialization Error:", err));
-
-    function isUserBusy() {
-        // List of all known modals, overlays, and document viewers.
-        // If any of these are visible, we DELAY the refresh so we don't interrupt the user.
-        const busyElements = [
-            'Policy_Repo_pdfViewer',
-            'Secondary_PdfViewer',
-            'submitOverlay',
-            'archivesModal',
-            'pmCreateFolderModal',
-            'pmRenameFolderModal',
-            'pmDeleteFolderModal',
-            'pmAddFileModal',
-            'pmRemovePolicyModal',
-            'assignNameContainer',
-            'assignRoleContainer',
-            'departmentStructureContainer',
-            'renameDepartmentContainer',
-            'deleteConfirmationContainer',
-            'renameRoleContainer',
-            'rmAddUserModal',
-            'confirm-dl',
-            'rejectedReasonModal',
-            'documentHistoryOverlay',
-            'popupOverlay' // Notifications dropdown
-        ];
-
-        for (const id of busyElements) {
-            const el = document.getElementById(id);
-            if (el && el.style.display !== 'none' && el.style.display !== '') {
-                return true;
-            }
-        }
-
-        // Check if the user is actively typing in a search bar, textarea, or input
-        const activeTag = document.activeElement ? document.activeElement.tagName : '';
-        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return true;
-
-        return false;
-    }
-
-    function applyUpdateIfSafe() {
-        if (pendingUpdate && !isUserBusy()) {
-            pendingUpdate = false;
-            
-            // ✨ SILENT BACKGROUND REFRESH (WITH CACHE-BUSTER) ✨
-            const fetchUrl = window.location.href.split('#')[0];
-            const cacheBuster = fetchUrl + (fetchUrl.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
-
-            fetch(cacheBuster, { cache: 'no-store', headers: { 'Pragma': 'no-cache' } })
-                .then(res => res.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-
-                    // 1. Update Notification Bell (for the red unread badge)
-                    const newNotifBtn = doc.getElementById('notifButton');
-                    const oldNotifBtn = document.getElementById('notifButton');
-                    if (newNotifBtn && oldNotifBtn) oldNotifBtn.innerHTML = newNotifBtn.innerHTML;
-
-                    // 2. Update Notification Lists
-                    const newUnread = doc.getElementById('notif-unread-list');
-                    const oldUnread = document.getElementById('notif-unread-list');
-                    if (newUnread && oldUnread) oldUnread.innerHTML = newUnread.innerHTML;
-
-                    const newRead = doc.getElementById('notif-read-list');
-                    const oldRead = document.getElementById('notif-read-list');
-                    if (newRead && oldRead) oldRead.innerHTML = newRead.innerHTML;
-                    
-                    // 3. Silently update Workspace Tasks
-                    const newTaskTable = doc.querySelector('.task-manager-table');
-                    const oldTaskTable = document.querySelector('.task-manager-table');
-                    if (newTaskTable && oldTaskTable) oldTaskTable.innerHTML = newTaskTable.innerHTML;
-                    
-                    // 4. Silently update Process Tracker
-                    const newTracker = doc.querySelector('.Process-Tracker-Panel2');
-                    const oldTracker = document.querySelector('.Process-Tracker-Panel2');
-                    if (newTracker && oldTracker) oldTracker.innerHTML = newTracker.innerHTML;
-                })
-                .catch(err => console.error("Auto-sync fetch error:", err));
-        }
-    }
-
-    // 2. If an update is queued while they were busy, trigger the update the moment they click away or close a modal.
-    document.addEventListener('click', () => setTimeout(applyUpdateIfSafe, 400));
-    document.addEventListener('keyup', () => setTimeout(applyUpdateIfSafe, 400));
-
-    // 3. The Poller: Checks the server every 4 seconds for database structural changes.
+function startDashboardPolling() {
     setInterval(() => {
-        if (!currentSystemHash) return; 
-        fetch(`/qms_optiqual/generalComponents/check_updates.php?hash=${currentSystemHash}`)
+        fetch('../../generalComponents/policyManagerPHP/getDashboardSync.php')
             .then(res => res.json())
             .then(data => {
-                if (data.hasUpdates) {
-                    currentSystemHash = data.hash; // Instantly update local hash to prevent spam loops
-                    pendingUpdate = true;
-                    applyUpdateIfSafe(); 
+                if (!data.success) return;
+
+                // 1. Check Task State
+                if (data.taskState !== lastDashboardKpiState.taskState) {
+                    if (lastDashboardKpiState.taskState !== null) {
+                        // Refresh Tasks via existing data JS function
+                        if (typeof fetchTasksAndPopulate === 'function') {
+                            fetchTasksAndPopulate();
+                        }
+                    }
+                    lastDashboardKpiState.taskState = data.taskState;
                 }
-            }).catch(err => console.error("Auto-Sync Polling Error:", err));
-    }, 4000);
-})();
+
+                // 2. Update Notifications silently
+                const notifs = data.notifications;
+                if (notifs) {
+                    const unreadList = document.getElementById('notif-unread-list');
+                    const readList = document.getElementById('notif-read-list');
+                    
+                    if (unreadList && notifs.unreadHtml && unreadList.innerHTML !== notifs.unreadHtml) {
+                        unreadList.innerHTML = notifs.unreadHtml;
+                        if (typeof updateNotifBadgeCount === 'function') updateNotifBadgeCount();
+                    }
+                    
+                    if (readList && notifs.readHtml && readList.innerHTML !== notifs.readHtml) {
+                        readList.innerHTML = notifs.readHtml;
+                    }
+                }
+            })
+            .catch(err => { /* Ignore silent errors */ });
+    }, 7000); 
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    startDashboardPolling();
+});

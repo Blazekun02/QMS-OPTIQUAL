@@ -24,70 +24,56 @@ if ($year > 0) {
 }
 
 if ($parentID === null) {
-    // Top Level: Parent Folders (includes policies nested in child folders) + Main Repository
+    // Top Level: Departments
     $query = "
         SELECT 
-            c.categoryID,
-            c.categoryName, 
-            (
-                SELECT COUNT(p.policyID)
-                FROM policytbl p
-                LEFT JOIN categorytbl child ON p.categoryID = child.categoryID
-                WHERE (p.categoryID = c.categoryID OR child.parentCategoryID = c.categoryID)
-                AND p.policyStatusID IN (4, 5)
-                $dateCondition
-            ) as activePolicies
-        FROM categorytbl c
-        WHERE c.parentCategoryID IS NULL
-
-        UNION ALL
-
-        SELECT 
-            NULL as categoryID,
-            'Main Repository' as categoryName, 
-            COUNT(p.policyID) as activePolicies
-        FROM policytbl p
-        WHERE p.categoryID IS NULL 
-          AND p.policyStatusID IN (4, 5) 
-          $dateCondition
+            c.categoryID AS categoryID,
+            c.categoryName AS categoryName,
+            SUM(CASE WHEN p.policyStatusID IN (4, 5) THEN 1 ELSE 0 END) AS policiesApproved,
+            COUNT(p.policyID) AS totalPoliciesSubmitted
+        FROM 
+            categorytbl c
+        LEFT JOIN 
+            policytbl p ON c.categoryID = p.categoryID $dateCondition
+        WHERE 
+            c.parentCategoryID IS NULL OR c.categoryID IN (SELECT DISTINCT categoryID FROM policytbl WHERE categoryID IS NOT NULL)
+        GROUP BY 
+            c.categoryID, c.categoryName
+        ORDER BY 
+            totalPoliciesSubmitted DESC
     ";
 } else {
-    // Drill Down: Child Folders of the specific Parent + Direct Policies
+    // Drill Down: Sub-departments
     $query = "
         SELECT 
-            c.categoryID,
-            c.categoryName, 
-            COUNT(p.policyID) as activePolicies
-        FROM categorytbl c
-        LEFT JOIN policytbl p 
-            ON c.categoryID = p.categoryID 
-            AND p.policyStatusID IN (4, 5) 
-            $dateCondition
-        WHERE c.parentCategoryID = $parentID
-        GROUP BY c.categoryID, c.categoryName
-
-        UNION ALL
-
-        SELECT 
-            NULL as categoryID,
-            'Directly in Folder' as categoryName, 
-            COUNT(p.policyID) as activePolicies
-        FROM policytbl p
-        WHERE p.categoryID = $parentID
-          AND p.policyStatusID IN (4, 5) 
-          $dateCondition
+            c.categoryID AS categoryID,
+            c.categoryName AS categoryName,
+            SUM(CASE WHEN p.policyStatusID IN (4, 5) THEN 1 ELSE 0 END) AS policiesApproved,
+            COUNT(p.policyID) AS totalPoliciesSubmitted
+        FROM 
+            categorytbl c
+        LEFT JOIN 
+            policytbl p ON c.categoryID = p.categoryID $dateCondition
+        WHERE 
+            c.parentCategoryID = $parentID
+        GROUP BY 
+            c.categoryID, c.categoryName
+        ORDER BY 
+            totalPoliciesSubmitted DESC
     ";
 }
 
 $result = $conn->query($query);
 $labels = [];
 $activeData = [];
+$totalData = [];
 $categoryIds = [];
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $labels[] = $row['categoryName'];
-        $activeData[] = (int)$row['activePolicies'];
+        $activeData[] = (int)$row['policiesApproved'];
+        $totalData[] = (int)$row['totalPoliciesSubmitted'];
         $categoryIds[] = $row['categoryID'];
     }
 }
@@ -96,6 +82,7 @@ echo json_encode([
     'success' => true,
     'labels' => $labels,
     'active' => $activeData,
+    'total' => $totalData,
     'categoryIds' => $categoryIds,
     'parentID' => $parentID
 ]);

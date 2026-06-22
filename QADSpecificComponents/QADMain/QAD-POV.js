@@ -109,6 +109,13 @@ function showReports() {
     }
 }
 
+function showWelcomePage() {
+    hideAllPanels();
+    const welcome = document.querySelector('#Welcome-Panel');
+    if (welcome) welcome.style.display = 'flex';
+    localStorage.setItem('activePanel', 'welcome');
+}
+
 // Attach Event Listeners to Sidebar Icons
 document.addEventListener('DOMContentLoaded', () => {
     const icons = document.querySelectorAll('.menu-icons');
@@ -119,6 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (icons[4]) icons[4].addEventListener('click', showDepartmentManager);
     if (icons[5]) icons[5].addEventListener('click', showPolicyManager);
     if (icons[6]) icons[6].addEventListener('click', showReports);
+
+    const sidebarLogo = document.querySelector('.Sidebar-Logo');
+    if (sidebarLogo) sidebarLogo.addEventListener('click', showWelcomePage);
 
     // 👉 ✨ THE FIX: Check if it was a Human or the Script that reloaded the page
     const savedPanel = localStorage.getItem('activePanel');
@@ -136,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (savedPanel === 'role') showRoleManager();
         else if (savedPanel === 'reports') showReports();
         else if (savedPanel === 'information') showInformation();
+        else if (savedPanel === 'welcome') showWelcomePage();
     } else {
         // A human hit F5, or just logged in! Show the Welcome Screen.
         hideAllPanels();
@@ -393,35 +404,35 @@ function pr_renderPage(num) {
                 // =========================================================
                 // ✨ SECURITY PART 2: BOTTOM-RIGHT IMAGE WATERMARK
                 // =========================================================
-                const watermarkImg = new Image();
-                watermarkImg.src = '../../assets/YONG.jpg'; 
+                // const watermarkImg = new Image();
+                // watermarkImg.src = '../../assets/YONG.jpg'; 
 
-                watermarkImg.onload = function() {
-                    pr_ctx.save();
+                // watermarkImg.onload = function() {
+                //     pr_ctx.save();
                     
-                    // Transparency for the image
-                    pr_ctx.globalAlpha = 0.3; 
+                //     // Transparency for the image
+                //     pr_ctx.globalAlpha = 0.3; 
                     
-                    // Image Size
-                    const imgWidth = 150; 
-                    const imgHeight = 150; 
+                //     // Image Size
+                //     const imgWidth = 150; 
+                //     const imgHeight = 150; 
                     
-                    // Calculate the BOTTOM-RIGHT position
-                    const margin = 30;
-                    const xPos = pr_canvas.width - imgWidth - margin;
-                    const yPos = pr_canvas.height - imgHeight - margin;
+                //     // Calculate the BOTTOM-RIGHT position
+                //     const margin = 30;
+                //     const xPos = pr_canvas.width - imgWidth - margin;
+                //     const yPos = pr_canvas.height - imgHeight - margin;
                     
-                    // Draw the Image
-                    pr_ctx.drawImage(watermarkImg, xPos, yPos, imgWidth, imgHeight);
+                //     // Draw the Image
+                //     pr_ctx.drawImage(watermarkImg, xPos, yPos, imgWidth, imgHeight);
                     
-                    pr_ctx.restore();
-                };
-                // =========================================================
+                //     pr_ctx.restore();
+                // };
+                // // =========================================================
 
-                if (pr_pageNumPending !== null) {
-                    pr_renderPage(pr_pageNumPending);
-                    pr_pageNumPending = null;
-                }
+                // if (pr_pageNumPending !== null) {
+                //     pr_renderPage(pr_pageNumPending);
+                //     pr_pageNumPending = null;
+                // }
             });
         });
 
@@ -1125,6 +1136,39 @@ if (submitForm && formSubmitBtn) {
         const title = titleInput ? titleInput.value.trim() : '';
         const isRevCheckbox = document.querySelector('input[name="isRevision"]');
         
+        // File validation: Only PDF and under 2MB
+        const fileInput = document.querySelector('input[name="policyFile"]');
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileSizeMB = file.size / (1024 * 1024);
+            const fileName = file.name.toLowerCase();
+            
+            if (!fileName.endsWith('.pdf')) {
+                alert("Only PDF files are accepted.");
+                return;
+            }
+            if (fileSizeMB > 2) {
+                alert("File size must be 2MB and below.");
+                return;
+            }
+        }
+        
+        const logFileInput = document.querySelector('input[name="changeLogFile"]');
+        if (logFileInput && logFileInput.files.length > 0) {
+            const logFile = logFileInput.files[0];
+            const logFileSizeMB = logFile.size / (1024 * 1024);
+            const logFileName = logFile.name.toLowerCase();
+            
+            if (!logFileName.endsWith('.pdf')) {
+                alert("Only PDF files are accepted for the revision log.");
+                return;
+            }
+            if (logFileSizeMB > 2) {
+                alert("Revision log file size must be 2MB and below.");
+                return;
+            }
+        }
+        
         if (!title) return alert("Please enter a policy title.");
         
         let isRevision = false;
@@ -1336,14 +1380,65 @@ document.addEventListener('DOMContentLoaded', () => {
   
         const addUserBtn = document.createElement('div');
         addUserBtn.className = 'expandable-btn';
-        addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i><span class="btn-text">Assign User</span>';
-        addUserBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            assignRoleContainer.style.display = 'block';
-            if(overlay) overlay.style.display = 'block';
-            currentTargetDepartment = departmentDiv;
-            assignRoleContainer.dataset.targetDepartment = departmentDiv;
+addUserBtn.innerHTML = '<i class="fas fa-user-plus"></i><span class="btn-text">Assign User</span>';
+addUserBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+
+    // 1. Clear the old list and show a loading state in the modal
+    const accountListContainer = document.querySelector('.scrollable-account-list');
+    if (accountListContainer) {
+        accountListContainer.innerHTML = '<p style="padding:10px; color:gray;"><i class="fas fa-spinner fa-spin"></i> Loading all accounts...</p>';
+    }
+
+    // 2. Fetch ALL accounts instead of just assignees
+    fetch(`../../generalComponents/dpManagerPHP/getAllAccounts.php`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && accountListContainer) {
+                if (data.employees.length === 0) {
+                    accountListContainer.innerHTML = '<p style="padding:10px; color:red;">No users found.</p>';
+                    return;
+                }
+
+                // 3. Repopulate the list with ALL employees
+                accountListContainer.innerHTML = data.employees.map(emp => {
+                    return `
+                        <div class="account-item" data-account-id="${emp.accID}">
+                            <input type="radio" id="account-${emp.accID}" name="selectedAccount" value="${emp.accID}">
+                            <label for="account-${emp.accID}">${emp.fullName} (${emp.email})</label>
+                        </div>
+                    `;
+                }).join('');
+
+                // 4. Re-bind the change listener so clicking updates the display name input
+                document.querySelectorAll('.scrollable-account-list input[type="radio"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        if (radio.checked) {
+                            const accountLabel = radio.nextElementSibling.textContent;
+                            const [fullName] = accountLabel.split(' (');
+                            if(document.getElementById('nameInput')) {
+                                document.getElementById('nameInput').value = fullName.trim();
+                            }
+                        }
+                    });
+                });
+            } else if (accountListContainer) {
+                accountListContainer.innerHTML = '<p style="padding:10px; color:red;">Error loading accounts.</p>';
+            }
+        })
+        .catch(err => {
+            console.error("Error fetching assignees:", err);
+            if (accountListContainer) {
+                accountListContainer.innerHTML = '<p style="padding:10px; color:red;">Network error.</p>';
+            }
         });
+
+    // 6. Open up the modal overlays
+    assignRoleContainer.style.display = 'block';
+    if(overlay) overlay.style.display = 'block';
+    currentTargetDepartment = departmentDiv;
+    assignRoleContainer.dataset.targetDepartment = departmentDiv;
+});
         iconsDiv.appendChild(addUserBtn);
   
         if (!isChild) {
@@ -3006,16 +3101,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 1. INJECT KPI RIBBON
                 if (dbData.kpiData) {
-                    document.getElementById('kpi-active').innerText = dbData.kpiData.active;
-                    document.getElementById('kpi-pending').innerText = dbData.kpiData.pending;
-                    document.getElementById('kpi-speed').innerHTML = `${dbData.kpiData.speed} <span style="font-size: 14px; color: #64748b;">Days</span>`;
-                    document.getElementById('kpi-expiring').innerText = dbData.kpiData.expiring;
-                    if (document.getElementById('kpi-rejected')) {
-                        document.getElementById('kpi-rejected').innerText = dbData.kpiData.rejected || 0;
-                    }
-                    if (document.getElementById('kpi-feedbacks')) {
-                        document.getElementById('kpi-feedbacks').innerText = dbData.kpiData.feedbacks || 0;
-                    }
+                    const kpiActive = document.getElementById('kpi-active');
+                    if (kpiActive) kpiActive.innerText = dbData.kpiData.active;
+
+                    const kpiPending = document.getElementById('kpi-pending');
+                    if (kpiPending) kpiPending.innerText = dbData.kpiData.pending;
+
+                    const kpiSpeed = document.getElementById('kpi-speed');
+                    if (kpiSpeed) kpiSpeed.innerHTML = `${dbData.kpiData.speed} <span style="font-size: 14px; color: #64748b;">Days</span>`;
+
+                    const kpiExpiring = document.getElementById('kpi-expiring');
+                    if (kpiExpiring) kpiExpiring.innerText = dbData.kpiData.expiring;
+
+                    const kpiRejected = document.getElementById('kpi-rejected');
+                    if (kpiRejected) kpiRejected.innerText = dbData.kpiData.rejected || 0;
+
+                    const kpiFeedbacks = document.getElementById('kpi-feedbacks');
+                    if (kpiFeedbacks) kpiFeedbacks.innerText = dbData.kpiData.feedbacks || 0;
 
                     // ✨ Rename "Pending Review" to "Pending Tasks"
                     document.querySelectorAll('.kpi-box h3, .kpi-box h4, .kpi-box div, .kpi-box p, .kpi-box span').forEach(el => {
@@ -3321,29 +3423,7 @@ let activePoliciesChartInstance = null;
 let currentChartParentId = null;
 
 window.toggleActivePoliciesChart = function() {
-    const chartContainer = document.getElementById('activePoliciesChartContainer');
-    const detailsContainer = document.getElementById('reportDetailsArea');
-    
-    if (detailsContainer) detailsContainer.style.display = 'none';
-
-    document.querySelectorAll('.kpi-box').forEach(box => {
-        box.style.border = '';
-        box.style.boxShadow = '';
-    });
-
-    if (chartContainer.style.display === 'none' || chartContainer.style.display === '') {
-        chartContainer.style.display = 'block';
-        currentChartParentId = null;
-        renderActivePoliciesChart();
-
-        const kpiBox = document.getElementById('kpi-active')?.closest('.kpi-box');
-        if (kpiBox) {
-            kpiBox.style.border = '2px solid #fbaf41';
-            kpiBox.style.boxShadow = '0 4px 15px rgba(251, 175, 65, 0.4)';
-        }
-    } else {
-        chartContainer.style.display = 'none';
-    }
+    loadReportDetails('active');
 };
 
 window.renderActivePoliciesChart = function(drilldownId = undefined) {
@@ -3393,21 +3473,35 @@ window.renderActivePoliciesChart = function(drilldownId = undefined) {
                     type: 'bar',
                     data: {
                         labels: data.labels,
-                        datasets: [{
-                            label: 'Active Policies',
-                            data: data.active,
-                            backgroundColor: '#fbaf41',
-                            barPercentage: 0.6,
-                            categoryPercentage: 0.8,
-                            categoryIds: data.categoryIds
-                        }]
+                        datasets: [
+                            {
+                                label: 'Policies Approved',
+                                data: data.active,
+                                backgroundColor: '#4472c4',
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8,
+                                categoryIds: data.categoryIds
+                            },
+                            {
+                                label: 'Total Policies Submitted',
+                                data: data.total,
+                                backgroundColor: '#ed7d31',
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8,
+                                categoryIds: data.categoryIds
+                            }
+                        ]
                     },
                     options: { 
-                        indexAxis: 'y', 
                         responsive: true, 
                         maintainAspectRatio: false, 
                         plugins: { 
                             legend: { position: 'bottom' },
+                            title: {
+                                display: true,
+                                text: 'Active Policies in the Month of January',
+                                font: { size: 18 }
+                            },
                             tooltip: {
                                 callbacks: {
                                     footer: (tooltipItems) => {
@@ -3421,7 +3515,7 @@ window.renderActivePoliciesChart = function(drilldownId = undefined) {
                                 }
                             }
                         }, 
-                        scales: { x: { beginAtZero: true }, y: { grid: { display: false } } },
+                        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } },
                         onClick: (event, elements, chart) => {
                             if (elements.length > 0) {
                                 const index = elements[0].index;
@@ -3561,12 +3655,21 @@ window.loadReportDetails = function(type, statusId = '') {
     fetchReportDetails();
 }
 
-window.fetchReportDetails = function() {
+window.fetchReportDetails = function(overrideParentID = undefined) {
+    if (overrideParentID !== undefined) {
+        currentChartParentId = overrideParentID;
+    } else if (currentReportType !== 'active') {
+        currentChartParentId = null;
+    }
+    
     const month = document.getElementById('filterMonth').value;
     const year = document.getElementById('filterYear').value;
     
     let url = `../../generalComponents/policyManagerPHP/getReportsData.php?action=details&type=${currentReportType}&month=${month}&year=${year}`;
     if (currentStatusId) url += `&statusId=${currentStatusId}`;
+    if (currentChartParentId !== null && currentReportType === 'active') {
+        url += `&parentID=${currentChartParentId}`;
+    }
     
     fetch(url)
         .then(res => res.json())
@@ -3594,8 +3697,7 @@ window.fetchReportDetails = function() {
             } else if (currentReportType === 'active') {
                 const kpiActive = document.getElementById('kpi-active');
                 if (kpiActive) {
-                    // For active policies, data contains grouped categories with 'total'
-                    const totalActive = data.reduce((sum, item) => sum + parseInt(item.total || 0), 0);
+                    const totalActive = data.reduce((sum, item) => sum + parseInt(item.policiesApproved || 0), 0);
                     kpiActive.innerText = totalActive;
                 }
             } else if (currentReportType === 'feedbacks') {
@@ -3603,6 +3705,143 @@ window.fetchReportDetails = function() {
                 if (kpiFeedbacks) {
                     const totalFeedbacks = data.reduce((sum, item) => sum + parseInt(item.feedbackCount || 0), 0);
                     kpiFeedbacks.innerText = totalFeedbacks;
+                }
+            }
+            
+            // Handle visibility of table vs chart
+            let dynChartContainer = document.getElementById('dynamicActivePoliciesChartContainer');
+            if (currentReportType === 'active') {
+                table.style.display = 'none';
+                if (!dynChartContainer) {
+                    dynChartContainer = document.createElement('div');
+                    dynChartContainer.id = 'dynamicActivePoliciesChartContainer';
+                    dynChartContainer.style.position = 'relative';
+                    dynChartContainer.style.width = '100%';
+                    table.parentNode.insertBefore(dynChartContainer, table);
+                }
+                dynChartContainer.style.display = 'block';
+                
+                let scrollWrapper = document.getElementById('dynChartScrollWrapper');
+                let chartSizer = document.getElementById('dynChartSizer');
+                let canvas = document.getElementById('dynamicActivePoliciesChart');
+                
+                if (!scrollWrapper) {
+                    scrollWrapper = document.createElement('div');
+                    scrollWrapper.id = 'dynChartScrollWrapper';
+                    scrollWrapper.style.width = '100%';
+                    scrollWrapper.style.height = '400px';
+                    scrollWrapper.style.overflowX = 'auto';
+                    scrollWrapper.style.overflowY = 'hidden';
+                    
+                    chartSizer = document.createElement('div');
+                    chartSizer.id = 'dynChartSizer';
+                    chartSizer.style.height = '100%';
+                    
+                    canvas = document.createElement('canvas');
+                    canvas.id = 'dynamicActivePoliciesChart';
+                    
+                    dynChartContainer.appendChild(scrollWrapper);
+                    scrollWrapper.appendChild(chartSizer);
+                    chartSizer.appendChild(canvas);
+                }
+                
+                if (currentChartParentId !== null) {
+                    let backBtn = document.getElementById('dynChartBackBtn');
+                    if (!backBtn) {
+                        backBtn = document.createElement('button');
+                        backBtn.id = 'dynChartBackBtn';
+                        backBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Parent Folders';
+                        backBtn.style.cssText = 'margin-bottom: 15px; padding: 8px 15px; background: #293A82; color: white; border: none; border-radius: 5px; cursor: pointer; display: inline-block; font-weight: bold;';
+                        backBtn.onclick = () => fetchReportDetails(null);
+                        dynChartContainer.insertBefore(backBtn, scrollWrapper);
+                    } else {
+                        backBtn.style.display = 'inline-block';
+                    }
+                } else {
+                    let backBtn = document.getElementById('dynChartBackBtn');
+                    if (backBtn) backBtn.style.display = 'none';
+                }
+                
+                if (window.dynamicActivePoliciesChartInstance) {
+                    window.dynamicActivePoliciesChartInstance.destroy();
+                }
+                
+                const labels = data.map(item => item.categoryName || 'Main Repository');
+                const approvedData = data.map(item => parseInt(item.policiesApproved || 0));
+                const totalData = data.map(item => parseInt(item.totalPoliciesSubmitted || 0));
+                const categoryIds = data.map(item => item.categoryID);
+                
+                let minWidth = Math.max(100, labels.length * 120); 
+                chartSizer.style.minWidth = minWidth + 'px';
+                
+                window.dynamicActivePoliciesChartInstance = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Policies Approved',
+                                data: approvedData,
+                                categoryIds: categoryIds,
+                                backgroundColor: '#4472c4',
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8
+                            },
+                            {
+                                label: 'Total Policies Submitted',
+                                data: totalData,
+                                categoryIds: categoryIds,
+                                backgroundColor: '#ed7d31',
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    footer: (tooltipItems) => {
+                                        const index = tooltipItems[0].dataIndex;
+                                        const catId = categoryIds[index];
+                                        if (catId !== null && currentChartParentId === null) {
+                                            return 'Click to view child folders';
+                                        }
+                                        return null;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: true },
+                            x: { grid: { display: false } }
+                        },
+                        onClick: (event, elements, chart) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const catId = chart.data.datasets[0].categoryIds[index];
+                                
+                                if (catId !== null && currentChartParentId === null) {
+                                    fetchReportDetails(catId);
+                                }
+                            }
+                        },
+                        onHover: (event, elements, chart) => {
+                            if (elements.length > 0 && currentChartParentId === null && chart.data.datasets[0].categoryIds[elements[0].index] !== null) {
+                                event.native.target.style.cursor = 'pointer';
+                            } else {
+                                event.native.target.style.cursor = 'default';
+                            }
+                        }
+                    }
+                });
+            } else {
+                table.style.display = 'table';
+                if (dynChartContainer) {
+                    dynChartContainer.style.display = 'none';
                 }
             }
             
@@ -3650,22 +3889,30 @@ window.fetchReportDetails = function() {
                         <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.rejectionFeedbackCount}</td>
                     </tr>
                 `).join('');
-            } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Folder / Category</th>
-                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Total Policies</th>
-                    </tr>
-                `;
-                tbody.innerHTML = data.map(item => `<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.categoryName || 'Main Repository'}</td><td style="padding: 10px; border-bottom: 1px solid #eee;">${item.total}</td></tr>`).join('');
             }
         });
 }
 
 // ✨ MODAL OVERLAY: Display Reason for Rejection
-window.showRejectedReason = function(index) {
-    const data = window.currentReportsData[index];
-    const reason = data.reason || "No specific feedback or reason was provided for this rejection.";
+window.showRejectedReason = function(indexOrId, fallbackTitle = null, fallbackReason = null) {
+    let title = fallbackTitle || 'Untitled Document';
+    let reason = fallbackReason || "No specific feedback or reason was provided for this rejection.";
+    let needsFetch = false;
+
+    // Scenario 1: User is in Reports Dashboard (Called with array index)
+    if (window.currentReportsData && window.currentReportsData[indexOrId]) {
+        const data = window.currentReportsData[indexOrId];
+        title = data.title || title;
+        reason = data.reason || reason;
+    } 
+    // Scenario 2: User is in Workspace / My Submissions (Called with a Policy ID)
+    else if (!window.currentReportsData || !window.currentReportsData[indexOrId]) {
+        if (!fallbackReason) {
+            needsFetch = true;
+            title = "Loading...";
+            reason = "Fetching rejection details from the database...";
+        }
+    }
     
     let modal = document.getElementById('rejectedReasonModal');
     if (!modal) {
@@ -3685,9 +3932,33 @@ window.showRejectedReason = function(index) {
         document.body.appendChild(modal);
     }
     
-    document.getElementById('rrModalTitle').textContent = data.title || 'Untitled';
+    document.getElementById('rrModalTitle').textContent = title;
     document.getElementById('rejectedReasonText').textContent = reason;
     modal.style.display = 'flex';
+
+    // If we are in the Workspace, dynamically pull the rejection reason using the Policy ID
+    if (needsFetch) {
+        fetch('../../generalComponents/policyManagerPHP/getFeedbacks.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.feedbacks) {
+                // Find the rejection feedback (fbType 2) matching this policy ID
+                const matchedFb = data.feedbacks.find(fb => (fb.policyID == indexOrId || fb.remarksOn == indexOrId) && fb.fbType == 2);
+                
+                if (matchedFb) {
+                    document.getElementById('rrModalTitle').textContent = matchedFb.policyTitle || 'Rejected Document';
+                    document.getElementById('rejectedReasonText').textContent = matchedFb.content || "No specific feedback was provided.";
+                } else {
+                    document.getElementById('rrModalTitle').textContent = 'Document ID: ' + indexOrId;
+                    document.getElementById('rejectedReasonText').textContent = "No specific feedback or reason was found for this rejection in the database.";
+                }
+            }
+        })
+        .catch(err => {
+            document.getElementById('rrModalTitle').textContent = "Network Error";
+            document.getElementById('rejectedReasonText').textContent = "Could not reach the server to load the rejection reason.";
+        });
+    }
 };
 
 window.openDocumentHistoryModal = function(policyId) {
@@ -3879,117 +4150,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* =====================================================================
    ✨ AUTOMATIC BACKGROUND REFRESH ENGINE ✨
-   (Real-Time Sync Across All POVs)
+   (Lightweight Polling for Tasks, KPIs & Notifications)
    ===================================================================== */
-(function() {
-    let currentSystemHash = '';
-    let pendingUpdate = false;
+let lastDashboardKpiState = {
+    active: null,
+    pending: null,
+    rejected: null,
+    feedbacks: null,
+    taskState: null
+};
 
-    // 1. Get the initial state fingerprint so we don't reload on the first pass
-    fetch('/qms_optiqual/generalComponents/check_updates.php')
-        .then(res => res.json())
-        .then(data => {
-            if (data.hash) currentSystemHash = data.hash;
-        })
-        .catch(err => console.error("Auto-Sync Initialization Error:", err));
-
-    function isUserBusy() {
-        // List of all known modals, overlays, and document viewers.
-        // If any of these are visible, we DELAY the refresh so we don't interrupt the user.
-        const busyElements = [
-            'Policy_Repo_pdfViewer',
-            'Secondary_PdfViewer',
-            'submitOverlay',
-            'archivesModal',
-            'pmCreateFolderModal',
-            'pmRenameFolderModal',
-            'pmDeleteFolderModal',
-            'pmAddFileModal',
-            'pmRemovePolicyModal',
-            'assignNameContainer',
-            'assignRoleContainer',
-            'departmentStructureContainer',
-            'renameDepartmentContainer',
-            'deleteConfirmationContainer',
-            'renameRoleContainer',
-            'rmAddUserModal',
-            'confirm-dl',
-            'rejectedReasonModal',
-            'documentHistoryOverlay',
-            'popupOverlay' // Notifications dropdown
-        ];
-
-        for (const id of busyElements) {
-            const el = document.getElementById(id);
-            if (el && el.style.display !== 'none' && el.style.display !== '') {
-                return true;
-            }
-        }
-
-        // Check if the user is actively typing in a search bar, textarea, or input
-        const activeTag = document.activeElement ? document.activeElement.tagName : '';
-        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return true;
-
-        return false;
-    }
-
-    function applyUpdateIfSafe() {
-        if (pendingUpdate && !isUserBusy()) {
-            pendingUpdate = false;
-            
-            // ✨ SILENT BACKGROUND REFRESH (WITH CACHE-BUSTER) ✨
-            const fetchUrl = window.location.href.split('#')[0];
-            const cacheBuster = fetchUrl + (fetchUrl.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
-
-            fetch(cacheBuster, { cache: 'no-store', headers: { 'Pragma': 'no-cache' } })
-                .then(res => res.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-
-                    // 1. Update Notification Bell (for the red unread badge)
-                    const newNotifBtn = doc.getElementById('notifButton');
-                    const oldNotifBtn = document.getElementById('notifButton');
-                    if (newNotifBtn && oldNotifBtn) oldNotifBtn.innerHTML = newNotifBtn.innerHTML;
-
-                    // 2. Update Notification Lists
-                    const newUnread = doc.getElementById('notif-unread-list');
-                    const oldUnread = document.getElementById('notif-unread-list');
-                    if (newUnread && oldUnread) oldUnread.innerHTML = newUnread.innerHTML;
-
-                    const newRead = doc.getElementById('notif-read-list');
-                    const oldRead = document.getElementById('notif-read-list');
-                    if (newRead && oldRead) oldRead.innerHTML = newRead.innerHTML;
-                    
-                    // 3. Silently update Workspace Tasks
-                    const newTaskTable = doc.querySelector('.task-manager-table');
-                    const oldTaskTable = document.querySelector('.task-manager-table');
-                    if (newTaskTable && oldTaskTable) oldTaskTable.innerHTML = newTaskTable.innerHTML;
-                    
-                    // 4. Silently update Process Tracker
-                    const newTracker = doc.querySelector('.Process-Tracker-Panel2');
-                    const oldTracker = document.querySelector('.Process-Tracker-Panel2');
-                    if (newTracker && oldTracker) oldTracker.innerHTML = newTracker.innerHTML;
-                })
-                .catch(err => console.error("Auto-sync fetch error:", err));
-        }
-    }
-
-    // 2. If an update is queued while they were busy, trigger the update the moment they click away or close a modal.
-    document.addEventListener('click', () => setTimeout(applyUpdateIfSafe, 400));
-    document.addEventListener('keyup', () => setTimeout(applyUpdateIfSafe, 400));
-
-    // 3. The Poller: Checks the server every 4 seconds for database structural changes.
+function startDashboardPolling() {
     setInterval(() => {
-        if (!currentSystemHash) return; 
-        fetch(`/qms_optiqual/generalComponents/check_updates.php?hash=${currentSystemHash}`)
+        fetch('../../generalComponents/policyManagerPHP/getDashboardSync.php')
             .then(res => res.json())
             .then(data => {
-                if (data.hasUpdates) {
-                    currentSystemHash = data.hash; // Instantly update local hash to prevent spam loops
-                    pendingUpdate = true;
-                    applyUpdateIfSafe(); 
+                if (!data.success) return;
+
+                // 1. Check Task State
+                if (data.taskState !== lastDashboardKpiState.taskState) {
+                    if (lastDashboardKpiState.taskState !== null) {
+                        if (typeof fetchTasksAndPopulate === 'function') {
+                            fetchTasksAndPopulate();
+                        }
+                    }
+                    lastDashboardKpiState.taskState = data.taskState;
                 }
-            }).catch(err => console.error("Auto-Sync Polling Error:", err));
-    }, 4000);
-})();
+
+                // 2. Check KPIs
+                const kpi = data.kpi;
+                let dataChanged = false;
+                
+                if (kpi.active !== lastDashboardKpiState.active) {
+                    const el = document.getElementById('kpi-active');
+                    if (el) el.innerText = kpi.active;
+                    if (lastDashboardKpiState.active !== null && typeof currentReportType !== 'undefined' && currentReportType === 'active') {
+                        dataChanged = true;
+                    }
+                    lastDashboardKpiState.active = kpi.active;
+                }
+
+                if (kpi.pending !== lastDashboardKpiState.pending) {
+                    const el = document.getElementById('kpi-pending');
+                    if (el) el.innerText = kpi.pending;
+                    if (lastDashboardKpiState.pending !== null && typeof currentReportType !== 'undefined' && currentReportType === 'pending') {
+                        dataChanged = true;
+                    }
+                    lastDashboardKpiState.pending = kpi.pending;
+                }
+
+                if (kpi.rejected !== lastDashboardKpiState.rejected) {
+                    const el = document.getElementById('kpi-rejected');
+                    if (el) el.innerText = kpi.rejected;
+                    if (lastDashboardKpiState.rejected !== null && typeof currentReportType !== 'undefined' && currentReportType === 'rejected') {
+                        dataChanged = true;
+                    }
+                    lastDashboardKpiState.rejected = kpi.rejected;
+                }
+
+                if (kpi.feedbacks !== lastDashboardKpiState.feedbacks) {
+                    const el = document.getElementById('kpi-feedbacks');
+                    if (el) el.innerText = kpi.feedbacks;
+                    if (lastDashboardKpiState.feedbacks !== null && typeof currentReportType !== 'undefined' && currentReportType === 'feedbacks') {
+                        dataChanged = true;
+                    }
+                    lastDashboardKpiState.feedbacks = kpi.feedbacks;
+                }
+
+                if (dataChanged && typeof window.fetchReportDetails === 'function') {
+                    if (currentReportType === 'active' && typeof currentChartParentId !== 'undefined') {
+                        window.fetchReportDetails(currentChartParentId);
+                    } else {
+                        window.fetchReportDetails();
+                    }
+                }
+
+                // 3. Update Notifications
+                const notifs = data.notifications;
+                if (notifs) {
+                    const unreadList = document.getElementById('notif-unread-list');
+                    const readList = document.getElementById('notif-read-list');
+                    
+                    if (unreadList && notifs.unreadHtml && unreadList.innerHTML !== notifs.unreadHtml) {
+                        unreadList.innerHTML = notifs.unreadHtml;
+                        if (typeof updateNotifBadgeCount === 'function') updateNotifBadgeCount();
+                    }
+                    
+                    if (readList && notifs.readHtml && readList.innerHTML !== notifs.readHtml) {
+                        readList.innerHTML = notifs.readHtml;
+                    }
+                }
+            })
+            .catch(err => { /* Ignore silent errors */ });
+    }, 7000); 
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    startDashboardPolling();
+});

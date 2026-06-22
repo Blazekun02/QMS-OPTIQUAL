@@ -163,7 +163,7 @@
                 
                 <li class="menu-icons">
                     <img src="../../assets/QAP Sidebar/Not Clicked/Role_Manage.png" alt="Icon 6">
-                    <span class="icon-label">Manage Roles</span>
+                    <span class="icon-label">View Team</span>
                 </li>
                 <li class="menu-icons">
                     <img src="../../assets/info - notClicked.png" alt="Icon 10">
@@ -205,7 +205,7 @@
         <div class="Welcome-Panel" id="Welcome-Panel" style="position: absolute; top: 60px; left: 0.8in; width: calc(100% - 0.9in); height: calc(100vh - 100px); background: linear-gradient(180deg, #fdfdfd 0%, #e0e8f0 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; z-index: 1;">
             <div class="welcome-text-container" style="text-align: center; z-index: 10; margin-top: -15vh;">
                 <h1 class="welcome-title" style="color: #293A82; font-size: 3.5rem; margin-bottom: 5px; font-family: 'Istok Web', sans-serif; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">Welcome to OPTIQUAL</h1>
-                <p class="welcome-subtitle" style="color: #fbaf41; font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; margin: 0;">Quality Assurance Staff Dashboard</p>
+                <p class="welcome-subtitle" style="color: #fbaf41; font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; margin: 0;">Quality Assurance Staff </p>
             </div>
             <div class="mountain-layer back-mountain"></div>
             <div class="mountain-layer mid-mountain"></div>
@@ -252,7 +252,7 @@
                         
                             echo '<div class="child-folders" data-parent-id="' . $row['categoryID'] . '" style="display: none;">'; 
 
-                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
+                            $queryParentPols = "SELECT * FROM policytbl WHERE categoryID = " . $row['categoryID'] . " AND policyStatusID IN (4, 5)";
 
                             $resultParentPols = mysqli_query($conn, $queryParentPols);
                             if ($resultParentPols && mysqli_num_rows($resultParentPols) > 0) {
@@ -274,7 +274,7 @@
                                     echo '<p class="PR-Child-Folder-Name"><i class="fas fa-caret-right folder-toggle-icon"></i> ' . $rowCF['categoryName'] . '</p>';
                                     echo '</div>';
                         
-                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID >= 4 AND policyStatusID != 6";
+                                    $queryPol = "SELECT * FROM policytbl WHERE categoryID = " . $rowCF['categoryID'] . " AND policyStatusID IN (4, 5)";
                                     $resultPol = mysqli_query($conn, $queryPol);
                         
                                     echo '<div class="Policies-Folder" data-pol-id="' .$rowCF['categoryID']. '" style="display: none;">'; 
@@ -296,7 +296,7 @@
                     }
 
                 // ✨ FIX: Fetch policies that are published directly to the "Main Repository" (No Folder)
-                $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID >= 4 AND policyStatusID != 6";
+                $queryMainPols = "SELECT * FROM policytbl WHERE categoryID IS NULL AND policyStatusID IN (4, 5)";
                 $resultMainPols = mysqli_query($conn, $queryMainPols);
                 if ($resultMainPols && mysqli_num_rows($resultMainPols) > 0) {
                     while ($rowPol = mysqli_fetch_assoc($resultMainPols)) {
@@ -387,6 +387,7 @@
                 <div class="submit-input">
                     <input type="text" name="policyTitle" id="policyTitle" placeholder="Enter policy title" required><br>
                     <input type="file" name="policyFile" accept=".pdf" required style="margin-top:10px;">
+                    <p style="font-size: 12px; color: #fbaf41; margin-top: 5px; margin-bottom: 0;">* Only PDF files are accepted. File size must be 2MB and below.</p>
                 </div>
                 
                 <div class="revision-toggle" style="margin-top: 15px; text-align: left;">
@@ -410,15 +411,17 @@
                         ?>
                     </select>
                     <label>Revision Type:</label>
+                    <label>Revision Type:</label>
                     <select name="revisionType" style="width: 100%; padding: 8px; margin-bottom: 10px;">
                         <option value="minor">Minor Revision</option>
                         <option value="major">Major Revision</option>
                     </select>
-                    <br>
-                    <label>Description of Changes:</label>
+                    <label for="changesDescription">Description of Changes:</label>
                     <textarea name="changesDescription" rows="3" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+
                     <label>Upload Revision Form (PDF):</label>
                     <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
+                    <p style="font-size: 12px; color: #fbaf41; margin-top: 5px; margin-bottom: 0;">* Only PDF files are accepted. File size must be 2MB and below.</p>
                 </div>
                 <div class="submit-buttons">
                     <button id="cancelBtn" type="button">Cancel</button>
@@ -448,11 +451,8 @@
             <h1 class="rm-title">Quality Assurance Team Directory</h1>
             
             <div class="rm-controls">
-                <div class="rm-search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="find employee" id="rmSearchInput" autocomplete="new-password" name="rm_search_input_prevent_autofill">
-                </div>
-                </div>
+                
+            </div>
             <div class="rm-grid-container" id="rmGridContainer"></div>
         </div>
 

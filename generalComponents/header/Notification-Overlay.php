@@ -128,7 +128,7 @@
                         $msg = htmlspecialchars((string)$row['message']);
                         // ✨ ADDED: notifID, the 'unread' class, and cursor:pointer
                         $notifID = $row['notifID'];
-                        echo "<div class='notification-item unread' data-id='$notifID' style='border-left: 4px solid #fbaf41; cursor: pointer;'><p style='margin:0; font-weight:bold;'>$msg</p></div>";    
+                        echo "<div class='notification-item unread' data-id='$notifID' onclick='handleNotificationClick(this)' style='border-left: 4px solid #fbaf41; cursor: pointer;'><p style='margin:0; font-weight:bold;'>$msg</p></div>";    
                     }
                 } else {
                     echo "<p class='no-notifications'><i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.</p>";
@@ -154,7 +154,8 @@
                     while ($row = $result->fetch_assoc()) {
                         // ✨ ADDED: Dimmed gray background and normal text for READ
                         $msg = htmlspecialchars((string)$row['message']);
-                        echo "<div class='notification-item' style='background-color:#555; border-left: 4px solid transparent;'><p style='margin:0; color:#d3d3d3;'>$msg</p></div>";
+                        $notifID = $row['notifID'];
+                        echo "<div class='notification-item' data-id='$notifID' onclick='handleNotificationClick(this)' style='background-color:#555; border-left: 4px solid transparent; cursor: pointer;'><p style='margin:0; color:#d3d3d3;'>$msg</p></div>";
                     }
                 } else {
                     echo "<p class='no-notifications'><i class='fas fa-envelope-open' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No read notifications.</p>";
@@ -206,12 +207,78 @@
         }
     }
 
-    function toggleNotifications() {
-        const notifBox = document.querySelector('.notif-wrapper');
-        if (notifBox.style.display === 'none' || notifBox.style.display === '') {
-            notifBox.style.display = 'block';
+
+
+    function handleNotificationClick(item) {
+        const notifID = item.getAttribute('data-id');
+        const isUnread = item.classList.contains('unread');
+
+        // Only mark as read if it is unread
+        if (isUnread) {
+            fetch('/qms_optiqual/generalComponents/header/markNotifsReadBE.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notifID: notifID })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Visually change the notification to 'read'
+                    item.classList.remove('unread');
+                    item.style.backgroundColor = '#555';
+                    item.style.borderLeft = '4px solid transparent';
+                    const p = item.querySelector('p');
+                    if (p) {
+                        p.style.fontWeight = 'normal';
+                        p.style.color = '#d3d3d3';
+                    }
+                    
+                    // Move to read list
+                    const readList = document.getElementById('notif-read-list');
+                    const noReadNotif = readList.querySelector('.no-notifications');
+                    if (noReadNotif) noReadNotif.style.display = 'none';
+                    
+                    readList.prepend(item);
+
+                    // Check if unread list is now empty
+                    const unreadList = document.getElementById('notif-unread-list');
+                    if (unreadList.querySelectorAll('.notification-item.unread').length === 0) {
+                        let noUnreadNotif = unreadList.querySelector('.no-notifications');
+                        if (!noUnreadNotif) {
+                            noUnreadNotif = document.createElement('p');
+                            noUnreadNotif.className = 'no-notifications';
+                            noUnreadNotif.innerHTML = "<i class='fas fa-bell-slash' style='display:block; font-size:24px; margin-bottom:10px; opacity:0.5;'></i>No unread notifications.";
+                            unreadList.appendChild(noUnreadNotif);
+                        }
+                        noUnreadNotif.style.display = 'block';
+                    }
+                    updateNotifBadgeCount();
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        // Redirect based on message content
+        const msgText = item.querySelector('p').innerText.toLowerCase();
+        
+        // ✨ FIX: Properly close the main popup overlay instead of hiding the inner wrapper
+        const popup = document.getElementById('popupOverlay');
+        if (popup) popup.style.display = 'none';
+        if (msgText.includes('feedback') || msgText.includes('reply') || msgText.includes('policy') && !msgText.includes('task') && !msgText.includes('submission')) {
+            if (typeof showPolicyRepository === 'function') {
+                showPolicyRepository();
+            } else if (typeof showWorkspace === 'function') {
+                showWorkspace();
+            }
+        } else if (msgText.includes('assigned a new task') || msgText.includes('task') || msgText.includes('submission') || msgText.includes('pending') || msgText.includes('verify') || msgText.includes('approve') || msgText.includes('reject')) {
+            if (typeof showWorkspace === 'function') {
+                showWorkspace();
+            }
         } else {
-            notifBox.style.display = 'none';
+            // Default to workspace
+            if (typeof showWorkspace === 'function') {
+                showWorkspace();
+            }
         }
     }
 </script>

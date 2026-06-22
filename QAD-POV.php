@@ -725,6 +725,11 @@ function toggleRevision(checkbox) {
 
 <script src="QAD-POV.js?v=<?php echo file_exists(__DIR__ . '/QAD-POV.js') ? filemtime(__DIR__ . '/QAD-POV.js') : '1.0'; ?>"></script>
 <script>
+    function showReports() {
+        // This function is now defined in QAD-POV.js, but we can add the initial fetch here.
+        fetchReportKpis(); // Fetch KPI data when the reports panel is shown.
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
         const confirmDlPopup = document.getElementById('confirm-dl');

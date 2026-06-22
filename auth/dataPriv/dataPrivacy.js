@@ -1,6 +1,6 @@
 
 document.getElementById("backButton").addEventListener("click", function () {
-    window.location.href = "../../auth/landing/landingPage.php";
+    window.location.href = "/qms_optiqual/auth/landing/landingPage.php";
 });
 
 document.getElementById("submitButton").addEventListener("click", function () {
@@ -8,7 +8,7 @@ document.getElementById("submitButton").addEventListener("click", function () {
     const messageBox = document.getElementById("messageBox");
 
     if (agreeCheckbox.checked) {
-        window.location.href = "../../auth/sign_up/signup.php";
+        window.location.href = "/qms_optiqual/auth/sign_up/signup.php";
     } else {
         messageBox.style.display = "block";
 

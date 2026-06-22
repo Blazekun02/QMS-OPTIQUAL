@@ -150,12 +150,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     if (yesConfirmUpdateBtn && confirmUpdateOverlay && currentDPAContent) {
         yesConfirmUpdateBtn.addEventListener('click', () => {
-            currentDPAContent.innerHTML = `<p>${newDPAText}</p>`;
-            confirmUpdateOverlay.style.display = 'none';
-            dpaEditTextarea.value = '';
-            newDPAText = '';
-            alert('Data Privacy Agreement updated successfully!');
-            document.body.style.overflow = ''; // Restore body scrollbar on final submit
+            // Send the new DPA text to the server
+            fetch('updateDPA.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ dpaContent: newDPAText }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the UI with the new text
+                    currentDPAContent.innerHTML = `<p>${newDPAText.replace(/\n/g, '<br>')}</p>`;
+                    alert('Data Privacy Agreement updated successfully!');
+                } else {
+                    alert('Failed to update DPA: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating DPA:', error);
+                alert('An error occurred while updating the DPA.');
+            })
+            .finally(() => {
+                confirmUpdateOverlay.style.display = 'none';
+                document.body.style.overflow = ''; // Restore body scrollbar
+            });
         });
     }
 

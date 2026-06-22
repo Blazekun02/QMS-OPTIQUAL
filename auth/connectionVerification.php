@@ -34,7 +34,7 @@ function directTo($accID){
     switch ($roleID){
         case 1://Admin
             setMessage("Logged In Succesfully!","success");
-            header("Location: /qms_optiqual/adminSpecificComponents/Admin-POV.php");
+            header("Location: /qms_optiqual/AdminSpecificComponents/Admin-POV.php");
             break;
         case 2://QA Director
             setMessage("Logged In Succesfully!","success");

@@ -196,6 +196,8 @@ try {
     if ($res) {
         while ($row = $res->fetch_assoc()) { 
             $dateForNewCheck = $row['taskDate'] ?? $row['dateSubmitted'];
+            // ✨ ADDED: Pass the raw date value for accurate client-side sorting
+            $row['rawSortDate'] = $dateForNewCheck;
             $row['isNewTask'] = (strtotime($dateForNewCheck) >= strtotime('-2 days'));
             $actionRequired[] = $row; 
         }

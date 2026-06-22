@@ -162,12 +162,41 @@ if ($updatePolicy->execute()) {
                         $catQuery->close();
                     }
                     
-                    // 2. ✨ Archive ALL older policies in this family (use Status 7 = Archived)
-                    $archiveOrig = $conn->prepare("UPDATE policytbl SET policyStatusID = 7 WHERE (policyID = ? OR originalPolicyID = ?) AND policyID != ? AND policyStatusID IN (4, 5)");
-                    if ($archiveOrig) {
-                        $archiveOrig->bind_param("iii", $origID, $origID, $policyID);
-                        $archiveOrig->execute();
-                        $archiveOrig->close();
+                    // 2. ✨ Archive ALL older policies in this family (use Status 7 = Archived) AND move their files.
+                    $archiveDir = __DIR__ . '/../../files/archives/';
+                    $targetDir = __DIR__ . '/../../files/';
+                    if (!file_exists($archiveDir)) {
+                        @mkdir($archiveDir, 0777, true);
+                    }
+
+                    $oldPoliciesQuery = $conn->prepare("SELECT policyID, contentPath FROM policytbl WHERE (policyID = ? OR originalPolicyID = ?) AND policyID != ? AND policyStatusID IN (4, 5)");
+                    if ($oldPoliciesQuery) {
+                        $oldPoliciesQuery->bind_param("iii", $origID, $origID, $policyID);
+                        $oldPoliciesQuery->execute();
+                        $oldPoliciesResult = $oldPoliciesQuery->get_result();
+
+                        while ($oldPolicy = $oldPoliciesResult->fetch_assoc()) {
+                            $oldPolicyID = $oldPolicy['policyID'];
+                            $oldRelativePath = $oldPolicy['contentPath'];
+
+                            if ($oldRelativePath && strpos($oldRelativePath, 'archives') === false && is_writable($archiveDir)) {
+                                $oldFileName = basename($oldRelativePath);
+                                $oldFullPath = $targetDir . $oldFileName;
+                                $newArchiveFullPath = $archiveDir . $oldFileName;
+                                $newArchiveRelativePath = '/qms_optiqual/files/archives/' . $oldFileName;
+
+                                if (file_exists($oldFullPath) && !file_exists($newArchiveFullPath)) {
+                                    if (rename($oldFullPath, $newArchiveFullPath)) {
+                                        // Now update the DB record for this specific old policy
+                                        $archiveStmt = $conn->prepare("UPDATE policytbl SET policyStatusID = 7, contentPath = ? WHERE policyID = ?");
+                                        $archiveStmt->bind_param("si", $newArchiveRelativePath, $oldPolicyID);
+                                        $archiveStmt->execute();
+                                        $archiveStmt->close();
+                                    }
+                                }
+                            }
+                        }
+                        $oldPoliciesQuery->close();
                     }
                 }
             }

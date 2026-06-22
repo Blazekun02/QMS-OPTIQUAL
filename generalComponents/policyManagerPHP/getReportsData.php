@@ -7,6 +7,7 @@ $action = $_GET['action'] ?? 'summary'; // 'summary' for dashboard, 'details' fo
 $type = $_GET['type'] ?? 'active';
 $month = $_GET['month'] ?? '';
 $year = $_GET['year'] ?? '';
+$parentID = isset($_GET['parentID']) && is_numeric($_GET['parentID']) ? (int)$_GET['parentID'] : null;
 
 if ($action === 'summary') {
     // --- 1. KPI & Chart Data ---
@@ -45,8 +46,8 @@ if ($action === 'summary') {
         'archived' => 0      
     ];
 
-    // Fetch Feedback KPI Count (Only General Feedbacks for valid policies)
-    $fbQuery = "SELECT COUNT(f.feedbackID) as cnt FROM feedbacktbl f JOIN policytbl p ON f.remarksOn = p.policyID WHERE f.fbType = 1";
+    // Fetch Feedback KPI Count (Includes General and Rejection Feedbacks)
+    $fbQuery = "SELECT COUNT(f.feedbackID) as cnt FROM feedbacktbl f JOIN policytbl p ON f.remarksOn = p.policyID WHERE f.fbType IN (1, 2)";
     $fbParams = [];
     $fbTypes = "";
     if (!empty($month)) {
@@ -318,28 +319,79 @@ if ($action === 'summary') {
         $query .= " GROUP BY COALESCE(p.originalPolicyID, p.policyID) 
                   ORDER BY COUNT(f.feedbackID) DESC";
     } else {
-        $statusMap = ['active' => [4, 5]];
-        $statusIDs = $statusMap[$type] ?? [4, 5];
+        // Active Policies chart data
+        $params = [];
+        $types = "";
+
+        $dateCondition1 = "";
+        $dateCondition2 = "";
+        $m = !empty($_GET['month']) ? (int)$_GET['month'] : 0;
+        $y = !empty($_GET['year']) ? (int)$_GET['year'] : 0;
+
+        if ($m > 0) {
+            $dateCondition1 .= " AND MONTH(COALESCE(p1.dateUploaded, p1.dateSubmitted)) = $m";
+            $dateCondition2 .= " AND MONTH(COALESCE(p2.dateUploaded, p2.dateSubmitted)) = $m";
+        }
+        if ($y > 0) {
+            $dateCondition1 .= " AND YEAR(COALESCE(p1.dateUploaded, p1.dateSubmitted)) = $y";
+            $dateCondition2 .= " AND YEAR(COALESCE(p2.dateUploaded, p2.dateSubmitted)) = $y";
+        }
         
-        $placeholders = implode(',', array_fill(0, count($statusIDs), '?'));
-        $query = "SELECT c.categoryName, COUNT(p.policyID) as total
-                  FROM categorytbl c 
-                  LEFT JOIN policytbl p ON c.categoryID = p.categoryID AND p.policyStatusID IN ($placeholders)";
-
-        $params = $statusIDs;
-        $types = str_repeat('i', count($statusIDs));
-
-        if (!empty($month)) {
-            $query .= " AND MONTH(COALESCE(p.dateUploaded, p.dateSubmitted)) = ?";
-            $params[] = $month;
-            $types .= 'i';
+        if ($parentID === null) {
+            // Top Level: Departments, sum child policies as well
+            $query = "SELECT 
+                parent.categoryID AS categoryID,
+                parent.categoryName AS categoryName,
+                (
+                    SELECT COUNT(p1.policyID) 
+                    FROM policytbl p1
+                    JOIN categorytbl c1 ON p1.categoryID = c1.categoryID
+                    WHERE (c1.categoryID = parent.categoryID OR c1.parentCategoryID = parent.categoryID)
+                      AND p1.policyStatusID IN (4, 5)
+                      $dateCondition1
+                ) AS policiesApproved,
+                (
+                    SELECT COUNT(p2.policyID)
+                    FROM policytbl p2
+                    JOIN empperdeptbl ed ON p2.policyAuthor = ed.accID
+                    JOIN dorgtbl d ON ed.dptID = d.dptID
+                    JOIN categorytbl c2 ON d.dptName = c2.categoryName
+                    WHERE (c2.categoryID = parent.categoryID OR c2.parentCategoryID = parent.categoryID)
+                      $dateCondition2
+                ) AS totalPoliciesSubmitted
+            FROM 
+                categorytbl parent
+            WHERE 
+                parent.parentCategoryID IS NULL
+            ORDER BY 
+                totalPoliciesSubmitted DESC";
+        } else {
+            // Drill Down: Sub-departments
+            $query = "SELECT 
+                c.categoryID AS categoryID,
+                c.categoryName AS categoryName,
+                (
+                    SELECT COUNT(p1.policyID) 
+                    FROM policytbl p1
+                    WHERE p1.categoryID = c.categoryID
+                      AND p1.policyStatusID IN (4, 5)
+                      $dateCondition1
+                ) AS policiesApproved,
+                (
+                    SELECT COUNT(p2.policyID)
+                    FROM policytbl p2
+                    JOIN empperdeptbl ed ON p2.policyAuthor = ed.accID
+                    JOIN dorgtbl d ON ed.dptID = d.dptID
+                    WHERE d.dptName = c.categoryName
+                      $dateCondition2
+                ) AS totalPoliciesSubmitted
+            FROM 
+                categorytbl c
+            WHERE 
+                c.parentCategoryID = " . (int)$parentID . "
+            ORDER BY 
+                totalPoliciesSubmitted DESC";
         }
-        if (!empty($year)) {
-            $query .= " AND YEAR(COALESCE(p.dateUploaded, p.dateSubmitted)) = ?";
-            $params[] = $year;
-            $types .= 'i';
-        }
-        $query .= " GROUP BY c.categoryID, c.categoryName ORDER BY c.categoryName ASC";
     }
 
     if (!empty($params)) {

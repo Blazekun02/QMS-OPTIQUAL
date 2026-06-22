@@ -307,6 +307,7 @@
     <div class="submit-group">
         <label>Upload Policy Document</label>
         <input type="file" name="policyFile" accept=".pdf" required>
+        <p style="font-size: 12px; color: #fbaf41; margin-top: 5px; margin-bottom: 0;">* Only PDF files are accepted. File size must be 2MB and below.</p>
     </div>
 
     <div class="revision-toggle">
@@ -340,6 +341,7 @@
         <textarea name="changesDescription" rows="3" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
         <label>Upload Revision Log (PDF):</label>
         <input type="file" name="changeLogFile" accept=".pdf" style="margin-top: 5px;">
+        <p style="font-size: 12px; color: #fbaf41; margin-top: 5px; margin-bottom: 0;">* Only PDF files are accepted. File size must be 2MB and below.</p>
     </div>
 
     <div class="submit-buttons">
